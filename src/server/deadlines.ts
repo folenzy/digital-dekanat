@@ -6,7 +6,11 @@ import { deadlines } from "./db/schema";
 import { currentSemester, listRequiredOpenCheckpoints } from "./grades";
 import { mskAt, mskDateKey, shiftDateKey } from "./time";
 
-export type DeadlineView = { kind: "deadline" | "checkpoint"; title: string; due: Date; href?: string };
+export type DeadlineView = {
+  kind: "deadline" | "checkpoint"; title: string; due: Date; href?: string;
+  /** Начало окна (только для kind = deadline) и код подтипа обращения, к которому оно относится. */
+  startsAt?: Date; appealTypeCode?: string;
+};
 
 const DAY_MS = 86_400_000;
 
@@ -24,11 +28,12 @@ export async function listUpcomingDeadlines(v: StudentViewer, now: Date, days = 
   ));
 
   const today = mskDateKey(now);
-  const checkpoints = await listRequiredOpenCheckpoints(v.studentId, currentSemester(v.course, now));
+  const checkpoints = await listRequiredOpenCheckpoints(v, currentSemester(v.course, now));
 
   const items: DeadlineView[] = [
     ...rows.map((d): DeadlineView => ({
-      kind: "deadline", title: d.title, due: d.endsAt,
+      kind: "deadline", title: d.title, due: d.endsAt, startsAt: d.startsAt,
+      ...(d.appealTypeCode ? { appealTypeCode: d.appealTypeCode } : {}),
       ...(d.appealTypeCode ? { href: `/dekanat/new?type=${d.appealTypeCode}` } : {}),
     })),
     ...checkpoints

@@ -82,7 +82,7 @@ function average(grades: (string | null)[]): number | null {
 }
 
 /** Невыполненные обязательные контрольные точки студента в семестре (для дедлайнов и рисков). */
-export async function listRequiredOpenCheckpoints(studentId: number, semester: number) {
+export async function listRequiredOpenCheckpoints(v: StudentViewer, semester: number) {
   return db
     .select({
       enrollmentId: enrollments.id, checkpointId: checkpoints.id, discipline: disciplines.name,
@@ -92,7 +92,7 @@ export async function listRequiredOpenCheckpoints(studentId: number, semester: n
     .innerJoin(enrollments, eq(enrollments.id, checkpoints.enrollmentId))
     .innerJoin(disciplines, eq(disciplines.id, enrollments.disciplineId))
     .where(and(
-      eq(enrollments.studentId, studentId), eq(enrollments.semester, semester),
+      eq(enrollments.studentId, v.studentId), eq(enrollments.semester, semester),
       eq(checkpoints.required, true), isNull(checkpoints.score),
     ))
     .orderBy(asc(checkpoints.dueDate), asc(checkpoints.id));
@@ -162,7 +162,7 @@ export async function getStudySummary(v: StudentViewer, now: Date): Promise<Stud
     }));
 
   const limit = shiftDateKey(today, RISK_DAYS);
-  const risks: Risk[] = (await listRequiredOpenCheckpoints(v.studentId, semester))
+  const risks: Risk[] = (await listRequiredOpenCheckpoints(v, semester))
     .filter((c) => c.dueDate <= limit)
     .map((c) => ({
       enrollmentId: c.enrollmentId, checkpointId: c.checkpointId, discipline: c.discipline, title: c.title,

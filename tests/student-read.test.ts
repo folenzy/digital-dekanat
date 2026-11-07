@@ -134,6 +134,16 @@ describe("расписание", () => {
     expect(ov.next?.dateKey).toBe("2026-11-11");
   });
 
+  it("2026-11-09T21:30Z — уже вторник 10 ноября по Москве: пары вторника, next не раньше 10-го", async () => {
+    const now = new Date("2026-11-09T21:30:00Z");
+    const ov = await getTodayOverview(alina, now);
+    expect(ov.lessons).toEqual(await getDay(alina, TUE));
+    expect(ov.lessons.length).toBeGreaterThan(0);
+    expect(ov.current).toBeUndefined();
+    expect(ov.next?.dateKey).toBe("2026-11-10");
+    expect(ov.next?.pair).toBe(1);
+  });
+
   it("суббота: пар нет, next — вторая пара понедельника", async () => {
     const ov = await getTodayOverview(alina, new Date("2026-11-14T09:00:00Z"));
     expect(ov.lessons).toEqual([]);
