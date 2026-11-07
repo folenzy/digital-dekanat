@@ -26,6 +26,8 @@ describe("время МСК", () => {
     expect(addWorkingDays(new Date("2026-11-06T12:00:00Z"), 1).toISOString()).toBe("2026-11-09T15:00:00.000Z"); // пт -> пн
     expect(addWorkingDays(new Date("2026-11-09T07:00:00Z"), 3).toISOString()).toBe("2026-11-12T15:00:00.000Z"); // пн -> чт
     expect(addWorkingDays(new Date("2026-11-04T07:00:00Z"), 3).toISOString()).toBe("2026-11-09T15:00:00.000Z"); // ср -> пн
+    // пятница по UTC, но уже суббота по МСК: первый рабочий день — понедельник
+    expect(addWorkingDays(new Date("2026-11-06T21:30:00Z"), 1).toISOString()).toBe("2026-11-09T15:00:00.000Z");
   });
 
   it("isOverdue: срок прошёл строго раньше now", () => {
