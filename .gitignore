@@ -1,0 +1,29 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# next.js / build
+.next/
+out/
+build/
+dist/
+*.tsbuildinfo
+next-env.d.ts
+
+# tests
+coverage/
+playwright-report/
+test-results/
+blob-report/
+
+# env & secrets — never commit
+.env
+.env.*
+!.env.example
+
+# local tooling
+.superpowers/
+.DS_Store
+Thumbs.db
+*.log
+backups/

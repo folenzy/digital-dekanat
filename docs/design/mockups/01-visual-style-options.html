@@ -1,0 +1,112 @@
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Golos+Text:wght@400;500;600;700&family=Unbounded:wght@500;700&display=swap');
+.phones{display:flex;gap:28px;flex-wrap:wrap;justify-content:center;margin-top:18px}
+.ph{width:300px;border-radius:34px;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.18);border:8px solid #111;position:relative}
+.ph .scr{height:600px;overflow:hidden;position:relative}
+.nav{position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:space-around;padding:10px 6px 14px;font-size:10.5px}
+.nav b{display:block;width:20px;height:20px;border-radius:7px;margin:0 auto 3px}
+.tag{font-size:9px;letter-spacing:.04em;padding:4px 10px;text-align:center}
+.pick{text-align:center;margin-top:10px}
+/* A paper */
+.a{background:#F4EFE6;color:#1D1B17;font-family:'Golos Text',sans-serif}
+.a h1{font-family:'Fraunces',serif;font-weight:700;font-size:30px;line-height:1.05;margin:6px 0 2px}
+.a .pad{padding:14px 18px}
+.a .muted{color:#7A7166;font-size:12px}
+.a .card{background:#FFFDF8;border:1px solid #E4DCCD;border-radius:14px;padding:12px 14px;margin-top:10px}
+.a .first{background:#1D1B17;color:#F4EFE6;border:0}
+.a .first .k{color:#E2774A}
+.a .k{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#B4552D;font-weight:600}
+.a .t{font-weight:600;font-size:14px;margin-top:3px}
+.a .s{font-size:12px;margin-top:3px;opacity:.75}
+.a .strike{text-decoration:line-through;opacity:.5}
+.a .chip{display:inline-block;background:#E2774A;color:#fff;border-radius:99px;padding:5px 11px;font-size:11px;font-weight:600;margin-top:8px}
+.a .bar{height:6px;background:#E4DCCD;border-radius:9px;margin-top:8px}.a .bar i{display:block;height:100%;width:60%;background:#1D1B17;border-radius:9px}
+.a .nav{background:#FFFDF8;border-top:1px solid #E4DCCD}.a .nav b{background:#E4DCCD}.a .nav .on b{background:#1D1B17}
+.a .tag{background:#1D1B17;color:#F4EFE6}
+/* B night */
+.b{background:#0E0F1A;color:#ECEDF7;font-family:'Golos Text',sans-serif}
+.b .pad{padding:14px 16px}
+.b h1{font-family:'Unbounded',sans-serif;font-weight:700;font-size:23px;line-height:1.1;margin:6px 0 2px}
+.b .muted{color:#8B8EA8;font-size:12px}
+.b .card{background:#191B2B;border-radius:18px;padding:12px 14px;margin-top:10px}
+.b .first{background:linear-gradient(135deg,#C6F432,#7BE0C3);color:#0E0F1A}
+.b .k{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#C6F432;font-weight:700}
+.b .first .k{color:#0E0F1A;opacity:.7}
+.b .t{font-weight:600;font-size:14px;margin-top:3px}
+.b .s{font-size:12px;margin-top:3px;opacity:.7}
+.b .strike{text-decoration:line-through;opacity:.45}
+.b .chip{display:inline-block;background:#0E0F1A;color:#C6F432;border-radius:99px;padding:5px 11px;font-size:11px;font-weight:600;margin-top:8px}
+.b .bar{height:6px;background:#2A2D45;border-radius:9px;margin-top:8px}.b .bar i{display:block;height:100%;width:60%;background:#9C8CFF;border-radius:9px}
+.b .nav{background:#151726}.b .nav b{background:#2A2D45}.b .nav .on{color:#C6F432}.b .nav .on b{background:#C6F432}
+.b .tag{background:#191B2B;color:#8B8EA8}
+/* C clean */
+.c{background:#F3F5FA;color:#14182B;font-family:'Golos Text',sans-serif}
+.c .hero{background:linear-gradient(160deg,#3B4CF5,#6C3BF5);color:#fff;padding:14px 18px 40px;border-radius:0 0 26px 26px}
+.c h1{font-weight:700;font-size:24px;margin:6px 0 2px}
+.c .muted{opacity:.8;font-size:12px}
+.c .pad{padding:0 14px;margin-top:-28px}
+.c .card{background:#fff;border-radius:18px;padding:12px 14px;margin-top:10px;box-shadow:0 4px 16px rgba(30,40,90,.08)}
+.c .first{border:2px solid #3B4CF5}
+.c .k{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#3B4CF5;font-weight:700}
+.c .t{font-weight:600;font-size:14px;margin-top:3px}
+.c .s{font-size:12px;margin-top:3px;color:#5B6178}
+.c .strike{text-decoration:line-through;opacity:.5}
+.c .chip{display:inline-block;background:#3B4CF5;color:#fff;border-radius:12px;padding:6px 12px;font-size:11px;font-weight:600;margin-top:8px}
+.c .bar{height:6px;background:#E3E6F2;border-radius:9px;margin-top:8px}.c .bar i{display:block;height:100%;width:60%;background:#2BB673;border-radius:9px}
+.c .nav{background:#fff;box-shadow:0 -4px 16px rgba(30,40,90,.06)}.c .nav b{background:#E3E6F2}.c .nav .on{color:#3B4CF5}.c .nav .on b{background:#3B4CF5}
+.c .tag{background:rgba(255,255,255,.18);color:#fff;border-radius:99px;display:inline-block}
+</style>
+
+<h2>Какой стиль кабинета тебе ближе?</h2>
+<p class="subtitle">Один и тот же экран «Сегодня» в трёх стилях. Смотри на настроение, цвета и шрифты, а не на детали — их доработаю. Нажми на понравившийся вариант.</p>
+
+<div class="phones">
+
+  <div class="option" data-choice="a" onclick="toggleSelect(this)" style="border:0;background:none;padding:0;display:block">
+    <div class="ph"><div class="scr a">
+      <div class="tag">КОНЦЕПТ ДЛЯ КОНКУРСА · НЕ ОФИЦИАЛЬНЫЙ СЕРВИС</div>
+      <div class="pad">
+        <div class="muted">Пятница, 7 ноября</div>
+        <h1>Доброе утро, Алина</h1>
+        <div class="card first"><div class="k">Деканат пишет первым</div><div class="t">Ты проходишь на повышенную стипендию</div><div class="s">Средний балл 4,8. Приём заявлений до 20 ноября.</div><span class="chip">Подать в 1 тап</span></div>
+        <div class="card"><div class="k">Следующая пара · 10:40</div><div class="t">Математический анализ</div><div class="s"><span class="strike">ауд. 214</span> → ауд. 305 · Соколова Е. В.</div></div>
+        <div class="card"><div class="k">Обращение</div><div class="t">Справка для военкомата</div><div class="s">Готовится · ответ до завтра 12:00</div><div class="bar"><i></i></div></div>
+      </div>
+      <div class="nav"><span class="on"><b></b>Сегодня</span><span><b></b>Учёба</span><span><b></b>Деканат</span><span><b></b>Профиль</span></div>
+    </div></div>
+    <div class="pick"><h3>A. «Бумага»</h3><p>Спокойный, как хороший ежедневник: кремовый фон, шрифт с засечками в заголовках, терракотовый акцент. Взрослый и «человечный».</p></div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)" style="border:0;background:none;padding:0;display:block">
+    <div class="ph"><div class="scr b">
+      <div class="tag">КОНЦЕПТ ДЛЯ КОНКУРСА · НЕ ОФИЦИАЛЬНЫЙ СЕРВИС</div>
+      <div class="pad">
+        <div class="muted">Пятница, 7 ноября</div>
+        <h1>Привет, Алина ✦</h1>
+        <div class="card first"><div class="k">Деканат пишет первым</div><div class="t">Ты проходишь на повышенную стипендию</div><div class="s">Средний балл 4,8. Приём заявлений до 20 ноября.</div><span class="chip">Подать в 1 тап</span></div>
+        <div class="card"><div class="k">Следующая пара · 10:40</div><div class="t">Математический анализ</div><div class="s"><span class="strike">ауд. 214</span> → ауд. 305 · Соколова Е. В.</div></div>
+        <div class="card"><div class="k">Обращение</div><div class="t">Справка для военкомата</div><div class="s">Готовится · ответ до завтра 12:00</div><div class="bar"><i></i></div></div>
+      </div>
+      <div class="nav"><span class="on"><b></b>Сегодня</span><span><b></b>Учёба</span><span><b></b>Деканат</span><span><b></b>Профиль</span></div>
+    </div></div>
+    <div class="pick"><h3>B. «Ночной кампус»</h3><p>Тёмный, смелый, неоново-лаймовый акцент и широкий шрифт. Похоже на современные приложения для студентов, сильно выделяется среди работ.</p></div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)" style="border:0;background:none;padding:0;display:block">
+    <div class="ph"><div class="scr c">
+      <div class="hero">
+        <span class="tag">концепт для конкурса · не официальный сервис</span>
+        <div class="muted" style="margin-top:8px">Пятница, 7 ноября</div>
+        <h1>Доброе утро, Алина</h1>
+      </div>
+      <div class="pad">
+        <div class="card first"><div class="k">Деканат пишет первым</div><div class="t">Ты проходишь на повышенную стипендию</div><div class="s">Средний балл 4,8. Приём заявлений до 20 ноября.</div><span class="chip">Подать в 1 тап</span></div>
+        <div class="card"><div class="k">Следующая пара · 10:40</div><div class="t">Математический анализ</div><div class="s"><span class="strike">ауд. 214</span> → ауд. 305 · Соколова Е. В.</div></div>
+        <div class="card"><div class="k">Обращение</div><div class="t">Справка для военкомата</div><div class="s">Готовится · ответ до завтра 12:00</div><div class="bar"><i></i></div></div>
+      </div>
+      <div class="nav"><span class="on"><b></b>Сегодня</span><span><b></b>Учёба</span><span><b></b>Деканат</span><span><b></b>Профиль</span></div>
+    </div></div>
+    <div class="pick"><h3>C. «Как в банке»</h3><p>Светлый, привычный, сине-фиолетовый градиент и белые карточки. Понятен с первого взгляда, но больше похож на то, что уже видели.</p></div>
+  </div>
+
+</div>
