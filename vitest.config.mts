@@ -16,7 +16,11 @@ export default defineConfig(({ mode }) => {
     },
     test: {
       include: ["tests/**/*.test.ts"],
-      env: { DATABASE_URL_TEST: env.DATABASE_URL_TEST ?? "" },
+      env: {
+        DATABASE_URL_TEST: env.DATABASE_URL_TEST ?? "",
+        // воркеры тестов ходят в тестовую БД через общий клиент приложения
+        DATABASE_URL: env.DATABASE_URL_TEST ?? "",
+      },
       globalSetup: ["tests/setup/global.ts"],
       fileParallelism: false,
       testTimeout: 15000,

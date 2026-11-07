@@ -1,6 +1,7 @@
 import postgres from "postgres";
+import { runMigrations } from "../../src/server/db/migrate";
 
-// Пока только проверяем доступность тестовой БД (миграции добавит Task 2).
+// Проверяем тестовую БД и накатываем миграции перед всеми тестами.
 export default async function setup() {
   const url = process.env.DATABASE_URL_TEST;
   if (!url) throw new Error("DATABASE_URL_TEST не задан (см. .env.example)");
@@ -14,4 +15,5 @@ export default async function setup() {
   } finally {
     await sql.end();
   }
+  await runMigrations(url);
 }
