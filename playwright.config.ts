@@ -13,7 +13,8 @@ export default defineConfig({
     { name: "desktop-1280", use: { ...devices["Desktop Chrome"], viewport: { width: 1280, height: 800 } } },
   ],
   webServer: {
-    command: `npm run build && npx next start -p ${PORT}`,
+    // output: "standalone" → запускаем server.js, как в Docker (см. scripts/start-standalone.mjs)
+    command: `npm run build && node scripts/start-standalone.mjs ${PORT}`,
     url: `http://localhost:${PORT}`,
     reuseExistingServer: true,
     timeout: 240_000,
