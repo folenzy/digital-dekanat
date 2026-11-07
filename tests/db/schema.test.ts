@@ -1,5 +1,5 @@
 import { afterAll, expect, test } from "vitest";
-import { closeTestDb, testSql } from "../helpers/db";
+import { closeTestDb, testSql, truncateAll } from "../helpers/db";
 
 afterAll(closeTestDb);
 
@@ -24,6 +24,7 @@ test("русский tsvector работает", async () => {
 });
 
 test("kb_articles.search генерируется и имеет GIN-индекс", async () => {
+  await truncateAll(); // другие тесты оставляют демо-мир в БД
   await testSql`insert into kb_articles (topic, question, answer, keywords)
     values ('Справки', 'Как заказать справку?', 'Через раздел обращений', 'справка заказ')`;
   const r = await testSql`select count(*)::int as n from kb_articles
