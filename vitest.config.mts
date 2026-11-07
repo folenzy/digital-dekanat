@@ -15,7 +15,7 @@ export default defineConfig(({ mode }) => {
       },
     },
     test: {
-      include: ["tests/**/*.test.ts"],
+      include: ["tests/**/*.test.{ts,tsx}"],
       env: {
         DATABASE_URL_TEST: env.DATABASE_URL_TEST ?? "",
         // воркеры тестов ходят в тестовую БД через общий клиент приложения

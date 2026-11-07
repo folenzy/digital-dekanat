@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { Toast, ToastRegion } from "../Toast";
 
 // Событие, как его присылает /api/events и как оно приходит в window-событие `ns:live` (detail).
 export type LiveEventDetail = {
@@ -54,11 +54,12 @@ const expire = () => {
 
 /**
  * Подключается к /api/events: тост, событие `ns:live` для колокольчика и router.refresh().
- * Минимальный вид; оформление — в оболочке приложения.
+ * Монтируется в AppShell; оформление тоста — src/ui/Toast.tsx.
  */
 export function LiveEvents() {
   const router = useRouter();
-  const [toast, setToast] = useState<LiveEventDetail | null>(null);
+  // seq — ключ тоста: новое событие заново проигрывает появление, даже если тост ещё виден.
+  const [toast, setToast] = useState<{ detail: LiveEventDetail; seq: number } | null>(null);
   const hideTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => {
@@ -72,7 +73,7 @@ export function LiveEvents() {
       es.onmessage = (e: MessageEvent<string>) => {
         const detail = parseLiveEvent(e.data);
         if (!detail) return;
-        setToast(detail);
+        setToast((prev) => ({ detail, seq: (prev?.seq ?? 0) + 1 }));
         clearTimeout(hideTimer.current);
         hideTimer.current = setTimeout(() => setToast(null), TOAST_MS);
         window.dispatchEvent(new CustomEvent<LiveEventDetail>("ns:live", { detail }));
@@ -105,22 +106,21 @@ export function LiveEvents() {
     };
   }, [router]);
 
+  const close = () => {
+    clearTimeout(hideTimer.current);
+    setToast(null);
+  };
+
   return (
-    <div
-      role="status"
-      aria-live="polite"
-      style={{ position: "fixed", right: 16, bottom: 16, zIndex: 50, maxWidth: "min(24rem, calc(100vw - 32px))" }}
-    >
+    <ToastRegion>
       {toast && (
-        <div style={{ background: "#1f2933", color: "#fff", padding: "12px 16px", borderRadius: 8 }}>
-          <p style={{ margin: 0 }}>{toast.title ?? "Новое уведомление"}</p>
-          {isSafeHref(toast.href) && (
-            <Link href={toast.href} style={{ color: "#fff", textDecoration: "underline" }} onClick={() => setToast(null)}>
-              Открыть
-            </Link>
-          )}
-        </div>
+        <Toast
+          key={toast.seq}
+          title={toast.detail.title ?? "Новое уведомление"}
+          href={isSafeHref(toast.detail.href) ? toast.detail.href : undefined}
+          onClose={close}
+        />
       )}
-    </div>
+    </ToastRegion>
   );
 }

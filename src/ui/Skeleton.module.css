@@ -1,0 +1,33 @@
+.skeleton {
+  display: block;
+  max-width: 100%;
+  border-radius: var(--radius-sm);
+  background: var(--line);
+  animation: breathe 1.6s ease-in-out infinite;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+
+.title {
+  margin-bottom: var(--space-1);
+}
+
+@keyframes breathe {
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+}
