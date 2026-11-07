@@ -44,3 +44,19 @@ export function addWorkingDays(from: Date, n: number): Date {
 export function isOverdue(due: Date, now: Date): boolean {
   return now.getTime() > due.getTime();
 }
+
+/** Ключ даты 'YYYY-MM-DD', сдвинутый на n суток. */
+export function shiftDateKey(key: string, n: number): string {
+  return new Date(Date.parse(`${key}T00:00:00Z`) + n * DAY_MS).toISOString().slice(0, 10);
+}
+
+/** Момент времени «ГГГГ-ММ-ДД ЧЧ:ММ» по Москве. */
+export function mskAt(key: string, hhmm: string): Date {
+  return new Date(`${key}T${hhmm}:00+03:00`);
+}
+
+/** Минуты от полуночи по Москве (целые). */
+export function mskMinutes(now: Date): number {
+  const d = mskShifted(now);
+  return d.getUTCHours() * 60 + d.getUTCMinutes();
+}
