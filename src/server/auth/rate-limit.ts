@@ -1,6 +1,6 @@
 import "server-only";
 import { isIP } from "node:net";
-import { and, desc, eq, gt, lt } from "drizzle-orm";
+import { and, desc, eq, gt, inArray, lt, or } from "drizzle-orm";
 import { db } from "../db/client";
 import { loginAttempts } from "../db/schema";
 
@@ -9,8 +9,6 @@ import { loginAttempts } from "../db/schema";
 export const LOGIN_WINDOW_MS = 15 * 60_000;
 export const PAIR_LIMIT = 5;
 export const IP_LIMIT = 30;
-
-export type LimitCheck = { limited: false } | { limited: true; retryAfterSec: number };
 
 const pairKey = (login: string, ip: string) => `pair:${login.trim().toLowerCase()}|${ip}`;
 const ipKey = (ip: string) => `ip:${ip}`;
@@ -27,40 +25,62 @@ export function clientIp(headers: Headers): string {
   return "unknown";
 }
 
-/** Когда ключ освободится, если в окне уже `limit` неудач; иначе null. */
-async function blockedUntil(key: string, limit: number, now: Date): Promise<number | null> {
+/** Попытка входа, заранее записанная как неудача (до проверки пароля). */
+export type LoginAttempt = { pair: string; pairId: number; ipId: number; now: Date };
+export type AttemptStart = { limited: true; retryAfterSec: number } | { limited: false; attempt: LoginAttempt };
+
+/**
+ * Если неудач в окне (вместе со своей строкой `mineId`) больше `limit` — момент, когда ключ освободится
+ * без своей строки: тогда limit-я с конца чужая неудача выйдет из окна. Иначе null.
+ */
+async function blockedUntil(key: string, limit: number, mineId: number, now: Date): Promise<number | null> {
   const since = new Date(now.getTime() - LOGIN_WINDOW_MS);
-  // limit-я с конца неудача в окне: когда она выйдет из окна, неудач станет меньше лимита
-  const [row] = await db
-    .select({ at: loginAttempts.createdAt })
+  const rows = await db
+    .select({ id: loginAttempts.id, at: loginAttempts.createdAt })
     .from(loginAttempts)
     .where(and(eq(loginAttempts.key, key), eq(loginAttempts.success, false), gt(loginAttempts.createdAt, since)))
-    .orderBy(desc(loginAttempts.createdAt))
-    .offset(limit - 1)
-    .limit(1);
-  return row ? row.at.getTime() + LOGIN_WINDOW_MS : null;
+    .orderBy(desc(loginAttempts.createdAt), desc(loginAttempts.id))
+    .limit(limit + 1);
+  if (rows.length <= limit) return null;
+  const others = rows.filter((r) => r.id !== mineId);
+  return others[limit - 1].at.getTime() + LOGIN_WINDOW_MS;
 }
 
-export async function checkLoginLimit(login: string, ip: string, now: Date): Promise<LimitCheck> {
-  const [pair, byIp] = await Promise.all([
-    blockedUntil(pairKey(login, ip), PAIR_LIMIT, now),
-    blockedUntil(ipKey(ip), IP_LIMIT, now),
+/**
+ * Резервирует попытку: сначала записывает неудачу для пары и IP, потом считает неудачи в окне вместе с ней.
+ * Проверка и запись не разделены паузой на argon2, поэтому параллельные запросы не проскакивают:
+ * запрос, чья строка записана k-й, видит не меньше k строк. При превышении лимита свои строки
+ * удаляются — заблокированные попытки не продлевают блокировку.
+ */
+export async function beginLoginAttempt(login: string, ip: string, now: Date): Promise<AttemptStart> {
+  const pair = pairKey(login, ip);
+  const byIp = ipKey(ip);
+  const rows = await db
+    .insert(loginAttempts)
+    .values([{ key: pair, success: false, createdAt: now }, { key: byIp, success: false, createdAt: now }])
+    .returning({ id: loginAttempts.id, key: loginAttempts.key });
+  const pairId = rows.find((r) => r.key === pair)!.id;
+  const ipId = rows.find((r) => r.key === byIp)!.id;
+
+  const [pairUntil, ipUntil] = await Promise.all([
+    blockedUntil(pair, PAIR_LIMIT, pairId, now),
+    blockedUntil(byIp, IP_LIMIT, ipId, now),
   ]);
-  if (pair === null && byIp === null) return { limited: false };
-  const until = Math.max(pair ?? 0, byIp ?? 0);
+  if (pairUntil === null && ipUntil === null) return { limited: false, attempt: { pair, pairId, ipId, now } };
+
+  await db.delete(loginAttempts).where(inArray(loginAttempts.id, [pairId, ipId]));
+  const until = Math.max(pairUntil ?? 0, ipUntil ?? 0);
   return { limited: true, retryAfterSec: Math.max(1, Math.ceil((until - now.getTime()) / 1000)) };
 }
 
-export async function recordLoginFailure(login: string, ip: string, now: Date): Promise<void> {
-  await db.insert(loginAttempts).values([
-    { key: pairKey(login, ip), success: false, createdAt: now },
-    { key: ipKey(ip), success: false, createdAt: now },
-  ]);
-  // попутная уборка: записи старше окна больше ни на что не влияют
-  await db.delete(loginAttempts).where(lt(loginAttempts.createdAt, new Date(now.getTime() - LOGIN_WINDOW_MS)));
+/** Неверный пароль: зарезервированные строки остаются неудачами; попутно убираем записи старше окна. */
+export async function failLoginAttempt(attempt: LoginAttempt): Promise<void> {
+  await db.delete(loginAttempts)
+    .where(lt(loginAttempts.createdAt, new Date(attempt.now.getTime() - LOGIN_WINDOW_MS)));
 }
 
-/** После успешного входа счётчик пары обнуляется; счётчик IP — нет. */
-export async function clearLoginFailures(login: string, ip: string): Promise<void> {
-  await db.delete(loginAttempts).where(eq(loginAttempts.key, pairKey(login, ip)));
+/** Успешный вход: счётчик пары обнуляется, из счётчика IP убирается только эта попытка. */
+export async function succeedLoginAttempt(attempt: LoginAttempt): Promise<void> {
+  await db.delete(loginAttempts)
+    .where(or(eq(loginAttempts.key, attempt.pair), eq(loginAttempts.id, attempt.ipId)));
 }

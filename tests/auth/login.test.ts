@@ -127,6 +127,48 @@ describe("login", () => {
     expect(await login("irina.belova", pw.irina, IP_B, at(1))).toMatchObject({ ok: true, role: "staff" });
   });
 
+  // Параллельные POST не должны проскакивать между проверкой лимита и записью неудачи.
+  const tally = (rs: Awaited<ReturnType<typeof login>>[]) => ({
+    invalid: rs.filter((r) => !r.ok && r.error === "invalid").length,
+    limited: rs.filter((r) => !r.ok && r.error === "rate_limited").length,
+  });
+
+  it("20 одновременных неверных попыток с одной пары: не больше 5 проверок пароля", async () => {
+    const rs = await Promise.all(
+      Array.from({ length: 20 }, (_, i) => login("alina.mironova", `wrong-${i}`, IP_A, at(0))),
+    );
+    const { invalid, limited } = tally(rs);
+    expect(invalid).toBeLessThanOrEqual(5);
+    expect(invalid + limited).toBe(20);
+    const [{ n }] = await testSql<{ n: number }[]>`
+      select count(*)::int n from login_attempts where key = 'pair:alina.mironova|203.0.113.10'`;
+    expect(n).toBe(invalid);
+  });
+
+  it("40 одновременных попыток по разным логинам с одного IP: не больше 30 проверок пароля", async () => {
+    const rs = await Promise.all(
+      Array.from({ length: 40 }, (_, i) => login(`guess.${i}`, "x", IP_A, at(0))),
+    );
+    const { invalid, limited } = tally(rs);
+    expect(invalid).toBeLessThanOrEqual(30);
+    expect(invalid + limited).toBe(40);
+    const [{ n }] = await testSql<{ n: number }[]>`
+      select count(*)::int n from login_attempts where key = 'ip:203.0.113.10'`;
+    expect(n).toBe(invalid);
+  });
+
+  it("после неудач в окне параллельный всплеск добирает только остаток лимита", async () => {
+    for (let i = 0; i < 3; i++) await login("alina.mironova", `wrong-${i}`, IP_A, at(i));
+    const rs = await Promise.all(
+      Array.from({ length: 10 }, (_, i) => login("alina.mironova", `burst-${i}`, IP_A, at(3))),
+    );
+    const { invalid } = tally(rs);
+    expect(invalid).toBeLessThanOrEqual(2);
+    const [{ n }] = await testSql<{ n: number }[]>`
+      select count(*)::int n from login_attempts where key = 'pair:alina.mironova|203.0.113.10'`;
+    expect(n).toBe(3 + invalid);
+  });
+
   it("сообщения для пользователя", () => {
     expect(LOGIN_INVALID_MESSAGE).toBe("Неверный логин или пароль");
     expect(rateLimitedMessage(600)).toBe("Слишком много попыток, попробуй через 10 мин");

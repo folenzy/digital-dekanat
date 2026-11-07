@@ -4,7 +4,7 @@ import { eq } from "drizzle-orm";
 import { db } from "../db/client";
 import { users } from "../db/schema";
 import { hashPassword, verifyPassword } from "./password";
-import { checkLoginLimit, clearLoginFailures, recordLoginFailure } from "./rate-limit";
+import { beginLoginAttempt, failLoginAttempt, succeedLoginAttempt } from "./rate-limit";
 import { createSession, type Role } from "./session";
 
 export type LoginResult =
@@ -38,8 +38,9 @@ export async function login(
   loginName: string, password: string, ip: string, now: Date, userAgent?: string | null,
 ): Promise<LoginResult> {
   const name = loginName.trim().toLowerCase();
-  const limit = await checkLoginLimit(name, ip, now);
-  if (limit.limited) return { ok: false, error: "rate_limited", retryAfterSec: limit.retryAfterSec };
+  // попытка считается неудачей до проверки пароля: параллельные запросы не обходят лимит
+  const start = await beginLoginAttempt(name, ip, now);
+  if (start.limited) return { ok: false, error: "rate_limited", retryAfterSec: start.retryAfterSec };
 
   const [user] = await db
     .select({ id: users.id, role: users.role, passwordHash: users.passwordHash })
@@ -47,11 +48,11 @@ export async function login(
   const hash = user?.passwordHash ?? (await getDummyHash());
   const passwordOk = await verifyPassword(hash, password);
   if (!user?.passwordHash || !passwordOk) {
-    await recordLoginFailure(name, ip, now);
+    await failLoginAttempt(start.attempt);
     return { ok: false, error: "invalid" };
   }
 
-  await clearLoginFailures(name, ip);
+  await succeedLoginAttempt(start.attempt);
   const { token, expiresAt } = await createSession(user.id, userAgent, now);
   return { ok: true, token, role: user.role, expiresAt };
 }
