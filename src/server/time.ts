@@ -45,6 +45,12 @@ export function isOverdue(due: Date, now: Date): boolean {
   return now.getTime() > due.getTime();
 }
 
+/** «13.11» — день и месяц по Москве (для текстов уведомлений). */
+export function mskDdMm(d: Date): string {
+  const key = mskDateKey(d);
+  return `${key.slice(8, 10)}.${key.slice(5, 7)}`;
+}
+
 /** Ключ даты 'YYYY-MM-DD', сдвинутый на n суток. */
 export function shiftDateKey(key: string, n: number): string {
   return new Date(Date.parse(`${key}T00:00:00Z`) + n * DAY_MS).toISOString().slice(0, 10);

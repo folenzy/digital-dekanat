@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { appealStatusEnum } from "../db/schema";
 
 export type AppealTopic = "certificates" | "study" | "stipend";
 export type AppealKind = "certificate" | "application" | "question";
@@ -102,3 +103,97 @@ export const APPEAL_TYPES = {
 } satisfies Record<string, AppealTypeDef>;
 
 export type AppealTypeCode = keyof typeof APPEAL_TYPES;
+
+/** Код типа из запроса клиента; ключи прототипа (`constructor`, `__proto__`) сюда не проходят. */
+export function isAppealTypeCode(code: unknown): code is AppealTypeCode {
+  return typeof code === "string" && Object.hasOwn(APPEAL_TYPES, code);
+}
+
+/** Длины текстов (для maxLength в формах; сервер проверяет сам). */
+export const APPEAL_TEXT_LIMITS = {
+  message: 2000, // сообщение, ответ сотрудника, вопрос-уточнение
+  rejectReasonMin: 5,
+  rejectReasonMax: 500,
+  pickupPlace: 120,
+} as const;
+
+export const messageTextSchema = z.string().trim().min(1).max(APPEAL_TEXT_LIMITS.message);
+export const rejectReasonSchema = z.string().trim()
+  .min(APPEAL_TEXT_LIMITS.rejectReasonMin).max(APPEAL_TEXT_LIMITS.rejectReasonMax);
+/** Где и до какого момента забрать справку (обязательно для kind = certificate). */
+export const pickupSchema = z.object({
+  place: z.string().trim().min(1).max(APPEAL_TEXT_LIMITS.pickupPlace),
+  until: z.date(),
+});
+export type Pickup = z.infer<typeof pickupSchema>;
+
+// ---------- то, что видят экраны ----------
+export type AppealStatus = (typeof appealStatusEnum.enumValues)[number];
+
+/** Записи таймлайна. `answered` — студент ответил на уточнение; `replied` — ответ сотрудника в переписке. */
+export type AppealEventKind =
+  | "submitted" | "taken" | "replied" | "needs_info" | "answered" | "ready" | "rejected" | "closed";
+
+export type AppealTypeInfo = { code: AppealTypeCode; title: string; topic: AppealTopic; kind: AppealKind };
+export type DepartmentInfo = { id: number; code: DepartmentCode; name: string };
+
+export type AppealListItem = {
+  id: string;
+  number: string;
+  type: AppealTypeInfo;
+  department: DepartmentInfo;
+  status: AppealStatus;
+  slaDueAt: Date;
+  /** Срок идёт только в submitted / in_progress; просрочено, если now > slaDueAt. */
+  overdue: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type AppealEventView = {
+  kind: AppealEventKind;
+  text: string | null;
+  at: Date;
+  actor: "student" | "staff" | "system";
+  actorName?: string;
+};
+
+export type AppealMessageView = {
+  id: number;
+  body: string;
+  at: Date;
+  author: "student" | "staff";
+  authorName: string;
+};
+
+/** Карточка обращения для студента. Текст полей и сообщений — как ввёл автор (экранирует рендер). */
+export type AppealDetail = AppealListItem & {
+  fields: Record<string, unknown>;
+  /** Название дисциплины из fields.disciplineId (учебные вопросы), иначе null. */
+  disciplineName: string | null;
+  pickup: { place: string; until: Date } | null;
+  rejectReason: string | null;
+  assignee: string | null;
+  events: AppealEventView[];
+  messages: AppealMessageView[];
+};
+
+/** О студенте сотрудник видит только это (минимум привилегий). */
+export type AppealStudentInfo = { fullName: string; faculty: string; group: string; course: number };
+
+export type QueueItem = AppealListItem & {
+  assignee: string | null;
+  student: { fullName: string; group: string };
+};
+
+export type QueueAppealDetail = AppealDetail & { student: AppealStudentInfo };
+
+export type StaffTab = "new" | "in_progress" | "waiting" | "closed";
+
+export type StaffSummary = {
+  new: number;
+  inProgress: number;
+  overdue: number;
+  /** Среднее время до первого действия сотрудника, ч (0,1), по первым ответам за 7 дней; null — не было. */
+  avgFirstResponseHoursWeek: number | null;
+};
