@@ -4,7 +4,8 @@ import { isSafeHref, parseLiveEvent } from "@/ui/live/LiveEvents";
 describe("клиентская проверка событий", () => {
   it("href только относительный на этом же сайте", () => {
     expect(isSafeHref("/dekanat/1")).toBe(true);
-    for (const h of ["//evil.com", "/\\evil.com", "https://evil.com", "javascript:alert(1)", "", undefined, 5]) {
+    const bad = ["//evil.com", "/\x5cevil.com", "https://evil.com", "javascript:alert(1)", "/\t/evil.com", "/\n/evil.com", "/\r/evil.com", " /x", "/x ", "/x\ny", "/\u0000x", "", undefined, 5];
+    for (const h of bad) {
       expect(isSafeHref(h)).toBe(false);
     }
   });
