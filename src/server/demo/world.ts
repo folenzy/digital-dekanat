@@ -149,7 +149,7 @@ export async function buildDemoWorld(db: Db, now: Date, passwords: DemoPasswords
     const [d1, d2] = changeDates(now);
     const changeRows: (typeof s.scheduleChanges.$inferInsert)[] = [];
     const scheduleNotes: Record<string, string> = {};
-    for (const group of ["ПМИ-24-1", "ЭК-23-2"]) {
+    for (const group of ["ПМИ-25-1", "ЭК-24-2"]) {
       const l1 = lessonsOn(group, d1);
       const l2 = lessonsOn(group, d2);
       const gid = groupId.get(group)!;
@@ -202,7 +202,7 @@ export async function buildDemoWorld(db: Db, now: Date, passwords: DemoPasswords
     })));
     const retakeDay = rollToWorkday(day(7));
     await tx.insert(s.exams).values({
-      groupId: groupId.get("ЭК-23-2")!, disciplineId: disciplineId.get("Статистика")!, kind: "retake",
+      groupId: groupId.get("ЭК-24-2")!, disciplineId: disciplineId.get("Статистика")!, kind: "retake",
       startsAt: mskAt(retakeDay, "10:00"), roomId: roomId.get("А-218")!, studentId: denis.id,
     });
 
@@ -339,8 +339,8 @@ export async function buildDemoWorld(db: Db, now: Date, passwords: DemoPasswords
         publishedAt: new Date(now.getTime() - 3 * DAY_MS),
       },
       {
-        authorStaffId: staffIrina.id, audienceGroupId: groupId.get("ЭК-23-2"),
-        title: "ЭК-23-2: консультация по эконометрике",
+        authorStaffId: staffIrina.id, audienceGroupId: groupId.get("ЭК-24-2"),
+        title: "ЭК-24-2: консультация по эконометрике",
         body: "Виктор Степанович Морозов проведёт консультацию по лабораторным работам в классе Б-14 в пятницу после третьей пары. Возьмите с собой ноутбуки с установленной средой для анализа данных.",
         publishedAt: new Date(now.getTime() - 5 * HOUR_MS),
       },
@@ -350,7 +350,7 @@ export async function buildDemoWorld(db: Db, now: Date, passwords: DemoPasswords
     const hAgo = (h: number) => new Date(now.getTime() - h * HOUR_MS);
     await notify(alina.userId, "appeal_status", `Обращение ${aMil.number} принято в работу`,
       "Справку для военкомата готовит Ирина Николаевна Белова. Ответим в обещанный срок.", aTaken, `/dekanat/${aMil.id}`);
-    await notify(alina.userId, "schedule_change", "Изменение в расписании", scheduleNotes["ПМИ-24-1"], hAgo(1), "/schedule");
+    await notify(alina.userId, "schedule_change", "Изменение в расписании", scheduleNotes["ПМИ-25-1"], hAgo(1), "/schedule");
     await notify(alina.userId, "announcement", "Зимняя сессия начинается 22 декабря",
       "Проверь, какие контрольные точки ещё не сданы.", hAgo(24), "/");
     await notify(alina.userId, "deadline", "Идёт приём заявлений на повышенную стипендию",
@@ -362,7 +362,7 @@ export async function buildDemoWorld(db: Db, now: Date, passwords: DemoPasswords
       "Сотрудник деканата задал вопрос по пересдаче. Ответь, чтобы мы продолжили.", dAsked, `/dekanat/${dRetake.id}`);
     await notify(denis.userId, "appeal_status", `Справка по обращению ${dCert.number} готова`,
       `Забери справку: ${pickupPlace}, до ${ddmm(mskDateKey(pickupUntil))}.`, cReady, `/dekanat/${dCert.id}`);
-    await notify(denis.userId, "schedule_change", "Изменение в расписании", scheduleNotes["ЭК-23-2"], hAgo(1), "/schedule");
+    await notify(denis.userId, "schedule_change", "Изменение в расписании", scheduleNotes["ЭК-24-2"], hAgo(1), "/schedule");
     await notify(denis.userId, "deadline", "Скоро срок сдачи лабораторной работы",
       "Лабораторная работа №3 по эконометрике: срок через 3 дня, работа обязательная для допуска.", hAgo(2), "/study");
     await notify(denis.userId, "announcement", "Документы на производственную практику",

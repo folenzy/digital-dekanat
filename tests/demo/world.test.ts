@@ -42,8 +42,8 @@ describe("buildDemoWorld", () => {
     const d = await studentByLogin("denis.kravtsov");
     expect(a.faculty_id).not.toBe(d.faculty_id);
     const g = await db.select().from(s.groups);
-    expect(g.find((x) => x.id === a.group_id)).toMatchObject({ name: "ПМИ-24-1", course: 2 });
-    expect(g.find((x) => x.id === d.group_id)).toMatchObject({ name: "ЭК-23-2", course: 3 });
+    expect(g.find((x) => x.id === a.group_id)).toMatchObject({ name: "ПМИ-25-1", course: 2 });
+    expect(g.find((x) => x.id === d.group_id)).toMatchObject({ name: "ЭК-24-2", course: 3 });
   });
 
   it("есть изменения расписания на сегодня для обеих групп (минимум отмена и смена аудитории)", async () => {

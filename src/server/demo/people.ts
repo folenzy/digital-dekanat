@@ -14,11 +14,11 @@ export const PROGRAMS = [
 ] as const;
 
 export const GROUPS = [
-  { name: "ПМИ-24-1", program: "pmi", course: 2 },
-  { name: "ПМИ-24-2", program: "pmi", course: 2 },
-  { name: "ЭК-23-1", program: "eco", course: 3 },
-  { name: "ЭК-23-2", program: "eco", course: 3 },
-  { name: "ЛИН-25-1", program: "ling", course: 1 },
+  { name: "ПМИ-25-1", program: "pmi", course: 2 },
+  { name: "ПМИ-25-2", program: "pmi", course: 2 },
+  { name: "ЭК-24-1", program: "eco", course: 3 },
+  { name: "ЭК-24-2", program: "eco", course: 3 },
+  { name: "ЛИН-26-1", program: "ling", course: 1 },
 ] as const;
 
 export const DEPARTMENTS = [
@@ -82,14 +82,14 @@ const slot = (
   room: string, teacher: string, parity: Parity = "both",
 ): SlotDef => ({ group, weekday, parity, pair, discipline, type, room, teacher });
 
-const PMI = "ПМИ-24-1";
-const EK = "ЭК-23-2";
+const PMI = "ПМИ-25-1";
+const EK = "ЭК-24-2";
 const [KOV, LEB, ORL, FOM, ZAI, NAZ] = TEACHERS;
 const [MOR, KRY, DAN, VLA, SHI, BEL] = [TEACHERS[6], TEACHERS[7], TEACHERS[8], TEACHERS[9], TEACHERS[10], TEACHERS[11]];
 
 // Недельный шаблон: в каждый будний день не меньше двух пар при любой чётности.
 export const SCHEDULE: SlotDef[] = [
-  // ПМИ-24-1
+  // ПМИ-25-1
   slot(PMI, 1, 2, "Математический анализ", "lecture", "А-301", KOV),
   slot(PMI, 1, 3, "Математический анализ", "practice", "А-215", KOV),
   slot(PMI, 1, 4, "Английский язык", "practice", "Б-104", NAZ),
@@ -104,7 +104,7 @@ export const SCHEDULE: SlotDef[] = [
   slot(PMI, 4, 3, "Базы данных", "lecture", "А-205", ZAI),
   slot(PMI, 5, 2, "Дискретная математика", "practice", "А-215", LEB),
   slot(PMI, 5, 3, "Теория вероятностей", "practice", "А-217", FOM),
-  // ЭК-23-2
+  // ЭК-24-2
   slot(EK, 1, 1, "Макроэкономика", "lecture", "А-305", KRY),
   slot(EK, 1, 2, "Макроэкономика", "practice", "А-218", KRY),
   slot(EK, 1, 3, "Профессиональный иностранный язык", "practice", "Б-106", BEL),
@@ -155,30 +155,30 @@ export const STUDENTS = {
   alina: {
     login: "alina.mironova" as string | null,
     lastName: "Миронова", firstName: "Алина", middleName: "Сергеевна",
-    group: "ПМИ-24-1", studyForm: "очная", funding: "бюджет",
-    recordBookNo: "ОР-24-0137", email: "alina.mironova@orientir-uni.example",
+    group: "ПМИ-25-1", studyForm: "очная", funding: "бюджет",
+    recordBookNo: "ОР-25-0137", email: "alina.mironova@orientir-uni.example",
     curatorName: "Ковалёва Марина Анатольевна",
   },
   denis: {
     login: "denis.kravtsov" as string | null,
     lastName: "Кравцов", firstName: "Денис", middleName: "Олегович",
-    group: "ЭК-23-2", studyForm: "очная", funding: "договор",
-    recordBookNo: "ОР-23-0412", email: "denis.kravtsov@orientir-uni.example",
+    group: "ЭК-24-2", studyForm: "очная", funding: "договор",
+    recordBookNo: "ОР-24-0412", email: "denis.kravtsov@orientir-uni.example",
     curatorName: "Данилов Игорь Аркадьевич",
   },
   // вымышленные студенты без логина: войти нельзя, нужны для очереди сотрудника
   tikhonov: {
     login: null as string | null,
     lastName: "Тихонов", firstName: "Артём", middleName: "Игоревич",
-    group: "ПМИ-24-2", studyForm: "очная", funding: "бюджет",
-    recordBookNo: "ОР-24-0151", email: "artem.tikhonov@orientir-uni.example",
+    group: "ПМИ-25-2", studyForm: "очная", funding: "бюджет",
+    recordBookNo: "ОР-25-0151", email: "artem.tikhonov@orientir-uni.example",
     curatorName: "Ковалёва Марина Анатольевна",
   },
   sokolova: {
     login: null as string | null,
     lastName: "Соколова", firstName: "Милана", middleName: "Андреевна",
-    group: "ЭК-23-1", studyForm: "очная", funding: "бюджет",
-    recordBookNo: "ОР-23-0388", email: "milana.sokolova@orientir-uni.example",
+    group: "ЭК-24-1", studyForm: "очная", funding: "бюджет",
+    recordBookNo: "ОР-24-0388", email: "milana.sokolova@orientir-uni.example",
     curatorName: "Власова Екатерина Романовна",
   },
 } as const;
