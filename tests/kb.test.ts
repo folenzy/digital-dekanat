@@ -42,6 +42,22 @@ describe("searchKb", () => {
     expect((await searchKb("хочу взять академ по болезни"))[0]?.appealTypeCode).toBe("study_academic_leave");
   });
 
+  it("одно настоящее слово + бессмыслица не даёт случайных статей", async () => {
+    expect(await searchKb("получить пиццу доставкой бесплатно")).toEqual([]);
+    expect(await searchKb("справка о погоде на марсе")).toEqual([]);
+  });
+
+  it("запрос, не прошедший строгий AND, находится запасным поиском", async () => {
+    const hits = await searchKb("хочу справку для военкомата срочно");
+    expect(hits.length).toBeGreaterThan(0);
+    expect(hits[0].appealTypeCode).toBe("cert_military");
+  });
+
+  it("символы синтаксиса tsquery не роняют поиск", async () => {
+    await expect(searchKb("a & | ! :* ( ' \"")).resolves.toEqual([]);
+    await expect(searchKb("справка & | ! :* ( ' \" военкомат")).resolves.toBeInstanceOf(Array);
+  });
+
   it("бессмыслица → []", async () => {
     expect(await searchKb("абырвалг")).toEqual([]);
     expect(await searchKb("абырвалг глокая куздра")).toEqual([]);

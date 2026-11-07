@@ -56,6 +56,26 @@ async function run(tsquery: SQL, limit: number): Promise<Row[]> {
     limit ${limit}`)) as unknown as Row[];
 }
 
+// Запасной поиск: статья подходит, если совпало достаточно значимых слов запроса.
+// Стоп-слова («как», «на») дают пустой tsquery и не считаются значимыми.
+// При 3 и более значимых словах нужно совпадение минимум двух, иначе одно общее слово
+// («справка», «получить») вытаскивало бы статьи на запрос вроде «как получить пиццу».
+async function runFallback(words: string[], limit: number): Promise<Row[]> {
+  const tq = words.map((w) => sql`plainto_tsquery('russian', ${w})`);
+  const matched = sql.join(tq.map((x) => sql`(search @@ ${x})::int`), sql` + `);
+  const content = sql.join(tq.map((x) => sql`(numnode(${x}) > 0)::int`), sql` + `);
+  const anyQuery = sql`(${sql.join(tq, sql` || `)})`;
+  return (await db.execute(sql`
+    select id, question, answer, topic, appeal_type_code from (
+      select id, question, answer, topic, appeal_type_code,
+             ${matched} as m, ${content} as c, ts_rank(search, ${anyQuery}) as r
+      from kb_articles
+    ) x
+    where m > 0 and m >= case when c >= 3 then 2 else 1 end
+    order by r desc, id asc
+    limit ${limit}`)) as unknown as Row[];
+}
+
 export async function searchKb(query: string, limit = 3): Promise<KbHit[]> {
   const q = query.trim().slice(0, MAX_QUERY).trim();
   if (q.length < MIN_QUERY) return [];
@@ -68,8 +88,7 @@ export async function searchKb(query: string, limit = 3): Promise<KbHit[]> {
     // Каждое слово идёт параметром в plainto_tsquery, синтаксис tsquery из ввода не собирается.
     const words = [...new Set(q.toLowerCase().match(/[\p{L}\p{N}]{3,}/gu) ?? [])].slice(0, MAX_WORDS);
     if (words.length > 0) {
-      const parts = words.map((w) => sql`plainto_tsquery('russian', ${w})`);
-      rows = await run(sql`(${sql.join(parts, sql` || `)})`, lim);
+      rows = await runFallback(words, lim);
     }
   }
 
