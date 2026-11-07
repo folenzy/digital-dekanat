@@ -119,7 +119,7 @@ export async function takeAppeal(v: StaffViewer, id: string, now: Date = new Dat
   });
 }
 
-/** Ответ в переписке (1–2000, лимит 30 в час). На submitted сначала берёт в работу. В rejected / closed → `closed`. */
+/** Ответ в переписке (1–2000, лимит сотрудника 120 в час). На submitted сначала берёт в работу. В rejected / closed → `closed`. */
 export async function replyAppeal(
   v: StaffViewer, id: string, text: string, now: Date = new Date(),
 ): Promise<AppealActionResult> {
@@ -127,7 +127,7 @@ export async function replyAppeal(
   const body = messageTextSchema.safeParse(text);
   if (!body.success) return fail("validation", fieldError("text", body.error));
   return runAppealAction({
-    scope: staffScope(v), id, now, actorUserId: v.userId, counterpart: "student", limit: LIMITS.message,
+    scope: staffScope(v), id, now, actorUserId: v.userId, counterpart: "student", limit: LIMITS.staffMessage,
     check: (a) => (a.status === "rejected" || a.status === "closed" ? fail("closed") : null),
     apply: async (tx, a) => {
       const taking = a.status === "submitted";
@@ -152,7 +152,7 @@ export async function requestInfo(
   const q = messageTextSchema.safeParse(question);
   if (!q.success) return fail("validation", fieldError("question", q.error));
   return runAppealAction({
-    scope: staffScope(v), id, now, actorUserId: v.userId, counterpart: "student", limit: LIMITS.message,
+    scope: staffScope(v), id, now, actorUserId: v.userId, counterpart: "student", limit: LIMITS.staffMessage,
     check: onlyFrom("in_progress"),
     apply: async (tx, a) => {
       await tx.update(appeals).set({ ...touch(a, v, now), status: "needs_info" }).where(eq(appeals.id, a.id));

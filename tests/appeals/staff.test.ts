@@ -312,12 +312,17 @@ describe("действия сотрудника", () => {
     expect(await notesFor(denis.userId, href)).toHaveLength(0);
   });
 
-  it("лимит 30 сообщений в час действует и для сотрудника", async () => {
+  it("у сотрудника лимит 120 сообщений в час (общий аккаунт жюри): ответы и уточнения делят его", async () => {
     const id = await idOf("cert_military");
-    for (let i = 0; i < 30; i++) expect((await replyAppeal(irina, id, `Ответ ${i}`, at(i * 1000))).ok).toBe(true);
-    expect(await replyAppeal(irina, id, "Ещё", at(31_000))).toEqual({ ok: false, error: "rate_limited" });
-    expect(await requestInfo(irina, id, "Вопрос?", at(32_000))).toEqual({ ok: false, error: "rate_limited" });
-    expect((await appealRow(id)).status).toBe("in_progress");
+    for (let i = 0; i < 119; i++) expect((await replyAppeal(irina, id, `Ответ ${i}`, at(i * 1000))).ok).toBe(true);
+    // 120-е — уточнение, оно расходует тот же лимит
+    expect(await requestInfo(irina, id, "Вопрос?", at(119_000))).toEqual({ ok: true, value: { status: "needs_info" } });
+    expect(await replyAppeal(irina, id, "Сто двадцать первое", at(120_000))).toEqual({ ok: false, error: "rate_limited" });
+    expect(await requestInfo(irina, id, "Ещё вопрос?", at(121_000))).toEqual({ ok: false, error: "rate_limited" });
+    expect(await db.select({ id: s.appealMessages.id }).from(s.appealMessages).where(eq(s.appealMessages.appealId, id)))
+      .toHaveLength(120);
+    // через час снова можно
+    expect((await replyAppeal(irina, id, "Через час", at(3_600_000 + 1000))).ok).toBe(true);
   });
 });
 

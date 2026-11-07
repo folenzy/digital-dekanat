@@ -7,7 +7,10 @@ import { actionLog } from "./db/schema";
 const HOUR_MS = 3_600_000;
 export const LIMITS = {
   appeal: { action: "appeal_create", limit: 10, windowMs: HOUR_MS },
+  /** Сообщения студента. */
   message: { action: "appeal_message", limit: 30, windowMs: HOUR_MS },
+  /** Ответы и уточнения сотрудника (общий счётчик): аккаунт сотрудника в демо делит всё жюри. */
+  staffMessage: { action: "appeal_message", limit: 120, windowMs: HOUR_MS },
 } as const;
 export type LimitSpec = { action: string; limit: number; windowMs: number };
 
