@@ -1,0 +1,21 @@
+import { describe, expect, it } from "vitest";
+import { isSafeHref, parseLiveEvent } from "@/ui/live/LiveEvents";
+
+describe("клиентская проверка событий", () => {
+  it("href только относительный на этом же сайте", () => {
+    expect(isSafeHref("/dekanat/1")).toBe(true);
+    for (const h of ["//evil.com", "/\\evil.com", "https://evil.com", "javascript:alert(1)", "", undefined, 5]) {
+      expect(isSafeHref(h)).toBe(false);
+    }
+  });
+  it("мусор и неизвестный type игнорируются, небезопасный href отбрасывается", () => {
+    expect(parseLiveEvent("не json")).toBeNull();
+    expect(parseLiveEvent("null")).toBeNull();
+    expect(parseLiveEvent("[]")).toBeNull();
+    expect(parseLiveEvent('{"type":"x"}')).toBeNull();
+    expect(parseLiveEvent('{"type":"notification","title":"Привет","href":"//evil.com","extra":1}'))
+      .toEqual({ type: "notification", title: "Привет" });
+    expect(parseLiveEvent('{"type":"appeal_updated","href":"/dekanat/1","appealId":"a"}'))
+      .toEqual({ type: "appeal_updated", href: "/dekanat/1", appealId: "a" });
+  });
+});

@@ -97,3 +97,10 @@ export async function stopRealtime(): Promise<void> {
   await stopListening?.();
   stopListening = undefined;
 }
+
+/** Число активных подписчиков (для тестов утечек). */
+export function subscriberCount(): number {
+  let n = 0;
+  for (const s of subscribers.values()) n += s.size;
+  return n;
+}

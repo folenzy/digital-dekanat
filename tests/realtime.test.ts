@@ -9,7 +9,7 @@ import { createSession } from "@/server/auth/session";
 import { SESSION_COOKIE } from "@/server/auth/cookie";
 import { replyAppeal } from "@/server/appeals/staff";
 import { createAnnouncement } from "@/server/announcements";
-import { listenReady, publish, stopRealtime, subscribe, type LiveEvent } from "@/server/realtime";
+import { listenReady, publish, stopRealtime, subscribe, subscriberCount, type LiveEvent } from "@/server/realtime";
 import { openEventStream } from "@/server/events-stream";
 import { sql as appSql } from "@/server/db/client";
 import { closeTestDb, testSql } from "./helpers/db";
@@ -218,5 +218,54 @@ describe("createAnnouncement", () => {
     }, NOW);
     for (let i = 0; i < 10; i++) expect((await make()).ok).toBe(true);
     expect(await make()).toEqual({ ok: false, error: "rate_limited" });
+  });
+});
+
+describe("утечки потока при отключении клиента", () => {
+  const url = "http://localhost/api/events";
+  const reqWith = (token: string, signal?: AbortSignal) =>
+    new NextRequest(url, { headers: { cookie: `${SESSION_COOKIE.name}=${token}` }, signal });
+
+  it("abort снимает подписку и таймер пульса", async () => {
+    const { token } = await createSession(alina.userId, "vitest", new Date());
+    const before = subscriberCount();
+    vi.useFakeTimers({ toFake: ["setInterval", "clearInterval"] });
+    try {
+      const ac = new AbortController();
+      const res = await openEventStream(reqWith(token, ac.signal), 1000);
+      await res.body!.getReader().read();
+      expect(subscriberCount()).toBe(before + 1);
+      expect(vi.getTimerCount()).toBe(1);
+      ac.abort();
+      expect(subscriberCount()).toBe(before);
+      expect(vi.getTimerCount()).toBe(0);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("abort до открытия потока: подписки и таймеры не создаются", async () => {
+    const { token } = await createSession(alina.userId, "vitest", new Date());
+    const before = subscriberCount();
+    vi.useFakeTimers({ toFake: ["setInterval", "clearInterval"] });
+    try {
+      const ac = new AbortController();
+      ac.abort();
+      const res = await openEventStream(reqWith(token, ac.signal), 1000);
+      expect(res.body).toBeNull();
+      expect(subscriberCount()).toBe(before);
+      expect(vi.getTimerCount()).toBe(0);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("?probe=1: 204 с сессией, 401 без неё, поток не открывается", async () => {
+    const { token } = await createSession(alina.userId, "vitest", new Date());
+    const before = subscriberCount();
+    const ok = await openEventStream(new NextRequest(`${url}?probe=1`, { headers: reqWith(token).headers }));
+    expect(ok.status).toBe(204);
+    expect((await openEventStream(new NextRequest(`${url}?probe=1`))).status).toBe(401);
+    expect(subscriberCount()).toBe(before);
   });
 });

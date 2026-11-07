@@ -16,8 +16,16 @@ export async function openEventStream(req: NextRequest, heartbeatMs: number = HE
   const session = token ? await getSessionUser(token, new Date()) : null;
   if (!token || !session) return new Response("Unauthorized", { status: 401, headers: { "cache-control": "no-store" } });
 
+  // Проба сессии для клиента: без потока, только 204/401.
+  if (req.nextUrl.searchParams.get("probe") === "1") {
+    return new Response(null, { status: 204, headers: { "cache-control": "no-store" } });
+  }
+  // Клиент мог отключиться, пока мы ждали БД: abort уже не придёт.
+  if (req.signal.aborted) return new Response(null, { status: 499 });
+
   try {
     await listenReady();
+    if (req.signal.aborted) return new Response(null, { status: 499 });
   } catch {
     return new Response("Service Unavailable", { status: 503, headers: { "cache-control": "no-store" } });
   }
@@ -62,6 +70,10 @@ export async function openEventStream(req: NextRequest, heartbeatMs: number = HE
         try { controller.close(); } catch { /* уже закрыт */ }
       };
       req.signal.addEventListener("abort", onAbort);
+      if (req.signal.aborted) {
+        onAbort();
+        return;
+      }
       send(": connected\n\n");
     },
     cancel() {
