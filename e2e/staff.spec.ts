@@ -350,7 +350,7 @@ test("профиль сотрудника: ФИО, должность, отде�
   // «О проекте» из профиля: знак ведёт сотрудника в его очередь (студенческая «/» для него 404)
   await page.getByRole("link", { name: /О проекте/ }).click();
   await page.waitForURL("**/about");
-  await expect(page.getByRole("link", { name: "На связи — на главную" })).toHaveAttribute("href", "/staff");
+  await expect(page.getByRole("link", { name: /^На связи.* на главную$/ })).toHaveAttribute("href", "/staff");
   await page.goBack();
   await page.waitForURL("**/staff/profile");
 
@@ -391,7 +391,7 @@ test("чужая роль — страница не найдена: студен
     await expect(page.getByRole("heading", { name: "Страница не найдена" })).toBeVisible();
     // «На главную» ведёт сотрудника в его очередь, а не на чужую главную
     await expect(page.getByRole("link", { name: "На главную", exact: true })).toHaveAttribute("href", "/staff");
-    await expect(page.getByRole("link", { name: "На связи — на главную" })).toHaveAttribute("href", "/staff");
+    await expect(page.getByRole("link", { name: /^На связи.* на главную$/ })).toHaveAttribute("href", "/staff");
   }
 });
 

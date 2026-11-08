@@ -57,7 +57,7 @@ export function Bell({ initial, href, withLabel = false }: BellProps) {
       <Link href={href} className={styles.row} aria-label={bellLabel(count)}>
         <BellIcon aria-hidden="true" className={styles.rowIcon} />
         <span aria-hidden="true">Уведомления</span>
-        {counter}
+        {badge && <span className={styles.badge} aria-hidden="true" data-count={badge} />}
       </Link>
     );
   }

@@ -79,3 +79,20 @@ export async function shoot(page: Page, name: string, width: number, series = "0
     style: 'nav[aria-label="Разделы"] { position: static !important; }',
   });
 }
+
+/** Ошибки консоли браузера и необработанные исключения страницы: тест проверяет, что список пуст. */
+export function collectConsoleErrors(page: Page): string[] {
+  const errors: string[] = [];
+  page.on("console", (msg) => {
+    if (msg.type() === "error") errors.push(`${msg.text()} @ ${msg.location().url}`);
+  });
+  page.on("pageerror", (e) => errors.push(e.message));
+  return errors;
+}
+
+/** Открытое подключение к потоку событий: после этого сервер точно доставит событие вкладке. */
+export async function waitForEventStream(page: Page, open: () => Promise<unknown>): Promise<void> {
+  const stream = page.waitForResponse((r) => new URL(r.url()).pathname === "/api/events");
+  await open();
+  await stream;
+}

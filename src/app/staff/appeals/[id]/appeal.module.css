@@ -318,7 +318,8 @@
 
 .summaryHint {
   font-size: var(--text-sm);
-  color: var(--fg-muted);
+  /* на открытой форме фон — --bg: --fg-muted даёт там 4,36:1, усиленный — выше 4,5 */
+  color: var(--muted-strong);
   line-height: var(--leading-snug);
 }
 

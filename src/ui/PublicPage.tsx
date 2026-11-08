@@ -19,7 +19,7 @@ export function PublicPage({ children, action, home = "/" }: PublicPageProps) {
       <a href="#main" className={styles.skip}>Перейти к содержимому</a>
       <ConceptBanner />
       <header className={styles.header}>
-        <Link href={home} className={styles.brand} aria-label="На связи — на главную">
+        <Link href={home} className={styles.brand} aria-label="На связи цифровой деканат — на главную">
           <Logo subtitle />
         </Link>
         {action}

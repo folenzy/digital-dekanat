@@ -40,6 +40,8 @@ export function Logo({ size = 28, wordmark = true, subtitle = false, className }
       <LogoMark size={size} />
       <span className={styles.text}>
         <span className={styles.word}>На связи</span>
+        {/* пробел — чтобы в тексте ссылки было «На связи цифровой деканат», а не слитно */}
+        {subtitle && " "}
         {subtitle && <span className={styles.sub}>цифровой деканат</span>}
       </span>
     </span>

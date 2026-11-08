@@ -107,7 +107,7 @@ test("кабинеты под CSP: заголовки на страницах, �
   // «О проекте» без оболочки: у студента знак ведёт на его главную
   const about = await page.goto("/about");
   expectCsp(await about!.headersArray(), "/about");
-  await expect(page.getByRole("link", { name: "На связи — на главную" })).toHaveAttribute("href", "/");
+  await expect(page.getByRole("link", { name: /^На связи.* на главную$/ })).toHaveAttribute("href", "/");
   expect(await cspViolations(page)).toEqual([]);
 
   await page.context().clearCookies();
@@ -171,7 +171,7 @@ test("аноним: страницы кабинетов и неизвестны�
   expectCsp(await about!.headersArray(), "/about");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("О проекте");
   // анониму знак ведёт сразу на вход (а не на «/», которая всё равно уведёт туда же)
-  await expect(page.getByRole("link", { name: "На связи — на главную" })).toHaveAttribute("href", "/login");
+  await expect(page.getByRole("link", { name: /^На связи.* на главную$/ })).toHaveAttribute("href", "/login");
   expect(await cspViolations(page)).toEqual([]);
 
   // иконка и чанки Next не уводятся на вход, но тоже с заголовками безопасности

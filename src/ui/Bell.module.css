@@ -74,6 +74,12 @@
   left: 12px;
 }
 
+/* Число — из data-count через ::before: оно рисуется, но не входит в видимый текст ссылки,
+   иначе «Уведомления 6» не совпало бы с подписью «Уведомления: 6 непрочитанных» (WCAG 2.5.3) */
+.row .badge::before {
+  content: attr(data-count);
+}
+
 .row .badge {
   margin-left: auto;
   box-shadow: none;

@@ -24,7 +24,11 @@ export default defineConfig({
       name: "mobile-360",
       use: { ...devices["Pixel 5"], viewport: { width: 360, height: 800 }, deviceScaleFactor: 2 },
     },
-    { name: "desktop-1280", use: { ...devices["Desktop Chrome"], viewport: { width: 1280, height: 800 } } },
+    {
+      name: "desktop-1280",
+      use: { ...devices["Desktop Chrome"], viewport: { width: 1280, height: 800 } },
+      testIgnore: /mobile.spec.ts/, // телефонный файл сам задаёт 360×740
+    },
   ],
   webServer: {
     // output: "standalone" → запускаем server.js, как в Docker (см. scripts/start-standalone.mjs)
