@@ -8,11 +8,8 @@ import { assertLocalDatabaseUrl } from "./local-db";
 const root = path.resolve(__dirname, "..");
 const tsx = path.join(root, "node_modules", "tsx", "dist", "cli.mjs");
 
-/**
- * Миграции и пересборка демо-мира в БД из .env (ту же использует запущенный сервер).
- * Скрипты печатают только «Миграции применены» / «Демо-мир пересобран», секреты не выводятся.
- */
-export function resetDemoWorld(): void {
+/** Адрес БД из окружения или .env — только локальный (иначе исключение без самого адреса в тексте). */
+export function localDatabaseUrl(): string {
   if (!process.env.DATABASE_URL) {
     try {
       process.loadEnvFile(path.join(root, ".env"));
@@ -20,9 +17,18 @@ export function resetDemoWorld(): void {
       // нет .env — проверка ниже не пропустит пустой адрес
     }
   }
-  // Проверяем ровно тот адрес, который получат скрипты: loadEnvFile в них не перезаписывает переданный env.
   const url = process.env.DATABASE_URL;
   assertLocalDatabaseUrl(url);
+  return url!;
+}
+
+/**
+ * Миграции и пересборка демо-мира в БД из .env (ту же использует запущенный сервер).
+ * Скрипты печатают только «Миграции применены» / «Демо-мир пересобран», секреты не выводятся.
+ */
+export function resetDemoWorld(): void {
+  // Проверяем ровно тот адрес, который получат скрипты: loadEnvFile в них не перезаписывает переданный env.
+  const url = localDatabaseUrl();
   for (const script of ["scripts/migrate.ts", "scripts/demo-reset.ts"]) {
     execFileSync(process.execPath, [tsx, script], {
       cwd: root,
@@ -35,6 +41,7 @@ export function resetDemoWorld(): void {
 export const ACCOUNTS = {
   alina: { login: "alina.mironova", passwordEnv: "DEMO_PASSWORD_ALINA" },
   denis: { login: "denis.kravtsov", passwordEnv: "DEMO_PASSWORD_DENIS" },
+  irina: { login: "irina.belova", passwordEnv: "DEMO_PASSWORD_IRINA" },
 } as const;
 
 /** Пароль из окружения; в лог и отчёт не попадает. */
@@ -49,7 +56,9 @@ export async function signIn(page: Page, who: keyof typeof ACCOUNTS): Promise<vo
   await page.getByLabel("Логин").fill(ACCOUNTS[who].login);
   await page.getByLabel("Пароль", { exact: true }).fill(passwordOf(who));
   await page.getByRole("button", { name: "Войти" }).click();
-  await page.waitForURL((url) => url.pathname === "/");
+  // студента вход ведёт на «Сегодня», сотрудника — в очередь
+  const home = who === "irina" ? "/staff" : "/";
+  await page.waitForURL((url) => url.pathname === home);
 }
 
 /** Нет горизонтальной прокрутки (ширина документа не больше окна). */
@@ -59,7 +68,7 @@ export async function hasNoHorizontalScroll(page: Page): Promise<boolean> {
 
 /**
  * Скриншот всей страницы → docs/screenshots/<серия>-<экран>-<ширина>.png (серия: 02 — экраны студента,
- * 03 — деканат). Фиксированную нижнюю панель на время снимка делаем статичной,
+ * 03 — деканат, 04 — кабинет сотрудника). Фиксированную нижнюю панель на время снимка делаем статичной,
  * иначе Chromium нарисует её посреди длинного снимка.
  */
 export async function shoot(page: Page, name: string, width: number, series = "02"): Promise<void> {
