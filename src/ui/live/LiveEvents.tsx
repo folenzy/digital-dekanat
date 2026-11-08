@@ -2,7 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { isSafeHref } from "../safe-href";
 import { Toast, ToastRegion } from "../Toast";
+
+export { isSafeHref };
 
 // Событие, как его присылает /api/events и как оно приходит в window-событие `ns:live` (detail).
 export type LiveEventDetail = {
@@ -15,18 +18,6 @@ export type LiveEventDetail = {
 const TOAST_MS = 6000;
 const RECONNECT_MS = 3000;
 const TYPES = ["notification", "appeal_updated", "announcement"];
-
-/** Только относительные ссылки на этот же сайт: "/x", но не "//host" и не "/\host". */
-export function isSafeHref(href: unknown): href is string {
-  // Без пробелов и управляющих символов: парсер URL вырезает tab/CR/LF, и "/<tab>/host" стал бы "//host".
-  if (typeof href !== "string" || !/^\/(?![\/\x5c])[^\x00-\x20\x7f]*$/.test(href)) return false;
-  if (typeof location === "undefined") return true;
-  try {
-    return new URL(href, location.origin).origin === location.origin;
-  } catch {
-    return false;
-  }
-}
 
 /** Разбор сообщения SSE: неизвестная форма → null; небезопасный href отбрасывается. */
 export function parseLiveEvent(raw: string): LiveEventDetail | null {
