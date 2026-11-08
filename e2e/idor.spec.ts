@@ -71,7 +71,7 @@ test("Алина: подмена id в форме и повтор действи
   // 2. Сырой повтор того же действия с куками Алины
   const res = await replay(ctx, captured, { from: denisAppeal, to: denisAppeal });
   const text = await res.text();
-  expect(text).not.toContain("Дата подходит"); // ничего из переписки Дениса в ответе
+  expect(text).not.toContain("Эта дата вам подходит"); // настоящий кусок переписки Дениса (вопрос сотрудника из демо-мира)
   expect(await appealSnapshot(denisAppeal)).toBe(before);
   expect(await messageCount(denisAppeal)).toBe(messagesBefore);
 
