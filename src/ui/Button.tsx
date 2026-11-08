@@ -1,6 +1,6 @@
 import { LoaderCircle } from "lucide-react";
 import Link from "next/link";
-import type { ButtonHTMLAttributes, ReactNode } from "react";
+import type { ButtonHTMLAttributes, ReactNode, Ref } from "react";
 import styles from "./Button.module.css";
 
 // Кнопка: primary — главное действие экрана (одно), secondary — остальные, ghost — третьестепенные.
@@ -22,6 +22,8 @@ type Common = {
 type AsButton = Common & Omit<ButtonHTMLAttributes<HTMLButtonElement>, "children" | "className"> & {
   href?: undefined;
   loading?: boolean;
+  /** React 19: ref — обычный проп; нужен, чтобы перевести фокус на кнопку (подтверждение «Отклонить»). */
+  ref?: Ref<HTMLButtonElement>;
 };
 
 type AsLink = Common & { href: string; "aria-label"?: string };
