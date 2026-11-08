@@ -29,9 +29,10 @@ export function slaPhrase(days: number): string {
   return `обычно отвечаем за ${days} раб. ${plural(days, ["день", "дня", "дней"])}`;
 }
 
-/** Подпись поля с текстом: заявление или вопрос. */
-export function textLabel(kind: AppealKind): string {
-  return kind === "question" ? "Твой вопрос" : "Текст заявления";
+/** Подпись поля с текстом: заявление или вопрос (студенту — «Твой вопрос», сотруднику — «Вопрос студента»). */
+export function textLabel(kind: AppealKind, who: "student" | "staff" = "student"): string {
+  if (kind !== "question") return "Текст заявления";
+  return who === "staff" ? "Вопрос студента" : "Твой вопрос";
 }
 
 export const FORMAT_LABEL: Record<string, string> = {
@@ -70,7 +71,7 @@ const CERT_FIELDS: [key: string, label: string][] = [
 type FieldsSource = Pick<AppealDetail, "fields" | "disciplineName"> & { type: { kind: AppealKind } };
 
 /** Поля обращения для карточки: только известные, в понятном порядке, текст — как ввёл автор. */
-export function fieldRows(a: FieldsSource): { label: string; value: string }[] {
+export function fieldRows(a: FieldsSource, who: "student" | "staff" = "student"): { label: string; value: string }[] {
   const f = a.fields;
   const rows: { label: string; value: string }[] = [];
   if (a.type.kind === "certificate") {
@@ -83,6 +84,6 @@ export function fieldRows(a: FieldsSource): { label: string; value: string }[] {
     return rows;
   }
   if (a.disciplineName) rows.push({ label: "Дисциплина", value: a.disciplineName });
-  if (typeof f.text === "string") rows.push({ label: textLabel(a.type.kind), value: f.text });
+  if (typeof f.text === "string") rows.push({ label: textLabel(a.type.kind, who), value: f.text });
   return rows;
 }
