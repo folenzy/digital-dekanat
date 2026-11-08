@@ -1,0 +1,105 @@
+/* «О проекте»: колонка текста для чтения, крупный заголовок, факты о деканате — листом. */
+
+.article {
+  max-width: 64ch;
+}
+
+.title {
+  font-size: var(--text-display);
+  letter-spacing: -0.02em;
+}
+
+.lead {
+  margin-top: var(--space-4);
+  font-size: var(--text-lg);
+  line-height: var(--leading-body);
+  text-wrap: pretty;
+}
+
+.concept {
+  display: inline-block;
+  margin-top: var(--space-4);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--ink);
+  color: var(--bg);
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+.section {
+  margin-top: var(--space-10);
+}
+
+.section h2 {
+  margin-bottom: var(--space-3);
+  font-size: var(--text-2xl);
+}
+
+.section p + p {
+  margin-top: var(--space-3);
+}
+
+.section p {
+  text-wrap: pretty;
+}
+
+/* Главная фраза про ночной сброс — набрана Literata, как цитата */
+.reset {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 600;
+  line-height: var(--leading-snug);
+}
+
+.protection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding-left: 1.1em;
+}
+
+.protection li::marker {
+  color: var(--accent-strong);
+}
+
+.facts {
+  margin: var(--space-4) 0 0;
+  padding: var(--space-1) var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+
+.fact {
+  display: grid;
+  gap: 2px;
+  padding: var(--space-3) 0;
+}
+
+.fact + .fact {
+  border-top: 1px solid var(--line);
+}
+
+.fact dt {
+  font-size: var(--text-sm);
+  color: var(--fg-muted);
+}
+
+.fact dd {
+  margin: 0;
+  font-weight: 500;
+}
+
+@media (min-width: 600px) {
+  .facts {
+    padding: var(--space-1) var(--space-6);
+  }
+
+  .fact {
+    grid-template-columns: 14rem minmax(0, 1fr);
+    gap: var(--space-4);
+    align-items: baseline;
+  }
+}

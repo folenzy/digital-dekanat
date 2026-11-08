@@ -1,0 +1,221 @@
+/* «Пары»: неделя со стрелками, полоса дней, карточки пар. */
+
+.weekNav {
+  display: grid;
+  grid-template-columns: var(--tap) minmax(0, 1fr) var(--tap);
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.arrow {
+  display: grid;
+  place-items: center;
+  width: var(--tap);
+  height: var(--tap);
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.arrow:hover {
+  border-color: var(--line-strong);
+}
+
+.arrow svg {
+  width: 20px;
+  height: 20px;
+}
+
+.weekLabel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.weekRange {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  line-height: var(--leading-snug);
+}
+
+.parity {
+  font-size: var(--text-sm);
+  color: var(--fg-muted);
+}
+
+/* Полоса дней: шесть «листков отрывного календаря» */
+.strip {
+  margin-bottom: var(--space-5);
+}
+
+.stripList {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dayLink {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-height: 64px;
+  padding: 8px 2px 6px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--paper);
+  color: var(--ink);
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.dayLink:hover {
+  border-color: var(--line-strong);
+}
+
+.dayShort {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.dayNum {
+  font-size: var(--text-xl);
+  font-weight: 600;
+  line-height: 1;
+}
+
+.dots {
+  display: flex;
+  gap: 3px;
+  height: 5px;
+  margin-top: 3px;
+}
+
+.dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--line-strong);
+}
+
+.dot[data-changed] {
+  background: var(--accent);
+}
+
+/* Сегодня — терракотовая черта снизу; выбранный день — тёмный листок */
+.dayLink[data-today]::after {
+  content: "";
+  position: absolute;
+  left: 30%;
+  right: 30%;
+  bottom: -1px;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  background: var(--accent);
+}
+
+.dayLink[aria-current="page"] {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.dayLink[aria-current="page"] .dayShort {
+  color: var(--ink-muted);
+}
+
+.dayLink[aria-current="page"] .dot {
+  background: var(--ink-muted);
+}
+
+.dayLink[aria-current="page"] .dot[data-changed] {
+  background: var(--accent-2);
+}
+
+.dayLink[aria-current="page"][data-today]::after {
+  background: var(--accent-2);
+}
+
+.back {
+  margin: 0 0 var(--space-4);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.back a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: var(--tap);
+  text-decoration: none;
+}
+
+.back svg {
+  width: 18px;
+  height: 18px;
+}
+
+.dayTitle {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-3);
+  font-size: var(--text-xl);
+}
+
+.note {
+  margin: 0 0 var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--fg-muted);
+}
+
+.lessons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.week {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.free {
+  padding: var(--space-3) var(--space-4);
+  border: 1.5px dashed color-mix(in srgb, var(--line-strong) 55%, transparent);
+  border-radius: var(--radius-lg);
+  color: var(--fg-muted);
+  font-size: var(--text-sm);
+}
+
+@media (min-width: 600px) {
+  .stripList {
+    gap: var(--space-2);
+  }
+
+  .dayShort {
+    font-size: var(--text-sm);
+  }
+
+  .dayNum {
+    font-size: var(--text-2xl);
+  }
+
+  .dayTitle {
+    font-size: var(--text-2xl);
+  }
+}

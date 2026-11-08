@@ -1,0 +1,131 @@
+/* Уведомления: строки-кнопки (открыть = прочитать), непрочитанные — с терракотовой точкой. */
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.toolbar > nav {
+  margin: 0;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) 10px;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--paper);
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+  overflow-wrap: break-word;
+  transition: border-color var(--dur-fast) var(--ease-out);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.item:hover {
+  border-color: var(--line-strong);
+}
+
+.item:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}
+
+.item[aria-busy] {
+  cursor: progress;
+  border-color: var(--line-strong);
+}
+
+.icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--neutral-tint);
+  color: var(--muted-strong);
+}
+
+.icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.title {
+  font-weight: 500;
+  line-height: var(--leading-snug);
+}
+
+.body {
+  margin-top: 2px;
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+  color: var(--muted);
+}
+
+.when {
+  margin-top: var(--space-1);
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  margin-top: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+/* Непрочитанное: жирный заголовок, иконка в терракотовом круге, точка справа */
+.item:has(.dot) .title {
+  font-weight: 700;
+}
+
+.item:has(.dot) .icon {
+  background: var(--accent-tint);
+  color: var(--accent-strong);
+}
+
+.important {
+  margin-bottom: var(--space-2);
+}
+
+.announcement {
+  white-space: pre-line;
+}
+
+.audience {
+  margin-top: var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--fg-muted);
+}
+
+@media (min-width: 600px) {
+  .item {
+    padding: var(--space-4) var(--space-5);
+  }
+}
