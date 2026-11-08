@@ -6,13 +6,20 @@ import styles from "./PublicPage.module.css";
 
 // Страница без входа (О проекте, 404, общая ошибка): пометка концепта, знак, колонка текста.
 
-export function PublicPage({ children, action }: { children: ReactNode; action?: ReactNode }) {
+type PublicPageProps = {
+  children: ReactNode;
+  action?: ReactNode;
+  /** Куда ведёт знак: по умолчанию «/»; 404 для сотрудника передаёт его очередь. */
+  home?: string;
+};
+
+export function PublicPage({ children, action, home = "/" }: PublicPageProps) {
   return (
     <div className={styles.page}>
       <a href="#main" className={styles.skip}>Перейти к содержимому</a>
       <ConceptBanner />
       <header className={styles.header}>
-        <Link href="/" className={styles.brand} aria-label="На связи — на главную">
+        <Link href={home} className={styles.brand} aria-label="На связи — на главную">
           <Logo subtitle />
         </Link>
         {action}
