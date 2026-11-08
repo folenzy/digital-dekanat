@@ -122,6 +122,30 @@ export async function listRequiredOpenCheckpoints(v: StudentViewer, semester: nu
     .orderBy(asc(checkpoints.dueDate), asc(checkpoints.id));
 }
 
+export type AppealDiscipline = { id: number; name: string; debt: boolean };
+
+/**
+ * Дисциплины для обращения о пересдаче: сначала долги прошлых сессий, затем текущий семестр (по алфавиту).
+ * Только записи самого студента — createAppeal проверяет disciplineId по ним же.
+ */
+export async function listAppealDisciplines(v: StudentViewer, now: Date): Promise<AppealDiscipline[]> {
+  if (v?.role !== "student") return [];
+  const semester = currentSemester(v.course, now);
+  const rows = await db
+    .select({ id: disciplines.id, name: disciplines.name, semester: enrollments.semester, grade: enrollments.finalGrade })
+    .from(enrollments)
+    .innerJoin(disciplines, eq(disciplines.id, enrollments.disciplineId))
+    .where(and(eq(enrollments.studentId, v.studentId), lte(enrollments.semester, semester)))
+    .orderBy(asc(disciplines.name), asc(enrollments.id));
+  const debts = rows.filter((r) => r.semester < semester && isDebtGrade(r.grade));
+  const current = rows.filter((r) => r.semester === semester);
+  // одна строка на дисциплину; долг важнее (идёт первым)
+  const out = new Map<number, AppealDiscipline>();
+  for (const r of debts) if (!out.has(r.id)) out.set(r.id, { id: r.id, name: r.name, debt: true });
+  for (const r of current) if (!out.has(r.id)) out.set(r.id, { id: r.id, name: r.name, debt: false });
+  return [...out.values()];
+}
+
 async function listSession(v: StudentViewer, results: Map<number, string | null>): Promise<ExamView[]> {
   const rows = await db
     .select({
