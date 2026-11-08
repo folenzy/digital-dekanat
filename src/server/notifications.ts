@@ -39,6 +39,19 @@ export async function markRead(v: Viewer, id: number): Promise<boolean> {
   return rows.length > 0;
 }
 
+/**
+ * Помечает прочитанными свои непрочитанные уведомления с этой ссылкой (открыл карточку обращения —
+ * уведомления о нём больше не «новые»). Возвращает, сколько изменено.
+ */
+export async function markReadByHref(v: Viewer, href: string): Promise<number> {
+  if (!href) return 0;
+  const rows = await db.update(notifications)
+    .set({ readAt: sql`now()` })
+    .where(and(eq(notifications.userId, v.userId), eq(notifications.href, href), isNull(notifications.readAt)))
+    .returning({ id: notifications.id });
+  return rows.length;
+}
+
 /** Помечает прочитанными все свои непрочитанные; возвращает, сколько изменено. */
 export async function markAllRead(v: Viewer): Promise<number> {
   const rows = await db.update(notifications)

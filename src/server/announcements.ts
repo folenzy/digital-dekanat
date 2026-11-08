@@ -1,5 +1,5 @@
 import "server-only";
-import { and, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import type { StaffViewer, StudentViewer } from "./auth/viewer";
 import { excerpt, insertNotifications, publishSafe } from "./appeals/notify";
@@ -7,7 +7,7 @@ import { fail, fieldErrorsOf, ok, type Result } from "./appeals/result";
 import { consumeAction, LIMITS } from "./limits";
 import { audienceFilter } from "./audience";
 import { db } from "./db/client";
-import { announcements, faculties, groups, students } from "./db/schema";
+import { announcements, faculties, groups, staff, students } from "./db/schema";
 
 export type AnnouncementView = {
   id: number; title: string; body: string; important: boolean; publishedAt: Date;
@@ -32,13 +32,61 @@ export async function listAnnouncementsFor(v: StudentViewer): Promise<Announceme
     }, v))
     .orderBy(desc(announcements.important), desc(announcements.publishedAt), desc(announcements.id));
 
-  return rows.map((r) => {
-    const parts = [r.faculty, r.course === null ? null : `${r.course} курс`, r.group].filter(Boolean);
-    return {
-      id: r.id, title: r.title, body: r.body, important: r.important, publishedAt: r.publishedAt,
-      audience: parts.length ? parts.join(" · ") : "Всем",
-    };
-  });
+  return rows.map((r) => ({
+    id: r.id, title: r.title, body: r.body, important: r.important, publishedAt: r.publishedAt,
+    audience: audienceText(r),
+  }));
+}
+
+/** Подпись аудитории: «Всем» или факультет (код), курс, группа — те, что заданы. */
+function audienceText(r: { faculty: string | null; course: number | null; group: string | null }): string {
+  const parts = [r.faculty, r.course === null ? null : `${r.course} курс`, r.group].filter(Boolean);
+  return parts.length ? parts.join(" · ") : "Всем";
+}
+
+export type StaffAnnouncementView = AnnouncementView & {
+  /** Кто опубликовал: «Ирина Белова». */
+  author: string;
+};
+
+/** Все опубликованные объявления для кабинета сотрудника, новые сверху. Не сотрудник → пусто. */
+export async function listAllAnnouncements(v: StaffViewer): Promise<StaffAnnouncementView[]> {
+  if (v?.role !== "staff") return [];
+  const rows = await db
+    .select({
+      id: announcements.id, title: announcements.title, body: announcements.body,
+      important: announcements.important, publishedAt: announcements.publishedAt,
+      course: announcements.audienceCourse, faculty: faculties.code, group: groups.name,
+      authorFirst: staff.firstName, authorLast: staff.lastName,
+    })
+    .from(announcements)
+    .innerJoin(staff, eq(staff.id, announcements.authorStaffId))
+    .leftJoin(faculties, eq(faculties.id, announcements.audienceFacultyId))
+    .leftJoin(groups, eq(groups.id, announcements.audienceGroupId))
+    .orderBy(desc(announcements.publishedAt), desc(announcements.id));
+  return rows.map((r) => ({
+    id: r.id, title: r.title, body: r.body, important: r.important, publishedAt: r.publishedAt,
+    audience: audienceText(r), author: `${r.authorFirst} ${r.authorLast}`,
+  }));
+}
+
+export type AudienceOptions = {
+  faculties: { id: number; code: string; name: string }[];
+  courses: number[];
+  groups: { id: number; name: string; course: number; facultyId: number }[];
+};
+
+/** Курсы, которые можно выбрать в аудитории объявления (как в схеме: 1–6). */
+const COURSES = [1, 2, 3, 4, 5, 6];
+
+/** Справочник для формы объявления: факультеты, курсы, группы (не персональные данные). */
+export async function listAudienceOptions(): Promise<AudienceOptions> {
+  const [fs, gs] = await Promise.all([
+    db.select({ id: faculties.id, code: faculties.code, name: faculties.name }).from(faculties).orderBy(asc(faculties.id)),
+    db.select({ id: groups.id, name: groups.name, course: groups.course, facultyId: groups.facultyId })
+      .from(groups).orderBy(asc(groups.course), asc(groups.name)),
+  ]);
+  return { faculties: fs, courses: COURSES, groups: gs };
 }
 
 const optionalId = z.number().int().positive().optional();
@@ -60,10 +108,11 @@ const INSERT_CHUNK = 1000;
 /**
  * Объявление от сотрудника: пишет его, создаёт уведомление каждому студенту аудитории и шлёт им realtime-событие.
  * Пустое поле аудитории = «любой»; несуществующий факультет/группа → validation.
+ * recipients — сколько студентов получили уведомление (для «Опубликовано: увидят N студентов»).
  */
 export async function createAnnouncement(
   v: StaffViewer, input: CreateAnnouncementInput, now: Date = new Date(),
-): Promise<Result<{ id: number }>> {
+): Promise<Result<{ id: number; recipients: number }>> {
   const parsed = createSchema.safeParse(input);
   if (!parsed.success) return fail("validation", fieldErrorsOf(parsed.error));
   const { title, body, important, audience } = parsed.data;
@@ -112,5 +161,5 @@ export async function createAnnouncement(
   });
 
   await publishSafe(recipients.userIds, { type: "announcement", title, href: HREF });
-  return ok({ id: recipients.id });
+  return ok({ id: recipients.id, recipients: recipients.userIds.length });
 }
