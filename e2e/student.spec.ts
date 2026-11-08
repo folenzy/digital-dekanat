@@ -223,6 +223,8 @@ test("Денис: на «Сегодня» деканат ждёт ответа, 
 });
 
 test("несуществующая страница — «Страница не найдена» со ссылкой домой", async ({ page }) => {
+  // аноним с неизвестного адреса уходит на вход (e2e/security-headers.spec.ts), 404 видит вошедший
+  await signIn(page, "alina");
   const res = await page.goto("/takoy-stranitsy-net");
   expect(res?.status()).toBe(404);
   await expect(page.getByRole("heading", { name: "Страница не найдена" })).toBeVisible();

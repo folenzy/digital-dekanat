@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { connection } from "next/server";
 // Шрифты self-host (@fontsource-variable, OFL-1.1), в каждом есть кириллица; браузер качает только нужные
 // подмножества по unicode-range. Literata — с осью оптического размера (opsz) для крупных заголовков.
 import "@fontsource-variable/literata/opsz.css";
@@ -21,7 +22,10 @@ export const viewport: Viewport = {
   themeColor: "#F4EFE6",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  // CSP с nonce (src/proxy.ts) требует рендера на каждый запрос: в статической странице скрипты остались бы
+  // без nonce, и браузер их заблокировал бы. connection() гарантирует это для любой будущей страницы.
+  await connection();
   return (
     <html lang="ru">
       <body>{children}</body>
