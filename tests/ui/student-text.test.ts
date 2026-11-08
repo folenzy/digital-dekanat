@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
-  dayDiff, greeting, mskTime, plural, prettyTime, ruDayTitle, ruWeekday, ruWeekdayShort, ruWhen, shortPersonName,
+  dayDiff, greeting, pairName, mskTime, plural, prettyTime, ruDayTitle, ruWeekday, ruWeekdayShort, ruWhen, shortPersonName,
 } from "@/server/format";
 import type { AppealListItem } from "@/server/appeals/types";
 import type { Lesson } from "@/server/schedule";
-import { CHANGE_META, gradeLabel, LESSON_TYPE_LABEL, VERDICT_COPY } from "@/ui/student/labels";
+import { buildingName, CHANGE_META, gradeLabel, LESSON_TYPE_LABEL, VERDICT_COPY } from "@/ui/student/labels";
 import { parseScheduleParams, weekLabel } from "@/ui/student/schedule-params";
 import { appealPromise, nextLessonPhrase, todaySummary } from "@/ui/student/today";
 import { isSafeHref } from "@/ui/safe-href";
@@ -68,6 +68,10 @@ describe("даты и время по-русски", () => {
     expect(ruWhen(msk("2026-11-05T09:00:00"), now)).toBe("5 ноября, 09:00");
   });
 
+  it("«2-я пара» не разрывается между строками (word joiner после дефиса)", () => {
+    expect(pairName(2)).toBe("2-⁠я пара");
+  });
+
   it("склонение и разница дат", () => {
     const pairs: [string, string, string] = ["пара", "пары", "пар"];
     expect([1, 2, 5, 11, 21, 22, 25].map((n) => plural(n, pairs))).toEqual(
@@ -90,6 +94,10 @@ describe("подписи", () => {
       "Перенос", "Отменена", "Замена преподавателя", "Новая аудитория", "Доп. занятие",
     ]);
     expect(CHANGE_META.cancelled.tone).toBe("danger");
+  });
+
+  it("корпус: со строчной, буква корпуса не отрывается", () => {
+    expect(buildingName("Корпус А")).toBe("корпус А");
   });
 
   it("тип занятия, оценка, вердикт", () => {
@@ -119,7 +127,7 @@ describe("сводка на «Сегодня»", () => {
     const text = todaySummary({
       lessons: three, current: three[1], next: { ...three[2], dateKey: "2026-11-09" }, appeals: [],
     }, now);
-    expect(text).toBe("Сейчас идёт 2-я пара, закончится в 12:10.");
+    expect(text).toBe(`Сейчас идёт ${pairName(2)}, закончится в 12:10.`);
   });
 
   it("перерыв между парами", () => {
@@ -131,7 +139,7 @@ describe("сводка на «Сегодня»", () => {
   it("пары закончились — когда следующая", () => {
     const now = msk("2026-11-09T15:00:00");
     const text = todaySummary({ lessons: three, next: { ...three[0], dateKey: "2026-11-10" }, appeals: [] }, now);
-    expect(text).toBe("Пары на сегодня закончились. Следующая — завтра, 1-я пара в 9:00.");
+    expect(text).toBe(`Пары на сегодня закончились. Следующая — завтра, ${pairName(1)} в 9:00.`);
   });
 
   it("выходной: про пары говорит блок «Пары сегодня», сводка — только про дела", () => {
@@ -139,8 +147,8 @@ describe("сводка на «Сегодня»", () => {
     expect(todaySummary({ lessons: [], next, appeals: [] }, SUN)).toBe("Срочных дел нет.");
     expect(todaySummary({ lessons: [], next, appeals: [appeal({})] }, SUN))
       .toBe("Обращение в работе, ответ завтра до 18:00.");
-    expect(nextLessonPhrase(next, SUN)).toBe("завтра, 2-я пара в 10:40");
-    expect(nextLessonPhrase({ ...next, dateKey: "2026-11-16" }, SUN)).toBe("понедельник, 16 ноября, 2-я пара в 10:40");
+    expect(nextLessonPhrase(next, SUN)).toBe(`завтра, ${pairName(2)} в 10:40`);
+    expect(nextLessonPhrase({ ...next, dateKey: "2026-11-16" }, SUN)).toBe(`понедельник, 16 ноября, ${pairName(2)} в 10:40`);
   });
 
   it("все пары отменены — как выходной", () => {
@@ -167,7 +175,8 @@ describe("срок ответа по обращению", () => {
     expect(appealPromise(appeal({ overdue: true }), msk("2026-11-10T10:00:00")))
       .toEqual({ text: "Срок ответа прошёл: обещали вчера до 18:00", tone: "danger" });
     expect(appealPromise(appeal({ status: "needs_info" }), SUN).tone).toBe("warn");
-    expect(appealPromise(appeal({ status: "ready" }), SUN).tone).toBe("ok");
+    expect(appealPromise(appeal({ status: "ready" }), SUN))
+      .toEqual({ text: "Можно забирать, где и до какого числа — в обращении", tone: "ok" });
   });
 });
 

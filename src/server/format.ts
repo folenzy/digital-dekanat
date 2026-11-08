@@ -98,3 +98,8 @@ export function shortPersonName(full: string): string {
   if (!rest.length) return last;
   return [last, ...rest.map((w) => `${w[0].toUpperCase()}.`)].join(" ");
 }
+
+/** «2-я пара»; после дефиса — word joiner (U+2060), чтобы «2-» и «я» не разъезжались по строкам. */
+export function pairName(n: number): string {
+  return `${n}-⁠я пара`;
+}

@@ -43,7 +43,12 @@ export function gradeLabel(grade: string): string {
   return GRADE_WORDS[grade] ? `${grade}, ${GRADE_WORDS[grade]}` : grade;
 }
 
-export const isDebtGrade = (g: string | null) => g === "2" || g === "незачёт";
+/** «Корпус А» → «корпус А» с неразрывным пробелом: буква корпуса не уезжает на новую строку. */
+export function buildingName(building: string): string {
+  return `${building[0].toLowerCase()}${building.slice(1)}`.replace(/ (\S+)$/, " $1");
+}
+
+export const isDebtGrade =(g: string | null) => g === "2" || g === "незачёт";
 
 /** Сводка «Как у меня дела»: заголовок и пояснение человеческим языком. */
 export const VERDICT_COPY: Record<StudySummary["verdict"], { title: string; text: string }> = {

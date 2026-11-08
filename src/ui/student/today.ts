@@ -1,5 +1,5 @@
 import type { AppealListItem } from "@/server/appeals/types";
-import { mskTime, plural, prettyTime, ruDateKey, ruRelativeDate, ruWeekday } from "@/server/format";
+import { mskTime, pairName, plural, prettyTime, ruDateKey, ruRelativeDate, ruWeekday } from "@/server/format";
 import type { Lesson } from "@/server/schedule";
 import { mskDateKey, mskMinutes, shiftDateKey } from "@/server/time";
 
@@ -21,7 +21,7 @@ export function nextLessonPhrase(next: NextLesson, now: Date): string {
     : next.dateKey === shiftDateKey(today, 1)
       ? "завтра"
       : `${ruWeekday(next.dateKey)}, ${ruDateKey(next.dateKey)}`;
-  return `${day}, ${next.pair}-я пара в ${prettyTime(next.start)}`;
+  return `${day}, ${pairName(next.pair)} в ${prettyTime(next.start)}`;
 }
 
 function lessonsSentence(
@@ -33,7 +33,7 @@ function lessonsSentence(
   // В день без пар об этом говорит блок «Пары сегодня» — сводка не повторяет.
   if (!active.length) return null;
 
-  if (current) return `Сейчас идёт ${current.pair}-я пара, закончится в ${prettyTime(current.end)}.`;
+  if (current) return `Сейчас идёт ${pairName(current.pair)}, закончится в ${prettyTime(current.end)}.`;
 
   const t = mskMinutes(now);
   const first = active[0];
@@ -90,7 +90,9 @@ export function appealPromise(a: AppealListItem, now: Date): AppealPromise {
     case "needs_info":
       return { text: "Деканат ждёт твоего ответа", tone: "warn" };
     case "ready":
-      return { text: "Готово, загляни в обращение", tone: "ok" };
+      return a.type.kind === "certificate"
+        ? { text: "Можно забирать, где и до какого числа — в обращении", tone: "ok" }
+        : { text: "Результат — в обращении", tone: "ok" };
     case "rejected":
       return { text: "Отклонено, причина в обращении", tone: "danger" };
     case "closed":

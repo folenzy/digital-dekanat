@@ -10,7 +10,7 @@ type EmptyStateProps = {
   text?: ReactNode;
   /** Обычно <Button href=…>. */
   action?: ReactNode;
-  titleAs?: "h2" | "h3";
+  titleAs?: "h1" | "h2" | "h3";
 };
 
 export function EmptyState({ icon, title, text, action, titleAs: Title = "h2" }: EmptyStateProps) {
