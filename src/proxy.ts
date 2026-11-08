@@ -24,6 +24,7 @@ function contentSecurityPolicy(nonce: string): string {
     "img-src 'self' data:",
     "font-src 'self'",
     "connect-src 'self'", // server actions, предзагрузка, поток /api/events
+    "object-src 'none'", // никаких <object>/<embed>: плагины — старый обход script-src
     "frame-ancestors 'none'",
     "base-uri 'self'",
     "form-action 'self'",

@@ -10,7 +10,7 @@ import { SESSION_COOKIE } from "@/server/auth/cookie";
 const ORIGIN = "http://127.0.0.1:3100";
 const CSP = (nonce: string, extraScript = "") =>
   `default-src 'self'; script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${extraScript}; ` +
-  "style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; " +
+  "style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; " +
   "frame-ancestors 'none'; base-uri 'self'; form-action 'self'";
 const NONCE = /'nonce-([^']+)'/;
 

@@ -9,7 +9,10 @@ type Header = { name: string; value: string };
 
 const cspFor = (nonce: string) =>
   `default-src 'self'; script-src 'self' 'nonce-${nonce}' 'strict-dynamic'; style-src 'self' 'unsafe-inline'; ` +
-  "img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'";
+  "img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'";
+
+/** Ответам API (JSON, текст, SSE) ничего грузить и показывать не нужно; рамки запрещены. */
+const API_CSP = "default-src 'none'; frame-ancestors 'none'";
 
 const SECURITY_HEADERS: Record<string, string> = {
   "x-content-type-options": "nosniff",
@@ -37,6 +40,11 @@ function expectCsp(headers: Header[], where: string): string {
   expect(csp[0], where).toBe(cspFor(nonce!));
   expect(csp[0]).not.toContain("unsafe-eval");
   return nonce!;
+}
+
+/** У ответа API — ровно одна CSP, своя жёсткая (proxy на /api не работает, nonce-политики там нет). */
+function expectApiCsp(headers: Header[], where: string) {
+  expect(values(headers, "content-security-policy"), where).toEqual([API_CSP]);
 }
 
 // Ошибки консоли и нарушения CSP собираем во всех тестах файла.
@@ -91,7 +99,8 @@ test("кабинеты под CSP: заголовки на страницах, �
     const headers = await res!.headersArray();
     expectSecurityHeaders(headers, path);
     expectCsp(headers, path);
-    await stream;
+    // поток событий живёт под своей CSP API — EventSource она не мешает (политика страницы — connect-src)
+    expectApiCsp(await (await stream).headersArray(), `/api/events @ ${path}`);
     expect(await cspViolations(page), path).toEqual([]);
   }
 
@@ -188,21 +197,26 @@ test("cookie есть, а сессии нет — пропускает даль�
   await expect(page).toHaveURL((url) => url.pathname === "/login" && url.searchParams.get("reason") === "expired");
 });
 
-test("API отвечает само: /api/health и /api/internal/* не уводятся на вход, /api/events без сессии — 401", async ({ request }) => {
+test("API отвечает само: /api/health и /api/internal/* не уводятся на вход, /api/events без сессии — 401; у API своя CSP", async ({ request }) => {
   // Сам маршрут /api/health появится в задаче деплоя (до тех пор 404); здесь важно, что proxy
   // не подменяет ответ API редиректом на вход.
   const health = await request.get("/api/health", { maxRedirects: 0 });
   expect(health.status()).not.toBe(307);
   expect(health.headers().location).toBeUndefined();
+  expectSecurityHeaders(health.headersArray(), "/api/health");
+  expectApiCsp(health.headersArray(), "/api/health");
 
   const reset = await request.post("/api/internal/demo-reset", { maxRedirects: 0 });
   expect(reset.status()).toBe(404); // без верного токена маршрут «не существует»
   expect(reset.headers().location).toBeUndefined();
+  expectSecurityHeaders(reset.headersArray(), "/api/internal/demo-reset");
+  expectApiCsp(reset.headersArray(), "/api/internal/demo-reset");
 
   const events = await request.get("/api/events", { maxRedirects: 0 });
   expect(events.status()).toBe(401);
   expect(events.headers().location).toBeUndefined();
   expectSecurityHeaders(events.headersArray(), "/api/events");
+  expectApiCsp(events.headersArray(), "/api/events");
 });
 
 test("студент на /staff — 404 «Страница не найдена»", async ({ page }) => {
