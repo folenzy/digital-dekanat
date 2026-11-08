@@ -2,7 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { eq } from "drizzle-orm";
 import { cookies } from "next/headers";
-import { notFound, redirect } from "next/navigation";
+import { notFound, redirect, unstable_rethrow } from "next/navigation";
 import { db } from "../db/client";
 import { groups, staff, staffDepartments, students, users } from "../db/schema";
 import { SESSION_COOKIE } from "./cookie";
@@ -57,6 +57,19 @@ const resolveViewer = cache(async (): Promise<{ hasCookie: boolean; viewer: View
 
 export async function getViewer(): Promise<Viewer | null> {
   return (await resolveViewer()).viewer;
+}
+
+/**
+ * Viewer для публичных страниц (404, «О проекте»), которым он нужен только ради ссылки «на главную».
+ * Сбой БД или сессии → null, как у анонима: такая страница не должна падать. Права так не проверять.
+ */
+export async function getViewerForPublicPage(): Promise<Viewer | null> {
+  try {
+    return await getViewer();
+  } catch (e) {
+    unstable_rethrow(e); // redirect/notFound и сигнал динамического рендера — дело Next
+    return null;
+  }
 }
 
 /** Нет cookie → /login; cookie есть, а сессии нет (истекла, сброс демо) → /login?reason=expired. */

@@ -347,6 +347,13 @@ test("профиль сотрудника: ФИО, должность, отде�
   await expectFits(page);
   await snap(page, "profile");
 
+  // «О проекте» из профиля: знак ведёт сотрудника в его очередь (студенческая «/» для него 404)
+  await page.getByRole("link", { name: /О проекте/ }).click();
+  await page.waitForURL("**/about");
+  await expect(page.getByRole("link", { name: "На связи — на главную" })).toHaveAttribute("href", "/staff");
+  await page.goBack();
+  await page.waitForURL("**/staff/profile");
+
   await page.getByRole("button", { name: "Выйти" }).click();
   await page.waitForURL("**/login");
   await page.goto("/staff");

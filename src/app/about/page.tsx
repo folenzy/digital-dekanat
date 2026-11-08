@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { getViewerForPublicPage } from "@/server/auth/viewer";
 import { Button } from "@/ui/Button";
 import { CONCEPT_TEXT } from "@/ui/ConceptBanner";
+import { homeHref } from "@/ui/nav";
 import { PublicPage } from "@/ui/PublicPage";
 import styles from "./about.module.css";
 
@@ -46,9 +48,11 @@ const DEANERY: { term: string; value: string }[] = [
   { term: "Факультеты", value: "прикладной математики и информатики, экономики и управления, гуманитарный" },
 ];
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  // Сюда ведёт и профиль сотрудника: знак должен вести в его очередь, а не на студенческую «/» (для него 404).
+  const home = homeHref((await getViewerForPublicPage())?.role ?? null);
   return (
-    <PublicPage action={<Button href="/login" variant="secondary">В кабинет</Button>}>
+    <PublicPage home={home} action={<Button href="/login" variant="secondary">В кабинет</Button>}>
       <article className={styles.article}>
         <header className={styles.header}>
           <h1 className={styles.title}>О проекте</h1>

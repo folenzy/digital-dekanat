@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { activeHref, bellHref, navItems } from "@/ui/nav";
+import { activeHref, bellHref, homeHref, navItems } from "@/ui/nav";
 
 describe("навигация оболочки", () => {
   it("студент: пять вкладок по спеке §7", () => {
@@ -18,6 +18,12 @@ describe("навигация оболочки", () => {
       ["Объявления", "/staff/announcements"],
       ["Профиль", "/staff/profile"],
     ]);
+  });
+
+  it("главная по роли: студенту «Сегодня», сотруднику очередь (студенческая «/» для него 404), анониму вход", () => {
+    expect(homeHref("student")).toBe("/");
+    expect(homeHref("staff")).toBe("/staff");
+    expect(homeHref(null)).toBe("/login");
   });
 
   it("колокольчик ведёт студента к уведомлениям, сотрудника — в очередь", () => {

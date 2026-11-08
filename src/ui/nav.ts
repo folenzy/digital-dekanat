@@ -22,6 +22,11 @@ export function navItems(role: ShellRole): NavItem[] {
   return role === "student" ? STUDENT : STAFF;
 }
 
+/** Главная по роли: студенту — «Сегодня», сотруднику — очередь (студенческая «/» для него 404), анониму — вход. */
+export function homeHref(role: ShellRole | null): string {
+  return role === null ? "/login" : navItems(role)[0].href;
+}
+
 /** Куда ведёт колокольчик: студенту — уведомления, сотруднику — очередь обращений. */
 export function bellHref(role: ShellRole): string {
   return role === "student" ? "/notifications" : "/staff";
