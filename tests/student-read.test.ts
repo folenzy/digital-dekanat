@@ -288,8 +288,8 @@ describe("уведомления", () => {
 
   it("сотрудник видит только свои уведомления", async () => {
     const list = await listNotifications(irina, {});
-    expect(list.map((n) => n.kind)).toEqual(["appeal_new", "appeal_new"]);
-    expect(await unreadCount(irina)).toBe(2);
+    expect(list.map((n) => n.kind)).toEqual(["appeal_new", "appeal_new", "appeal_new"]);
+    expect(await unreadCount(irina)).toBe(3);
   });
 
   it("markRead: свой — true и счётчик падает, повторно — true без смены read_at; нет такого — false", async () => {

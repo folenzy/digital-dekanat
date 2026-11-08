@@ -33,8 +33,8 @@ describe("markReadByHref", () => {
   it("помечает прочитанными только свои непрочитанные уведомления с этой ссылкой", async () => {
     const hrefs = await testSql<{ href: string }[]>`
       select href from notifications where user_id = ${irina.userId} and read_at is null order by id`;
-    expect(hrefs).toHaveLength(2);
-    const [first, second] = hrefs.map((h) => h.href);
+    expect(hrefs).toHaveLength(3);
+    const [first, ...rest] = hrefs.map((h) => h.href);
     expect(first).toMatch(/^\/staff\/appeals\/[0-9a-f-]{36}$/);
 
     // у Алины уведомление с той же ссылкой (как будто) — его трогать нельзя
@@ -42,12 +42,12 @@ describe("markReadByHref", () => {
       values (${alina.userId}, 'appeal_status', 'Чужое', 'Тест', ${first})`;
 
     expect(await markReadByHref(irina, first)).toBe(1);
-    expect(await unreadCount(irina)).toBe(1);
-    // повторно — уже нечего помечать; второе уведомление Ирины не тронуто
+    expect(await unreadCount(irina)).toBe(2);
+    // повторно — уже нечего помечать; остальные уведомления Ирины не тронуты
     expect(await markReadByHref(irina, first)).toBe(0);
-    const [left] = await testSql<{ href: string }[]>`
-      select href from notifications where user_id = ${irina.userId} and read_at is null`;
-    expect(left.href).toBe(second);
+    const left = await testSql<{ href: string }[]>`
+      select href from notifications where user_id = ${irina.userId} and read_at is null order by id`;
+    expect(left.map((l) => l.href)).toEqual(rest);
 
     const [alinas] = await testSql<{ read_at: Date | null }[]>`
       select read_at from notifications where user_id = ${alina.userId} and href = ${first}`;
@@ -58,13 +58,13 @@ describe("markReadByHref", () => {
     const [n] = await testSql<{ href: string }[]>`
       select href from notifications where user_id = ${irina.userId} and read_at is null`;
     expect(await markReadByHref(alina, n.href)).toBe(0);
-    expect(await unreadCount(irina)).toBe(1);
+    expect(await unreadCount(irina)).toBe(2);
   });
 
   it("пустая и чужая ссылка — ничего не меняет", async () => {
     expect(await markReadByHref(irina, "")).toBe(0);
     expect(await markReadByHref(irina, "/staff/appeals/00000000-0000-4000-8000-000000000000")).toBe(0);
-    expect(await unreadCount(irina)).toBe(1);
+    expect(await unreadCount(irina)).toBe(2);
   });
 });
 
@@ -120,7 +120,7 @@ describe("getStaffProfile", () => {
 });
 
 describe("createAnnouncement: сколько студентов получат", () => {
-  it("группа ПМИ-25-1 — одна Алина; всем — все четыре студента демо-мира", async () => {
+  it("группа ПМИ-25-1 — одна Алина; всем — все пять студентов демо-мира", async () => {
     const o = await listAudienceOptions();
     const pmi = o.groups.find((g) => g.name === "ПМИ-25-1")!;
     const forGroup = await createAnnouncement(irina, {
@@ -132,6 +132,6 @@ describe("createAnnouncement: сколько студентов получат",
     const forAll = await createAnnouncement(irina, {
       title: "Для всех студентов", body: "Единое окно в пятницу работает до 15:00.", important: true, audience: {},
     }, TUE);
-    expect(forAll).toEqual({ ok: true, value: { id: expect.any(Number), recipients: 4 } });
+    expect(forAll).toEqual({ ok: true, value: { id: expect.any(Number), recipients: 5 } });
   });
 });

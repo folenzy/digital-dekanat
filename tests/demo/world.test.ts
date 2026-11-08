@@ -101,16 +101,47 @@ describe("buildDemoWorld", () => {
     expect(mskDateKey(cert.pickupUntil!)).toBe("2026-11-16"); // today+5 = воскресенье, переносим на пн
   });
 
-  it("в очереди Ирины 2 новых обращения от студентов без логина", async () => {
+  it("в очереди Ирины 3 новых обращения от студентов без логина, каждому — уведомление Ирине", async () => {
     const rows = await testSql<{ type_code: string; login: string | null; status: string }[]>`
       select a.type_code, u.login, a.status from appeals a
       join students st on st.id = a.student_id join users u on u.id = st.user_id
       where a.status = 'submitted' order by a.type_code`;
-    expect(rows).toHaveLength(2);
+    expect(rows.map((r) => r.type_code)).toEqual(["stip_payment_question", "study_individual_plan", "study_other"]);
     expect(rows.every((r) => r.login === null)).toBe(true);
     const depts = await testSql<{ code: string }[]>`
       select d.code from appeals a join departments d on d.id = a.department_id where a.status = 'submitted' order by d.code`;
-    expect(depts.map((x) => x.code)).toEqual(["stipend", "study"]);
+    expect(depts.map((x) => x.code)).toEqual(["stipend", "study", "study"]);
+    const notes = await testSql<{ href: string }[]>`
+      select n.href from notifications n join users u on u.id = n.user_id
+      where u.login = 'irina.belova' and n.kind = 'appeal_new' and n.read_at is null`;
+    const ids = await testSql<{ id: string }[]>`select id from appeals where status = 'submitted'`;
+    expect(notes.map((n) => n.href).sort()).toEqual(ids.map((a) => `/staff/appeals/${a.id}`).sort());
+  });
+
+  it("ровно одно просроченное обращение — в будний день, в выходной и рано утром в понедельник", async () => {
+    const overdueAt = async (at: Date) => {
+      await truncateAll();
+      await buildDemoWorld(db, at, pw);
+      const rows = await testSql<{ type_code: string; last_name: string; sla_due_at: string; created_at: string }[]>`
+        select a.type_code, st.last_name, a.sla_due_at, a.created_at from appeals a
+        join students st on st.id = a.student_id
+        where a.status in ('submitted', 'in_progress') and a.sla_due_at < ${at.toISOString()}::timestamptz`;
+      // этот клиент отдаёт timestamptz строкой
+      return rows.map((r) => ({ ...r, sla_due_at: new Date(r.sla_due_at), created_at: new Date(r.created_at) }));
+    };
+    for (const at of [
+      now,                                   // вторник, 12:00 МСК
+      new Date("2026-11-08T09:00:00Z"),      // воскресенье, 12:00 МСК
+      new Date("2026-11-08T21:30:00Z"),      // понедельник, 00:30 МСК
+      new Date("2026-11-13T14:59:00Z"),      // пятница, 17:59 МСК — за минуту до конца рабочего дня
+    ]) {
+      const rows = await overdueAt(at);
+      expect(rows, at.toISOString()).toHaveLength(1);
+      expect(rows[0]).toMatchObject({ type_code: "study_other", last_name: "Захаров" });
+      // срок — 18:00 предыдущего рабочего дня; отправлено за (срок + 1) рабочих дня
+      expect(rows[0].sla_due_at).toEqual(addWorkingDays(rows[0].created_at, APPEAL_TYPES.study_other.slaDays));
+      expect(mskDateKey(rows[0].sla_due_at) < mskDateKey(at)).toBe(true);
+    }
   });
 
   it("Ирина состоит во всех трёх отделах", async () => {

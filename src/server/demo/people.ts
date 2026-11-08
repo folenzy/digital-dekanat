@@ -181,6 +181,14 @@ export const STUDENTS = {
     recordBookNo: "ОР-24-0388", email: "milana.sokolova@orientir-uni.example",
     curatorName: "Власова Екатерина Романовна",
   },
+  // его вопрос в очереди Ирины всегда просрочен: жюри видит, как выглядит просрочка
+  zakharov: {
+    login: null as string | null,
+    lastName: "Захаров", firstName: "Никита", middleName: "Павлович",
+    group: "ЛИН-26-1", studyForm: "очная", funding: "бюджет",
+    recordBookNo: "ОР-26-0042", email: "nikita.zakharov@orientir-uni.example",
+    curatorName: "Гусева Ольга Викторовна",
+  },
 } as const;
 
 export type CheckpointDef = {

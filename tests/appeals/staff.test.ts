@@ -76,7 +76,7 @@ describe("очередь сотрудника", () => {
 
   it("вкладки: новые, в работе, ждут студента, закрытые; сортировка по сроку", async () => {
     expect((await listQueue(irina, "new", undefined, NOW)).map((a) => a.type.code))
-      .toEqual(["study_individual_plan", "stip_payment_question"]);
+      .toEqual(["study_other", "study_individual_plan", "stip_payment_question"]);
     expect((await listQueue(irina, "in_progress", undefined, NOW)).map((a) => a.type.code)).toEqual(["cert_military"]);
     expect((await listQueue(irina, "waiting", undefined, NOW)).map((a) => a.type.code)).toEqual(["study_retake"]);
     expect((await listQueue(irina, "closed", undefined, NOW)).map((a) => a.type.code)).toEqual(["cert_study"]);
@@ -330,11 +330,11 @@ describe("сводка сотрудника", () => {
   beforeAll(loadWorld);
 
   it("новых, в работе, просрочено, среднее время первого ответа за неделю", async () => {
-    // первые ответы демо-мира: 20, 60 и 40 минут → 0,67 ч
-    expect(await getStaffSummary(irina, NOW)).toEqual({ new: 2, inProgress: 1, overdue: 0, avgFirstResponseHoursWeek: 0.7 });
-    // пятница 12:00 МСК: справка Алины (ср 18:00) и индивидуальный график (чт 18:00) просрочены
+    // первые ответы демо-мира: 20, 60 и 40 минут → 0,67 ч; вопрос Захарова просрочен с самого начала
+    expect(await getStaffSummary(irina, NOW)).toEqual({ new: 3, inProgress: 1, overdue: 1, avgFirstResponseHoursWeek: 0.7 });
+    // пятница 12:00 МСК: ещё и справка Алины (ср 18:00), и индивидуальный график (чт 18:00)
     expect(await getStaffSummary(irina, new Date("2026-11-13T09:00:00Z")))
-      .toEqual({ new: 2, inProgress: 1, overdue: 2, avgFirstResponseHoursWeek: 0.7 });
+      .toEqual({ new: 3, inProgress: 1, overdue: 3, avgFirstResponseHoursWeek: 0.7 });
     // через 8 дней первых ответов за неделю нет
     expect((await getStaffSummary(irina, at(8 * DAY))).avgFirstResponseHoursWeek).toBeNull();
   });

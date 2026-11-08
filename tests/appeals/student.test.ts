@@ -65,7 +65,7 @@ afterAll(closeTestDb);
 describe("createAppeal: маршрутизация и срок ответа", () => {
   it("cert_military уходит в отдел docs, sla_due_at = addWorkingDays(now, 1), событие и уведомление сотрудникам", async () => {
     const r = await createAppeal(alina, "cert_military", cert(), NOW);
-    expect(r).toEqual({ ok: true, value: { id: expect.any(String), number: "О-2026-000006" } });
+    expect(r).toEqual({ ok: true, value: { id: expect.any(String), number: "О-2026-000007" } });
     if (!r.ok) return;
 
     const row = await appealRow(r.value.id);
@@ -86,7 +86,7 @@ describe("createAppeal: маршрутизация и срок ответа", ()
 
     const notes = await db.select().from(s.notifications)
       .where(and(eq(s.notifications.userId, irina.userId), eq(s.notifications.href, `/staff/appeals/${r.value.id}`)));
-    expect(notes).toMatchObject([{ kind: "appeal_new", title: "Новое обращение О-2026-000006", createdAt: NOW }]);
+    expect(notes).toMatchObject([{ kind: "appeal_new", title: "Новое обращение О-2026-000007", createdAt: NOW }]);
   });
 
   it("учебный вопрос — в учебный отдел за 2 рабочих дня, стипендия — в стипендиальный за 3", async () => {

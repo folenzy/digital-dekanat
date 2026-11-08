@@ -1,5 +1,4 @@
 import { expect, test, type Page } from "@playwright/test";
-import { makeOverdue } from "./db";
 import { hasNoHorizontalScroll, resetDemoWorld, shoot, signIn } from "./demo";
 
 // Кабинет сотрудника (Ирина Белова): очередь, карточка обращения, объявления, профиль — на 360 и 1280 px.
@@ -69,28 +68,36 @@ function bell(page: Page) {
   return page.getByRole("link", { name: /^Уведомления/ });
 }
 
-test("очередь: сводка, вкладки со счётчиками, фильтр по отделу, пустое состояние", async ({ page }) => {
+test("очередь: сводка, вкладки со счётчиками, просрочка первой, фильтр по отделу, пустое состояние", async ({ page }) => {
   await signIn(page, "irina");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Очередь");
 
-  // сводка по всем отделам Ирины: два новых, одно в работе, просрочек нет, первый ответ в среднем за 40 мин
-  await expect(figure(page, "Новых")).toHaveText("2");
+  // сводка по всем отделам Ирины: три новых (одно просрочено — так засеян демо-мир), одно в работе,
+  // первый ответ в среднем за 40 мин
+  await expect(figure(page, "Новых")).toHaveText("3");
   await expect(figure(page, "В работе")).toHaveText("1");
-  await expect(figure(page, "Просрочено")).toHaveText("0");
+  await expect(figure(page, "Просрочено")).toHaveText("1");
   await expect(figure(page, "Первый ответ в среднем за неделю")).toHaveText("42 мин");
 
-  // «Новые»: по сроку, ближайший сверху; таймер, студент с группой, отдел, статус
+  // «Новые»: по сроку, ближайший сверху — просроченный, с красным корешком
   await expect(queueTab(page, "Новые")).toHaveAttribute("aria-current", "page");
-  await expect(queueTab(page, "Новые")).toContainText("2");
+  await expect(queueTab(page, "Новые")).toContainText("3");
   await expect(queueTab(page, "Ждут студента")).toContainText("1");
-  await expect(cards(page)).toHaveCount(2);
-  const first = cards(page).first();
-  await expect(first).toContainText("Индивидуальный график");
-  await expect(first).toContainText("Тихонов Артём Игоревич, ПМИ-25-2");
-  await expect(first).toContainText("Учебный отдел");
-  await expect(first).toContainText("Отправлено");
-  await expect(first).toContainText(/осталось \d+ (ч|мин|дн(я|ей))/);
-  await expect(cards(page).nth(1)).toContainText("Вопрос по выплате");
+  await expect(cards(page)).toHaveCount(3);
+  const late = cards(page).first();
+  await expect(late).toContainText("Другой учебный вопрос");
+  await expect(late).toContainText("Захаров Никита Павлович, ЛИН-26-1");
+  await expect(late).toHaveAttribute("data-overdue", "true");
+  await expect(late).toContainText(/просрочено на \d+ (ч|мин|дн(я|ей)|день)/);
+  // остальные — в срок: таймер, студент с группой, отдел, статус
+  const next = cards(page).nth(1);
+  await expect(next).not.toHaveAttribute("data-overdue", "true");
+  await expect(next).toContainText("Индивидуальный график");
+  await expect(next).toContainText("Тихонов Артём Игоревич, ПМИ-25-2");
+  await expect(next).toContainText("Учебный отдел");
+  await expect(next).toContainText("Отправлено");
+  await expect(next).toContainText(/осталось \d+ (ч|мин|дн(я|ей))/);
+  await expect(cards(page).nth(2)).toContainText("Вопрос по выплате");
   await expectFits(page);
   await snap(page, "queue-new");
 
@@ -132,33 +139,21 @@ test("очередь: сводка, вкладки со счётчиками, ф
   // чужой или кривой отдел в адресе → все отделы
   await page.goto("/staff?tab=new&dept=99999");
   await expect(depts.getByRole("link", { name: "Все отделы" })).toHaveAttribute("aria-current", "page");
-  await expect(cards(page)).toHaveCount(2);
+  await expect(cards(page)).toHaveCount(3);
 });
 
-test("просрочка: красный таймер и акцент на карточке; открытая карточка гасит своё уведомление", async ({ page }) => {
-  const number = await makeOverdue("stip_payment_question", 130);
+test("просроченная карточка: красный срок и пояснение; открытая карточка гасит своё уведомление", async ({ page }) => {
   await signIn(page, "irina");
-  await expect(figure(page, "Просрочено")).toHaveText("1");
-  await expect(bell(page)).toHaveAttribute("aria-label", "Уведомления: 2 непрочитанных");
+  await expect(bell(page)).toHaveAttribute("aria-label", "Уведомления: 3 непрочитанных");
 
-  // просроченное — первым: его срок раньше всех
-  const card = cards(page).first();
-  await expect(card).toContainText("Вопрос по выплате");
-  await expect(card).toContainText(number);
-  await expect(card).toHaveAttribute("data-overdue", "true");
-  await expect(card).toContainText("просрочено на 2 ч");
-  await expect(cards(page).nth(1)).not.toHaveAttribute("data-overdue", "true");
-  await expectFits(page);
-  await snap(page, "queue-overdue");
-
-  await card.click();
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Вопрос по выплате");
-  await expect(page.getByText(/^просрочено на 2 ч 1\d мин$/)).toBeVisible();
+  await cards(page).filter({ hasText: "Другой учебный вопрос" }).click();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Другой учебный вопрос");
+  await expect(page.getByText(/^просрочено на \d/)).toBeVisible();
   await expect(page.getByText("Срок прошёл — студент тоже видит просрочку.")).toBeVisible();
   // сотрудник видит «Вопрос студента», а не «Твой вопрос»
   await expect(page.getByText("Вопрос студента", { exact: true })).toBeVisible();
   // уведомление о новом обращении прочитано — счётчик колокольчика уменьшился
-  await expect(bell(page)).toHaveAttribute("aria-label", "Уведомления: 1 непрочитанное");
+  await expect(bell(page)).toHaveAttribute("aria-label", "Уведомления: 2 непрочитанных");
   await expectFits(page);
   await snap(page, "card-overdue");
 });

@@ -34,6 +34,16 @@ function isWeekendKey(key: string): boolean {
   return d === 0 || d === 6;
 }
 
+/** Рабочий день (пн–пт), отстоящий на n рабочих дней назад от `key`; сам `key` не считается. */
+function workdaysBefore(key: string, n: number): string {
+  let k = key;
+  for (let left = n; left > 0;) {
+    k = shiftKey(k, -1);
+    if (!isWeekendKey(k)) left--;
+  }
+  return k;
+}
+
 /** Сам день, если он будний, иначе ближайший следующий будний. */
 function rollToWorkday(key: string): string {
   let k = key;
@@ -124,7 +134,9 @@ export async function buildDemoWorld(db: Db, now: Date, passwords: DemoPasswords
       departments.map((d) => ({ staffId: staffIrina.id, departmentId: d.id })),
     );
 
-    const hashes: Record<string, string | null> = { alina: hashAlina, denis: hashDenis, tikhonov: null, sokolova: null };
+    const hashes: Record<string, string | null> = {
+      alina: hashAlina, denis: hashDenis, tikhonov: null, sokolova: null, zakharov: null,
+    };
     const students: Record<string, { id: number; userId: string }> = {};
     for (const [key, p] of Object.entries(STUDENTS)) {
       const [u] = await tx.insert(s.users).values({
@@ -137,7 +149,7 @@ export async function buildDemoWorld(db: Db, now: Date, passwords: DemoPasswords
       }).returning();
       students[key] = { id: st.id, userId: u.id };
     }
-    const { alina, denis, tikhonov, sokolova } = students;
+    const { alina, denis, tikhonov, sokolova, zakharov } = students;
 
     // ---------- расписание ----------
     await tx.insert(s.scheduleSlots).values(SCHEDULE.map((x) => ({
@@ -297,6 +309,18 @@ export async function buildDemoWorld(db: Db, now: Date, passwords: DemoPasswords
     });
     await event(nStip.id, sokolova.userId, "submitted", nStip.createdAt);
 
+    // Просроченное: отправлено за (срок + 1) рабочих дня до сегодня, поэтому срок ответа —
+    // 18:00 предыдущего рабочего дня, и в любой час любого дня недели оно уже просрочено.
+    const lateType = APPEAL_TYPES.study_other;
+    const nLate = await insertAppeal({
+      studentId: zakharov.id, code: "study_other", status: "submitted",
+      created: mskAt(workdaysBefore(today, lateType.slaDays + 1), "11:20"),
+      fields: {
+        text: "Физкультура у ЛИН-26-1 стоит в среду третьей парой, одновременно с практикой по английскому. Можно ли перейти в другую группу по физкультуре и куда для этого обратиться?",
+      },
+    });
+    await event(nLate.id, zakharov.userId, "submitted", nLate.createdAt);
+
     // ---------- дедлайны ----------
     await tx.insert(s.deadlines).values([
       {
@@ -373,6 +397,8 @@ export async function buildDemoWorld(db: Db, now: Date, passwords: DemoPasswords
       "Индивидуальный график, учебный отдел.", nStudy.createdAt, `/staff/appeals/${nStudy.id}`);
     await notify(uIrina.id, "appeal_new", `Новое обращение ${nStip.number}`,
       "Вопрос по выплате, стипендиальный отдел.", nStip.createdAt, `/staff/appeals/${nStip.id}`);
+    await notify(uIrina.id, "appeal_new", `Новое обращение ${nLate.number}`,
+      "Другой учебный вопрос, учебный отдел.", nLate.createdAt, `/staff/appeals/${nLate.id}`);
 
     // ---------- база ответов ----------
     await tx.insert(s.kbArticles).values(KB_ARTICLES.map((a) => ({
