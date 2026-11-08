@@ -58,13 +58,14 @@ export async function hasNoHorizontalScroll(page: Page): Promise<boolean> {
 }
 
 /**
- * Скриншот всей страницы. Фиксированную нижнюю панель на время снимка делаем статичной,
+ * Скриншот всей страницы → docs/screenshots/<серия>-<экран>-<ширина>.png (серия: 02 — экраны студента,
+ * 03 — деканат). Фиксированную нижнюю панель на время снимка делаем статичной,
  * иначе Chromium нарисует её посреди длинного снимка.
  */
-export async function shoot(page: Page, name: string, width: number): Promise<void> {
+export async function shoot(page: Page, name: string, width: number, series = "02"): Promise<void> {
   await page.evaluate(() => document.fonts.ready);
   await page.screenshot({
-    path: `docs/screenshots/02-${name}-${width}.png`,
+    path: `docs/screenshots/${series}-${name}-${width}.png`,
     fullPage: true,
     style: 'nav[aria-label="Разделы"] { position: static !important; }',
   });

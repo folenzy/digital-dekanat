@@ -1,0 +1,261 @@
+/* «Деканат»: тёмный лист «Спроси деканат» (голос деканата, как «Деканат пишет первым» на «Сегодня»),
+   под ним — ответы-листки, кнопка нового обращения и «Мои обращения». */
+
+.ask {
+  padding: var(--space-5) var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  color: var(--fg);
+}
+
+.askForm {
+  display: flex;
+  flex-direction: column;
+}
+
+.askTitle {
+  margin-bottom: var(--space-4);
+  font-size: var(--text-2xl);
+  color: var(--fg);
+}
+
+.askRow {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.askInput {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 48px;
+  padding: 0 18px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 1rem;
+}
+
+.askInput::placeholder {
+  color: var(--muted);
+}
+
+.askInput:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.askRow > button {
+  flex: none;
+  min-height: 48px;
+}
+
+/* На узком экране лупа на кнопке съедала место у поля: оставляем слово «Найти» */
+@media (max-width: 599px) {
+  .askRow > button {
+    padding-inline: var(--space-4);
+  }
+
+  .askRow > button > span[aria-hidden] {
+    display: none;
+  }
+}
+
+.askExamples,
+.askNote {
+  margin-top: var(--space-3);
+  font-size: var(--text-sm);
+  line-height: var(--leading-body);
+  color: var(--fg-muted);
+}
+
+.askExamples a {
+  color: var(--fg-accent);
+}
+
+.askNote {
+  color: var(--fg);
+  font-weight: 500;
+}
+
+/* Ответы базы знаний */
+.answers {
+  margin-top: var(--space-6);
+}
+
+.answersTitle {
+  font-size: var(--text-xl);
+}
+
+.answersFor {
+  margin: 2px 0 var(--space-3);
+  color: var(--fg-muted);
+  overflow-wrap: anywhere;
+}
+
+.answerList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.answer {
+  min-width: 0;
+  padding: var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  color: var(--fg);
+}
+
+.summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  cursor: pointer;
+  list-style: none;
+}
+
+.summary::-webkit-details-marker {
+  display: none;
+}
+
+.summary:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+.question {
+  font-family: var(--font-ui);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  line-height: var(--leading-snug);
+  letter-spacing: -0.005em;
+  text-wrap: pretty;
+}
+
+.excerpt {
+  color: var(--fg-muted);
+  font-size: var(--text-sm);
+  line-height: var(--leading-body);
+}
+
+.details[open] .excerpt {
+  display: none;
+}
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 32px;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--fg-accent);
+}
+
+.toggle::before {
+  content: "Читать ответ";
+}
+
+.details[open] .toggle::before {
+  content: "Свернуть";
+}
+
+.toggle::after {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: translateY(-2px) rotate(45deg);
+  transition: transform var(--dur) var(--ease-out);
+}
+
+.details[open] .toggle::after {
+  transform: translateY(1px) rotate(-135deg);
+}
+
+.full {
+  margin-top: var(--space-2);
+  line-height: var(--leading-body);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  text-wrap: pretty;
+}
+
+.answerActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--line);
+}
+
+/* «Не помогло — написать сотруднику» — третьестепенное действие: текстом, без центрирования при переносе */
+.answerActions a[data-variant="ghost"] {
+  justify-content: flex-start;
+  padding-inline: var(--space-1);
+  color: var(--fg-accent);
+  text-align: left;
+}
+
+/* Новое обращение */
+.newRow {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+  padding: var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  color: var(--fg);
+}
+
+.newTitle {
+  font-weight: 600;
+  line-height: var(--leading-snug);
+}
+
+.newLead {
+  margin-top: 2px;
+  font-size: var(--text-sm);
+  color: var(--fg-muted);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 600px) {
+  .ask {
+    padding: var(--space-6);
+  }
+
+  .answer {
+    padding: var(--space-5);
+  }
+
+  .newRow {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-4) var(--space-5);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toggle::after {
+    transition: none;
+  }
+}
