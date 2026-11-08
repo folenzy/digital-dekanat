@@ -198,10 +198,10 @@ test("cookie есть, а сессии нет — пропускает даль�
 });
 
 test("API отвечает само: /api/health и /api/internal/* не уводятся на вход, /api/events без сессии — 401; у API своя CSP", async ({ request }) => {
-  // Сам маршрут /api/health появится в задаче деплоя (до тех пор 404); здесь важно, что proxy
-  // не подменяет ответ API редиректом на вход.
+  // Проверка живости для Docker и DEPLOY.md: открыта без входа, отвечает сама (не редирект на вход).
   const health = await request.get("/api/health", { maxRedirects: 0 });
-  expect(health.status()).not.toBe(307);
+  expect(health.status()).toBe(200);
+  expect(await health.json()).toEqual({ ok: true });
   expect(health.headers().location).toBeUndefined();
   expectSecurityHeaders(health.headersArray(), "/api/health");
   expectApiCsp(health.headersArray(), "/api/health");
