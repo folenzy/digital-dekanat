@@ -196,17 +196,41 @@ describe("createAppeal: лимит 10 в час", () => {
     expect(await createAppeal(alina, "cert_study", cert("Лишнее"), at(20 * SEC))).toEqual({ ok: false, error: "rate_limited" });
   });
 
-  it("15 одновременных разных обращений: не больше 10 создано, лимит не превышен", async () => {
-    const before = await countOf(s.appeals);
-    const results = await Promise.all(
-      Array.from({ length: 15 }, (_, i) => createAppeal(alina, "cert_study", cert(`Параллельно ${i}`), NOW)),
-    );
-    const created = results.filter((r) => r.ok).length;
-    expect(created).toBeGreaterThan(0);
-    expect(created).toBeLessThanOrEqual(10);
-    expect(results.filter((r) => !r.ok).every((r) => !r.ok && r.error === "rate_limited")).toBe(true);
-    expect(await countOf(s.appeals)).toBe(before + created);
-    expect(await countOf(s.actionLog)).toBe(created);
+  // Каждый раунд на 2 часа позже предыдущего: прошлые записи уже вне часового окна.
+  const ROUNDS = 5;
+  const roundAt = (round: number) => at(round * 2 * HOUR);
+
+  it("15 одновременных разных обращений: создано ровно 10, остальные rate_limited", async () => {
+    for (let round = 0; round < ROUNDS; round++) {
+      const before = await countOf(s.appeals);
+      const results = await Promise.all(
+        Array.from({ length: 15 }, (_, i) => createAppeal(alina, "cert_study", cert(`Параллельно ${round}-${i}`), roundAt(round))),
+      );
+      const created = results.filter((r) => r.ok).length;
+      expect({ round, created }).toEqual({ round, created: 10 });
+      expect(results.filter((r) => !r.ok)).toEqual(Array(5).fill({ ok: false, error: "rate_limited" }));
+      expect(await countOf(s.appeals)).toBe(before + 10);
+      expect(await countOf(s.actionLog)).toBe(10 * (round + 1));
+    }
+  });
+
+  it("двойной тап на последнем доступном обращении: создаётся ровно одно", async () => {
+    for (let round = 0; round < ROUNDS; round++) {
+      for (let i = 0; i < 9; i++) {
+        expect((await createAppeal(alina, "cert_study", cert(`Раунд ${round}, №${i}`), roundAt(round))).ok).toBe(true);
+      }
+      const before = await countOf(s.appeals);
+      const results = await Promise.all([
+        createAppeal(alina, "cert_study", cert(`Раунд ${round}, последнее`), roundAt(round)),
+        createAppeal(alina, "cert_study", cert(`Раунд ${round}, последнее`), roundAt(round)),
+      ]);
+      expect(await countOf(s.appeals)).toBe(before + 1);
+      expect(await countOf(s.actionLog)).toBe(10 * (round + 1));
+      const okIds = new Set(results.flatMap((r) => (r.ok ? [r.value.id] : [])));
+      expect({ round, okIds: okIds.size }).toEqual({ round, okIds: 1 });
+      // второй ответ — то же обращение или rate_limited, если повтор пришёл раньше, чем первое создано
+      for (const r of results) if (!r.ok) expect(r).toEqual({ ok: false, error: "rate_limited" });
+    }
   });
 });
 

@@ -1,5 +1,5 @@
 import "server-only";
-import { and, count, eq, gt } from "drizzle-orm";
+import { and, count, eq, gt, sql } from "drizzle-orm";
 import { db } from "./db/client";
 import { actionLog } from "./db/schema";
 
@@ -16,21 +16,25 @@ export const LIMITS = {
 export type LimitSpec = { action: string; limit: number; windowMs: number };
 
 /**
- * Резервирует действие: сначала записывает его в action_log, потом считает записи в окне вместе с ней.
- * Каждый оператор коммитится сам, поэтому параллельные запросы не проскакивают: запрос, чья строка
- * записана k-й, видит не меньше k строк. При превышении своя строка удаляется (отказ не продлевает лимит).
- * Возвращает id резерва или null, если лимит исчерпан. Вызывать вне транзакции.
+ * Резервирует действие: в одной транзакции под блокировкой на пару «пользователь + действие» считает
+ * записи в окне и, если лимит не исчерпан, добавляет свою. Параллельные запросы одной пары идут по очереди,
+ * поэтому лимит точный: из N одновременных при пустом окне проходят ровно min(N, limit). Отказ ничего
+ * не записывает и лимит не продлевает. Возвращает id резерва или null, если лимит исчерпан.
+ * Вызывать вне транзакции: резерв должен закоммититься раньше самого действия.
  */
 export async function reserveAction(
   userId: string, action: string, limit: number, windowMs: number, now: Date,
 ): Promise<number | null> {
-  const [mine] = await db.insert(actionLog).values({ userId, action, createdAt: now }).returning({ id: actionLog.id });
   const since = new Date(now.getTime() - windowMs);
-  const [{ n }] = await db.select({ n: count() }).from(actionLog)
-    .where(and(eq(actionLog.userId, userId), eq(actionLog.action, action), gt(actionLog.createdAt, since)));
-  if (n <= limit) return mine.id;
-  await db.delete(actionLog).where(eq(actionLog.id, mine.id));
-  return null;
+  return db.transaction(async (tx) => {
+    // Своё пространство ключей (первый ключ 'limits'): не пересекается с блокировкой создания обращений.
+    await tx.execute(sql`select pg_advisory_xact_lock(hashtext('limits'), hashtext(${`${userId}:${action}`}))`);
+    const [{ n }] = await tx.select({ n: count() }).from(actionLog)
+      .where(and(eq(actionLog.userId, userId), eq(actionLog.action, action), gt(actionLog.createdAt, since)));
+    if (n >= limit) return null;
+    const [mine] = await tx.insert(actionLog).values({ userId, action, createdAt: now }).returning({ id: actionLog.id });
+    return mine.id;
+  });
 }
 
 /** true — действие разрешено и учтено; false — лимит в окне исчерпан. */

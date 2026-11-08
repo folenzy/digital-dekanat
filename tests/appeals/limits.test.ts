@@ -43,14 +43,28 @@ describe("consumeAction", () => {
     expect(await consumeAction(userA, "appeal", 2, 10 * MIN, NOW)).toBe(true);
   });
 
-  it("20 одновременных запросов при лимите 5: не больше 5 проходят, записей столько же", async () => {
-    const results = await Promise.all(
-      Array.from({ length: 20 }, () => consumeAction(userA, "burst", 5, 10 * MIN, NOW)),
-    );
-    const passed = results.filter(Boolean).length;
-    expect(passed).toBeGreaterThan(0);
-    expect(passed).toBeLessThanOrEqual(5);
-    expect(await rows(userA, "burst")).toBe(passed);
+  // Параллельные тесты повторяются: исход зависит от того, как перемешаются запросы, и одна удача ничего не доказывает.
+  const ROUNDS = 10;
+  const burst = (n: number, action: string, limit: number) =>
+    Promise.all(Array.from({ length: n }, () => consumeAction(userA, action, limit, 10 * MIN, NOW)));
+
+  it("20 одновременных запросов при лимите 5: проходят ровно 5, записей столько же", async () => {
+    for (let round = 0; round < ROUNDS; round++) {
+      const action = `burst-${round}`;
+      const passed = (await burst(20, action, 5)).filter(Boolean).length;
+      expect({ round, passed }).toEqual({ round, passed: 5 });
+      expect(await rows(userA, action)).toBe(5);
+    }
+  });
+
+  it("после 3 записей в окне всплеск из 10 при лимите 5 добирает ровно остаток", async () => {
+    for (let round = 0; round < ROUNDS; round++) {
+      const action = `rest-${round}`;
+      for (let i = 0; i < 3; i++) expect(await consumeAction(userA, action, 5, 10 * MIN, NOW)).toBe(true);
+      const passed = (await burst(10, action, 5)).filter(Boolean).length;
+      expect({ round, passed }).toEqual({ round, passed: 2 });
+      expect(await rows(userA, action)).toBe(5);
+    }
   });
 
   it("releaseAction возвращает резерв, если действие не состоялось", async () => {
