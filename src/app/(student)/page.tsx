@@ -10,13 +10,13 @@ import { getProfile } from "@/server/profile";
 import { getTodayOverview, type Lesson } from "@/server/schedule";
 import { mskDateKey, mskMinutes, shiftDateKey } from "@/server/time";
 import { Badge } from "@/ui/Badge";
+import { AppealListCard } from "@/ui/appeals/AppealListCard";
 import { Button } from "@/ui/Button";
 import { Card } from "@/ui/Card";
 import { PageHeader } from "@/ui/PageHeader";
 import { Section } from "@/ui/Section";
-import { StatusBadge } from "@/ui/StatusBadge";
 import { LessonCard, type LessonState } from "@/ui/student/LessonCard";
-import { appealPromise, nextLessonPhrase, todaySummary } from "@/ui/student/today";
+import { nextLessonPhrase, todaySummary } from "@/ui/student/today";
 import styles from "./today.module.css";
 
 export const metadata: Metadata = { title: "Сегодня" };
@@ -142,25 +142,9 @@ export default async function TodayPage() {
           </p>
         ) : (
           <ul className={styles.stack}>
-            {myAppeals.map((a) => {
-              const promise = appealPromise(a, now);
-              return (
-                <li key={a.id}>
-                <Card
-                  href={`/dekanat/${a.id}`}
-                  variant={a.status === "needs_info" ? "accent" : "paper"}
-                  kicker={`Обращение ${a.number}`}
-                  title={a.type.title}
-                >
-                  <div className={styles.appealRow}>
-                    <StatusBadge status={a.status} />
-                    <span className={styles.promise} data-tone={promise.tone}>{promise.text}</span>
-                  </div>
-                  <p className={styles.dept}>{a.department.name}</p>
-                </Card>
-                </li>
-              );
-            })}
+            {myAppeals.map((a) => (
+              <li key={a.id}><AppealListCard appeal={a} now={now} /></li>
+            ))}
           </ul>
         )}
       </Section>

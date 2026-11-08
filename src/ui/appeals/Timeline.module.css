@@ -1,0 +1,115 @@
+/* Трек обращения: точки-остановки на одной линии, как у посылки. */
+
+.track {
+  margin: 0;
+  padding: var(--space-4) var(--space-4) var(--space-1);
+  list-style: none;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  color: var(--fg);
+}
+
+.stop {
+  position: relative;
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: var(--space-3);
+  padding-bottom: var(--space-4);
+}
+
+/* линия к следующей остановке */
+.stop::before {
+  content: "";
+  position: absolute;
+  top: 14px;
+  bottom: -4px;
+  left: 9px;
+  width: 2px;
+  background: var(--line-strong);
+}
+
+.stop:last-child::before {
+  display: none;
+}
+
+/* к будущей остановке — пунктир */
+.stop:has(+ [data-next])::before {
+  background: repeating-linear-gradient(to bottom, var(--line-strong) 0 4px, transparent 4px 8px);
+}
+
+.dot {
+  width: 12px;
+  height: 12px;
+  margin: 5px 4px 0;
+  border-radius: 50%;
+  background: var(--ink);
+}
+
+.stop[data-current] .dot {
+  position: relative;
+  width: 16px;
+  height: 16px;
+  margin: 3px 2px 0;
+  background: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-tint);
+}
+
+.stop[data-current][data-kind="ready"] .dot,
+.stop[data-current][data-kind="closed"] .dot {
+  background: var(--ok);
+  box-shadow: 0 0 0 4px var(--ok-tint);
+}
+
+.stop[data-current][data-kind="needs_info"] .dot {
+  background: var(--warn);
+  box-shadow: 0 0 0 4px var(--warn-tint);
+}
+
+.stop[data-current][data-kind="rejected"] .dot {
+  background: var(--danger);
+  box-shadow: 0 0 0 4px var(--danger-tint);
+}
+
+.stop[data-next] .dot {
+  width: 14px;
+  height: 14px;
+  margin: 4px 3px 0;
+  border: 2px dashed var(--line-strong);
+  background: var(--surface);
+}
+
+.body {
+  min-width: 0;
+}
+
+.title {
+  font-weight: 600;
+  line-height: var(--leading-snug);
+}
+
+.stop[data-next] .title {
+  font-weight: 500;
+  color: var(--fg-muted);
+}
+
+.meta {
+  margin-top: 2px;
+  font-size: var(--text-sm);
+  color: var(--fg-muted);
+  line-height: var(--leading-snug);
+}
+
+.text {
+  margin-top: var(--space-1);
+  font-size: var(--text-sm);
+  line-height: var(--leading-body);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+@media (min-width: 600px) {
+  .track {
+    padding: var(--space-5) var(--space-5) var(--space-2);
+  }
+}

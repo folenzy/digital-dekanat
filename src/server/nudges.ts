@@ -101,7 +101,7 @@ export function computeNudges(ctx: NudgeContext, now: Date): Nudge[] {
       out.push({
         id: `needs_info:${a.id}`, kind: "needs_info",
         title: `Ответь на вопрос по обращению ${a.number}`,
-        body: `${a.typeTitle}: деканату нужно уточнение, пока ты не ответишь, работа стоит.`,
+        body: `${a.typeTitle}: деканату нужно уточнение. Ответь, и мы продолжим работу.`,
         action: { label: "Ответить", href: `/dekanat/${a.id}` },
       });
     }
