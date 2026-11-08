@@ -1,6 +1,7 @@
 import { execFileSync } from "node:child_process";
 import path from "node:path";
 import type { Page } from "@playwright/test";
+import { assertLocalDatabaseUrl } from "./local-db";
 
 // Общее для e2e: сброс демо-мира, вход демо-аккаунтом, проверки вёрстки.
 
@@ -12,8 +13,22 @@ const tsx = path.join(root, "node_modules", "tsx", "dist", "cli.mjs");
  * Скрипты печатают только «Миграции применены» / «Демо-мир пересобран», секреты не выводятся.
  */
 export function resetDemoWorld(): void {
+  if (!process.env.DATABASE_URL) {
+    try {
+      process.loadEnvFile(path.join(root, ".env"));
+    } catch {
+      // нет .env — проверка ниже не пропустит пустой адрес
+    }
+  }
+  // Проверяем ровно тот адрес, который получат скрипты: loadEnvFile в них не перезаписывает переданный env.
+  const url = process.env.DATABASE_URL;
+  assertLocalDatabaseUrl(url);
   for (const script of ["scripts/migrate.ts", "scripts/demo-reset.ts"]) {
-    execFileSync(process.execPath, [tsx, script], { cwd: root, stdio: ["ignore", "inherit", "inherit"] });
+    execFileSync(process.execPath, [tsx, script], {
+      cwd: root,
+      env: { ...process.env, DATABASE_URL: url },
+      stdio: ["ignore", "inherit", "inherit"],
+    });
   }
 }
 

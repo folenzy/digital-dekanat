@@ -13,10 +13,17 @@ export type CheckpointView = {
 export type EnrollmentView = {
   id: number; disciplineId: number; discipline: string; semester: number; controlForm: ControlForm;
   points: number | null; finalGrade: string | null; admitted: boolean | null;
-  /** Предварительная оценка по баллам (null, если баллов ещё нет). */
-  preliminary: string | null;
+  /**
+   * Предварительная оценка «по темпу» — по доле баллов в уже оценённых контрольных точках (paceGrade).
+   * Баллы из 100 в середине семестра оценку не показывают: «35 из 100» у отличницы — это 35 из 40 возможных.
+   * null — оценок пока мало.
+   */
+  pace: Pace | null;
   checkpoints: CheckpointView[];
 };
+
+/** Предварительная оценка и на чём она основана: score из max оценённых баллов. */
+export type Pace = { grade: string; score: number; max: number };
 
 export type ExamView = {
   id: number; disciplineId: number; discipline: string; kind: "exam" | "credit" | "retake";
@@ -70,6 +77,23 @@ export function preliminaryGrade(points: number | null): string | null {
   if (points >= 70) return "хорошо";
   if (points >= 55) return "удовлетворительно";
   return "неудовлетворительно";
+}
+
+/** Сколько должно быть оценено, чтобы показывать предварительную оценку: 20 баллов или две точки. */
+export const PACE_MIN_POINTS = 20;
+export const PACE_MIN_CHECKPOINTS = 2;
+
+/**
+ * Предварительная оценка по уже оценённым контрольным точкам: доля набранных баллов → шкала preliminaryGrade.
+ * Неоценённые точки не считаются. Если оценено меньше PACE_MIN_POINTS баллов и меньше PACE_MIN_CHECKPOINTS точек —
+ * null («пока мало оценок»): одна точка на 5 баллов, сданная на 5, — ещё не «отлично».
+ */
+export function paceGrade(checkpoints: readonly Pick<CheckpointView, "score" | "maxPoints">[]): Pace | null {
+  const graded = checkpoints.filter((c) => c.score !== null);
+  const max = graded.reduce((sum, c) => sum + c.maxPoints, 0);
+  const score = graded.reduce((sum, c) => sum + (c.score ?? 0), 0);
+  if (max === 0 || (max < PACE_MIN_POINTS && graded.length < PACE_MIN_CHECKPOINTS)) return null;
+  return { grade: preliminaryGrade(Math.round((score / max) * 100))!, score, max };
 }
 
 const isDebtGrade = (g: string | null) => g === "2" || g === "незачёт";
@@ -143,13 +167,12 @@ export async function getStudySummary(v: StudentViewer, now: Date): Promise<Stud
       .orderBy(asc(checkpoints.dueDate), asc(checkpoints.id))
     : [];
 
-  const current: EnrollmentView[] = currentRows.map((r) => ({
-    ...r,
-    preliminary: preliminaryGrade(r.points),
-    checkpoints: cps.filter((c) => c.enrollmentId === r.id).map((c) => ({
+  const current: EnrollmentView[] = currentRows.map((r) => {
+    const own = cps.filter((c) => c.enrollmentId === r.id).map((c) => ({
       id: c.id, title: c.title, maxPoints: c.maxPoints, score: c.score, dueDate: c.dueDate, required: c.required,
-    })),
-  }));
+    }));
+    return { ...r, pace: paceGrade(own), checkpoints: own };
+  });
 
   const session = await listSession(v, new Map(currentRows.map((r) => [r.disciplineId, r.finalGrade])));
 

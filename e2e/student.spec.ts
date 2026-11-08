@@ -18,20 +18,31 @@ function mskWorkday(): string {
   return d.toISOString().slice(0, 10);
 }
 
-// Ошибки в консоли браузера ловим во всех тестах. Исключение: предзагрузка разделов «Деканат»,
-// которых ещё нет (Task 13), даёт 404 в консоли.
-let consoleErrors: string[] = [];
+// Ошибки в консоли браузера ловим во всех тестах. Единственное исключение — 404 на предзагрузку (prefetch)
+// разделов «Деканат», которых до Task 13 нет: <Link> предзагружает их сам. Обычные переходы туда и любые
+// другие ошибки на /dekanat не прощаются. Task 13 уберёт это исключение.
+type ConsoleError = { text: string; url: string };
+let consoleErrors: ConsoleError[] = [];
+let prefetch404 = new Set<string>();
 test.beforeEach(({ page }) => {
   consoleErrors = [];
-  page.on("console", (msg) => {
-    if (msg.type() === "error" && !msg.location().url.includes("/dekanat")) {
-      consoleErrors.push(`${msg.text()} @ ${msg.location().url}`);
+  prefetch404 = new Set();
+  page.on("response", (res) => {
+    const headers = res.request().headers();
+    const isPrefetch = "next-router-prefetch" in headers || "next-router-segment-prefetch" in headers;
+    if (res.status() === 404 && isPrefetch && new URL(res.url()).pathname.startsWith("/dekanat")) {
+      prefetch404.add(res.url());
     }
   });
-  page.on("pageerror", (e) => consoleErrors.push(e.message));
+  page.on("console", (msg) => {
+    if (msg.type() === "error") consoleErrors.push({ text: msg.text(), url: msg.location().url });
+  });
+  page.on("pageerror", (e) => consoleErrors.push({ text: e.message, url: "" }));
 });
 test.afterEach(() => {
-  expect(consoleErrors).toEqual([]);
+  // фильтруем после теста: событие response могло прийти позже сообщения в консоли
+  const unexpected = consoleErrors.filter((e) => !(prefetch404.has(e.url) && e.text.includes("404")));
+  expect(unexpected.map((e) => `${e.text} @ ${e.url}`)).toEqual([]);
 });
 
 async function expectFits(page: Page) {
@@ -233,5 +244,5 @@ test("несуществующая страница — «Страница не 
   await expectFits(page);
   await shoot(page, "not-found", widthOf(page));
   // сам ответ 404 браузер пишет в консоль — это ожидаемо
-  consoleErrors = consoleErrors.filter((e) => !e.includes("/takoy-stranitsy-net"));
+  consoleErrors = consoleErrors.filter((e) => !(new URL(e.url || "x:/").pathname === "/takoy-stranitsy-net" && e.text.includes("404")));
 });

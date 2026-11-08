@@ -177,7 +177,9 @@ describe("успеваемость", () => {
     expect(sum.risks).toEqual([]);
     expect(sum.current).toHaveLength(6);
     const matan = sum.current.find((e) => e.discipline === "Математический анализ")!;
-    expect(matan).toMatchObject({ controlForm: "exam", points: 35, admitted: true, preliminary: "неудовлетворительно" });
+    expect(matan).toMatchObject({
+      controlForm: "exam", points: 35, admitted: true, pace: { grade: "отлично", score: 35, max: 40 },
+    });
     expect(matan.checkpoints.map((c) => c.title)).toEqual(["Контрольная работа №1", "Коллоквиум", "Контрольная работа №2"]);
     expect(matan.checkpoints[0]).toMatchObject({ score: 18, maxPoints: 20, required: true });
     expect(sum.history.map((h) => h.semester)).toEqual([2]);

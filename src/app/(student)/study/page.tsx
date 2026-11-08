@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { CircleAlert, CircleCheck, Circle, GraduationCap, NotebookPen } from "lucide-react";
 import { requireStudent } from "@/server/auth/viewer";
 import { dayDiff, formatAverage, mskTime, plural, ruDateKey, ruRelativeDate, ruWeekdayShort } from "@/server/format";
-import { currentSemester, getStudySummary, preliminaryGrade, type EnrollmentView, type ExamView, type StudySummary } from "@/server/grades";
+import { currentSemester, getStudySummary, type EnrollmentView, type ExamView, type StudySummary } from "@/server/grades";
 import { mskDateKey } from "@/server/time";
 import { Badge } from "@/ui/Badge";
 import { Button } from "@/ui/Button";
@@ -88,16 +88,10 @@ function admissionBadge(admitted: boolean | null) {
 }
 
 function Subject({ e, today, riskIds }: { e: EnrollmentView; today: string; riskIds: Set<number> }) {
-  const scored = e.checkpoints.filter((c) => c.score !== null);
-  const done = scored.length;
-  const doneScore = scored.reduce((sum, c) => sum + (c.score ?? 0), 0);
-  const doneMax = scored.reduce((sum, c) => sum + c.maxPoints, 0);
+  const done = e.checkpoints.filter((c) => c.score !== null).length;
   const remaining = e.checkpoints.filter((c) => c.score === null).reduce((sum, c) => sum + c.maxPoints, 0);
   const points = Math.min(100, Math.max(0, e.points ?? 0));
   const ahead = Math.min(100 - points, remaining);
-  // Предварительная оценка — по доле баллов в уже сданных точках: в середине семестра
-  // «35 из 100» ничего не говорит, а «35 из 40 возможных» — говорит.
-  const pace = doneMax > 0 ? preliminaryGrade(Math.round((doneScore / doneMax) * 100)) : null;
   const rest = e.controlForm === "exam" ? "на экзамене" : "на зачёте";
   return (
     <article className={styles.subject} data-surface="paper">
@@ -128,15 +122,17 @@ function Subject({ e, today, riskIds }: { e: EnrollmentView; today: string; risk
         <p className={styles.prelim}>
           {e.finalGrade ? (
             <>Итог: <strong>{gradeLabel(e.finalGrade)}</strong></>
-          ) : pace ? (
+          ) : e.pace ? (
             <>
-              Предварительно — <strong>{pace}</strong>: {doneScore} из {doneMax} за сданные точки.{" "}
+              Предварительно — <strong>{e.pace.grade}</strong>: {e.pace.score} из {e.pace.max} за сданные точки.{" "}
               {remaining > 0
                 ? `Впереди точки ещё на ${remaining} ${plural(remaining, POINTS)}, остальное — ${rest}.`
                 : `Остальные баллы — ${rest}.`}
             </>
+          ) : done > 0 ? (
+            "Пока мало оценок для предварительной оценки."
           ) : (
-            "Контрольные точки ещё впереди."
+            "Пока мало оценок: контрольные точки ещё впереди."
           )}
         </p>
       </div>

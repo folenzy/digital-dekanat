@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
-import { AlarmClock, Bell, BellOff, CalendarClock, CheckCheck, FileText, Megaphone, MessageCircle } from "lucide-react";
+import { AlarmClock, Bell, CalendarClock, CheckCheck, FileText, Megaphone, MessageCircle } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { requireStudent } from "@/server/auth/viewer";
 import { listAnnouncementsFor } from "@/server/announcements";
 import { ruWhen } from "@/server/format";
 import { listNotifications } from "@/server/notifications";
 import { Badge } from "@/ui/Badge";
-import { Button } from "@/ui/Button";
 import { Card } from "@/ui/Card";
 import { EmptyState } from "@/ui/EmptyState";
 import { PageHeader } from "@/ui/PageHeader";
@@ -14,6 +13,7 @@ import { SubmitButton } from "@/ui/SubmitButton";
 import { Tabs } from "@/ui/Tabs";
 import { markAllReadAction, openNotificationAction } from "./actions";
 import { ItemButton } from "./ItemButton";
+import { NotificationsEmpty } from "./NotificationsEmpty";
 import styles from "./notifications.module.css";
 
 export const metadata: Metadata = { title: "Уведомления" };
@@ -67,16 +67,7 @@ export default async function NotificationsPage({ searchParams }: PageProps<"/no
           </div>
 
           {shown.length === 0 ? (
-            <EmptyState
-              icon={<BellOff />}
-              title="Новых уведомлений нет"
-              text={all.length
-                ? "Всё прочитано. Прочитанные уведомления — во вкладке «Все»."
-                : "Когда деканат ответит или изменится расписание, уведомление появится здесь и на колокольчике."}
-              action={all.length && filter === "unread"
-                ? <Button href="/notifications" variant="secondary">Показать все</Button>
-                : undefined}
-            />
+            <NotificationsEmpty total={all.length} filter={filter} />
           ) : (
             <ul className={styles.list}>
               {shown.map((n) => {
