@@ -1,0 +1,143 @@
+/* Очередь: сводка-разлиновка журнала, отделы, вкладки, талоны. */
+
+/* Сводка — строка журнала регистрации: графы через тонкую линию, числа Literata */
+.summary {
+  margin-bottom: var(--space-6);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  color: var(--fg);
+}
+
+.ledger {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+}
+
+.cell {
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: flex-end;
+  gap: 2px;
+  min-width: 0;
+  padding: var(--space-3) var(--space-4);
+}
+
+.cell:nth-child(2n) {
+  border-left: 1px solid var(--line);
+}
+
+.cell:nth-child(n + 3) {
+  border-top: 1px solid var(--line);
+}
+
+.cell dt {
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+  color: var(--fg-muted);
+  text-wrap: balance;
+}
+
+.cell dd {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+/* есть просрочка — графа краснеет */
+.cell[data-alert] {
+  background: var(--danger-tint);
+}
+
+.cell[data-alert] dt,
+.cell[data-alert] dd {
+  color: var(--danger);
+}
+
+/* Отделы — переключатели-ярлыки, переносятся на узком экране */
+.depts {
+  margin-bottom: var(--space-3);
+}
+
+.depts ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.depts a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--muted-strong);
+  text-decoration: none;
+}
+
+.depts a:hover {
+  color: var(--ink);
+  border-color: var(--ink);
+}
+
+.depts a[aria-current="page"] {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.depts a:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* Вкладки: на телефоне четыре корешка в два ряда, иначе «Ждут студента» не влезает */
+.tabs ul {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-radius: calc(var(--radius-lg) + 3px);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 600px) {
+  .ledger {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(0, 1.6fr);
+  }
+
+  .cell {
+    padding: var(--space-4) var(--space-5);
+  }
+
+  .cell + .cell {
+    border-left: 1px solid var(--line);
+  }
+
+  .cell:nth-child(n + 3) {
+    border-top: 0;
+  }
+
+  .tabs ul {
+    display: flex;
+    border-radius: var(--radius-pill);
+  }
+}

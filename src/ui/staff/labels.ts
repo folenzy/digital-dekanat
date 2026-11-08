@@ -1,4 +1,4 @@
-import type { AppealStatus, StaffTab } from "@/server/appeals/types";
+import type { AppealStatus, DepartmentCode, StaffTab } from "@/server/appeals/types";
 import { plural } from "@/server/format";
 import { mskDateKey, shiftDateKey } from "@/server/time";
 
@@ -43,6 +43,13 @@ const TAB_OF_STATUS: Record<AppealStatus, StaffTab> = {
 export function tabOfStatus(status: AppealStatus): StaffTab {
   return TAB_OF_STATUS[status];
 }
+
+/** Короткие имена отделов для переключателя очереди (на телефоне полные не помещаются в ряд). */
+export const DEPT_SHORT: Record<DepartmentCode, string> = {
+  docs: "Справки",
+  study: "Учёба",
+  stipend: "Стипендия",
+};
 
 /** Среднее время первого ответа (часы, до 0,1) → «42 мин» / «1,5 ч»; нет данных — «—». */
 export function avgResponseText(hours: number | null): string {
