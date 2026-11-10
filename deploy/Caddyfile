@@ -9,7 +9,7 @@
 	header Strict-Transport-Security "max-age=31536000"
 
 	# Служебные маршруты (ночной сброс демо) — только из внутренней сети Docker, снаружи их «нет»
-	respond /api/internal/* 404
+	respond /api/internal* 404
 
 	reverse_proxy app:3000 {
 		# поток событий /api/events (SSE): отдаём сразу, без буферизации

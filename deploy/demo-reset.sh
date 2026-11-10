@@ -10,7 +10,8 @@ set -u
 log() { echo "$(date '+%F %T %Z') demo-reset: $*"; }
 
 tmp=$(mktemp -d)
-trap 'kill "$keeper" 2>/dev/null; rm -rf "$tmp"' EXIT
+keeper=""
+trap '[ -n "$keeper" ] && kill "$keeper" 2>/dev/null; rm -rf "$tmp"' EXIT
 mkfifo "$tmp/request"
 
 # busybox nc выходит сразу, как только кончается ввод, и ответа не дождался бы, а пока ввод открыт —

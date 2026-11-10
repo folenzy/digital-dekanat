@@ -6,6 +6,9 @@
 # Вручную: docker compose exec cron sh /deploy/backup.sh
 set -eu
 
+# Дамп — вся база, в том числе хеши паролей: файлы доступны только владельцу.
+umask 077
+
 dir=/backups
 keep=7
 name="nasvyazi-$(date +%Y-%m-%d_%H%M).dump"
