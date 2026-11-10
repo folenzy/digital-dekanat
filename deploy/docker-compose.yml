@@ -29,7 +29,6 @@ services:
       DEMO_PASSWORD_IRINA: ${DEMO_PASSWORD_IRINA:?задай DEMO_PASSWORD_IRINA в deploy/.env}
       DEMO_RESET_TOKEN: ${DEMO_RESET_TOKEN:?задай DEMO_RESET_TOKEN в deploy/.env}
       COOKIE_SECURE: ${COOKIE_SECURE:-true}
-      APP_ORIGIN: ${APP_ORIGIN:?задай APP_ORIGIN в deploy/.env}
     # только для соседей по сети Docker (Caddy, cron); на хосте порт не публикуется
     expose:
       - "3000"
