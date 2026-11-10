@@ -52,7 +52,7 @@ export default async function AboutPage() {
   // Сюда ведёт и профиль сотрудника: знак должен вести в его очередь, а не на студенческую «/» (для него 404).
   const home = homeHref((await getViewerForPublicPage())?.role ?? null);
   return (
-    <PublicPage home={home} action={<Button href="/login" variant="secondary">В кабинет</Button>}>
+    <PublicPage home={home} action={<Button href={home} variant="secondary">В кабинет</Button>}>
       <article className={styles.article}>
         <header className={styles.header}>
           <h1 className={styles.title}>О проекте</h1>
