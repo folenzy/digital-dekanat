@@ -11,7 +11,7 @@
 | `react-dom` | 19.3.1 | MIT | Интерфейс |
 | `drizzle-orm` | 0.45.4 | Apache-2.0 | ORM, параметризованные запросы к PostgreSQL |
 | `postgres` | 4.1.0 | Unlicense | Драйвер PostgreSQL (в т. ч. `LISTEN/NOTIFY` для realtime) |
-| `@node-rs/argon2` | 2.2.2 | MIT | Хеширование паролей argon2id (нативная сборка `@node-rs/argon2-*` — тоже MIT) |
+| `@node-rs/argon2` | 2.2.2 | MIT | Хеширование паролей argon2id (нативные сборки тоже MIT: `@node-rs/argon2-win32-x64-msvc` 2.2.2 — по её package.json, `@node-rs/argon2-linux-x64-musl` 2.2.2 для Docker-образа — по `npm view`) |
 | `zod` | 4.6.7 | MIT | Валидация входных данных на сервере |
 | `lucide-react` | 1.70.0 | ISC | Иконки Lucide |
 | `server-only` | 0.0.1 | MIT | Защита: серверные модули нельзя импортировать в клиентский код |
