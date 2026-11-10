@@ -57,6 +57,9 @@ test("Алина: подмена id в форме и повтор действи
   const messagesBefore = await messageCount(denisAppeal);
 
   const { ctx, page } = await openAs(browser, "alina");
+  // Первое открытие карточки гасит уведомления о ней и один раз обновляет страницу (RefreshOnce) —
+  // это перерисовало бы скрытое поле посреди теста. Второе открытие уже без обновления.
+  await page.goto(`/dekanat/${alinaAppeal}`);
   await page.goto(`/dekanat/${alinaAppeal}`);
 
   // 1. Через настоящую форму: меняем скрытое поле на id Дениса

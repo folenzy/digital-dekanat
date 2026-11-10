@@ -3,7 +3,7 @@ import { collectConsoleErrors, resetDemoWorld, screenshotsEnabled, shoot, signIn
 
 // Главная история продукта целиком, в двух браузерах одновременно — она же сценарий демо-видео:
 // Алина подаёт обращение → Ирина видит его в «Новых», берёт и отвечает → у Алины без перезагрузки
-// появляются тост и растёт счётчик колокольчика, открытая карточка показывает ответ →
+// появляется тост, открытая карточка показывает ответ →
 // Ирина отмечает справку готовой → Алина видит «Готово».
 // Скриншоты → docs/screenshots/05-realtime-toast-<ширина>.png, 05-queue-irina-<ширина>.png.
 
@@ -61,8 +61,8 @@ test("Алина → Ирина → Алина: обращение, взять, 
   // у Алины: тост «принято в работу» и счётчик, статус в карточке обновился сам
   await expect(alina.getByRole("status").getByText(/принято в работу$/)).toBeVisible({ timeout: REALTIME_MS });
   await expect(alina.getByText("В работе", { exact: true }).first()).toBeVisible({ timeout: REALTIME_MS });
-  await expect.poll(() => unreadOf(alina), { timeout: REALTIME_MS }).toBeGreaterThan(unreadBefore);
-  const unreadAfterTake = await unreadOf(alina);
+  // карточка открыта: уведомления о ней гасятся сразу, счётчик не растёт (а колокольчик уже получил событие)
+  await expect.poll(() => unreadOf(alina), { timeout: REALTIME_MS }).toBe(unreadBefore);
 
   // 3. Ирина отвечает
   const answer = "Справка будет готова в течение двух дней, зайдите в каб. 214.";
@@ -70,10 +70,10 @@ test("Алина → Ирина → Алина: обращение, взять, 
   await irina.getByRole("button", { name: "Ответить" }).click();
   await expect(irina.locator('[data-author="staff"]').last()).toContainText(answer);
 
-  // у Алины, без перезагрузки: тост, счётчик +1 не позже чем через 5 секунд, ответ в открытой карточке
+  // у Алины, без перезагрузки: тост не позже чем через 5 секунд, ответ в открытой карточке; открытая карточка сразу гасит своё уведомление
   await expect(alina.getByRole("status").getByText(/^Деканат ответил по обращению О-\d{4}-\d{6}$/))
     .toBeVisible({ timeout: REALTIME_MS });
-  await expect.poll(() => unreadOf(alina), { timeout: REALTIME_MS }).toBe(unreadAfterTake + 1);
+  await expect.poll(() => unreadOf(alina), { timeout: REALTIME_MS }).toBe(unreadBefore);
   await expect(alina.locator('[data-author="staff"]').last()).toContainText(answer, { timeout: REALTIME_MS });
   // снимок окна, а не всей страницы: тост закреплён на экране и в длинном снимке оказался бы посреди карточки
   await alina.evaluate(() => window.scrollTo(0, 0));
