@@ -4,6 +4,13 @@
 export async function register(): Promise<void> {
   if (process.env.NEXT_RUNTIME === "nodejs") {
     const { bootDatabase } = await import("./server/boot");
-    await bootDatabase();
+    try {
+      await bootDatabase();
+    } catch (e) {
+      // Ошибку register() Next только печатает, а процесс остаётся жить без подготовленной базы.
+      // Завершаемся: Docker (restart: unless-stopped) перезапустит контейнер и попробует снова.
+      console.error("Подготовка БД не удалась, процесс завершается:", (e as Error)?.message);
+      process.exit(1);
+    }
   }
 }
