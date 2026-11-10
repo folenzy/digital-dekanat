@@ -102,6 +102,9 @@ describe("очередь сотрудника", () => {
       .toEqual(["stip_payment_question"]);
     expect(await listQueue(irina, "new", 9999, NOW)).toEqual([]);
     expect(await listQueue(irina, "bogus" as "new", undefined, NOW)).toEqual([]);
+    // вне int4 — пусто, а не исключение Postgres «out of range»
+    expect(await listQueue(irina, "new", 2_147_483_648, NOW)).toEqual([]);
+    expect(await listQueue(irina, "new", -1, NOW)).toEqual([]);
   });
 
   it("listStaffDepartments — только свои отделы", async () => {

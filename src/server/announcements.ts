@@ -7,6 +7,7 @@ import { fail, fieldErrorsOf, ok, type Result } from "./appeals/result";
 import { consumeAction, LIMITS } from "./limits";
 import { audienceFilter } from "./audience";
 import { db } from "./db/client";
+import { dbId } from "./db/ids";
 import { announcements, faculties, groups, staff, students } from "./db/schema";
 
 export type AnnouncementView = {
@@ -89,7 +90,7 @@ export async function listAudienceOptions(): Promise<AudienceOptions> {
   return { faculties: fs, courses: COURSES, groups: gs };
 }
 
-const optionalId = z.number().int().positive().optional();
+const optionalId = dbId.optional();
 const createSchema = z.object({
   title: z.string().trim().min(3).max(120),
   body: z.string().trim().min(10).max(3000),

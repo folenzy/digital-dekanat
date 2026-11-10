@@ -68,6 +68,8 @@ export async function getViewerForPublicPage(): Promise<Viewer | null> {
     return await getViewer();
   } catch (e) {
     unstable_rethrow(e); // redirect/notFound и сигнал динамического рендера — дело Next
+    // страница не падает, но сбой виден в логе сервера (только текст ошибки, без данных cookie)
+    console.error("[viewer] публичная страница открыта как аноним, сбой:", (e as Error)?.message);
     return null;
   }
 }

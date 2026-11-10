@@ -75,4 +75,23 @@ describe("consumeAction", () => {
     expect(await rows(userA, "msg")).toBe(0);
     expect(await consumeAction(userA, "msg", 1, 10 * MIN, NOW)).toBe(true);
   });
+
+  // Если блокировку пары держат слишком долго (флуд общим аккаунтом), запрос не ждёт бесконечно,
+  // занимая соединение пула, а через lock_timeout отказывает — как при исчерпанном лимите (fail closed).
+  it("блокировка пары занята дольше lock_timeout — отказ без записи, а не вечное ожидание", async () => {
+    let result: number | null | undefined;
+    let elapsed = 0;
+    await testSql.begin(async (tx) => {
+      await tx`select pg_advisory_xact_lock(hashtext('limits'), hashtext(${`${userA}:msg`}))`;
+      const started = Date.now();
+      result = await reserveAction(userA, "msg", 5, 10 * MIN, NOW);
+      elapsed = Date.now() - started;
+    });
+    expect(result).toBeNull();
+    expect(elapsed).toBeGreaterThanOrEqual(1500);
+    expect(elapsed).toBeLessThan(5000);
+    expect(await rows(userA, "msg")).toBe(0);
+    // блокировка свободна — всё как обычно
+    expect(await consumeAction(userA, "msg", 5, 10 * MIN, NOW)).toBe(true);
+  }, 15_000);
 });

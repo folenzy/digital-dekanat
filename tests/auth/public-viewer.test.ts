@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { getSessionUser } from "@/server/auth/session";
@@ -16,7 +16,12 @@ const withCookie = (value: string | undefined) =>
   } as unknown as Awaited<ReturnType<typeof cookies>>);
 
 describe("getViewerForPublicPage", () => {
-  beforeEach(() => vi.resetAllMocks());
+  let errorSpy: ReturnType<typeof vi.spyOn>;
+  beforeEach(() => {
+    vi.resetAllMocks();
+    errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+  });
+  afterEach(() => errorSpy.mockRestore());
 
   it("без cookie — null, сессию не ищет", async () => {
     withCookie(undefined);
@@ -34,6 +39,10 @@ describe("getViewerForPublicPage", () => {
     withCookie("token");
     vi.mocked(getSessionUser).mockRejectedValue(new Error("connect ECONNREFUSED 127.0.0.1:5432"));
     expect(await getViewerForPublicPage()).toBeNull();
+    // сбой не проглатывается молча: в логе сервера видна причина (без токена из cookie)
+    expect(errorSpy).toHaveBeenCalledTimes(1);
+    expect(String(errorSpy.mock.calls[0].join(" "))).toContain("ECONNREFUSED");
+    expect(String(errorSpy.mock.calls[0].join(" "))).not.toContain("token");
   });
 
   it("служебные ошибки Next (здесь redirect) не глотает — их обрабатывает сам Next", async () => {

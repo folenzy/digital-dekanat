@@ -208,6 +208,9 @@ describe("createAnnouncement", () => {
       ok: false, error: "validation", fieldErrors: { "audience.groupId": expect.any(String) },
     });
     expect(await bad({ audience: { groupId: g.id, course: g.course + 1 } })).toMatchObject({ ok: false, error: "validation" });
+    // вне int4 — валидация, а не исключение Postgres
+    expect(await bad({ audience: { facultyId: 2_147_483_648 } })).toMatchObject({ ok: false, error: "validation" });
+    expect(await bad({ audience: { groupId: 2_147_483_648 } })).toMatchObject({ ok: false, error: "validation" });
   });
 
   it("лимит: 10 объявлений в час, одиннадцатое отклоняется", async () => {

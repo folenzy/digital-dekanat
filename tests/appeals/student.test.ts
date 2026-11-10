@@ -142,6 +142,14 @@ describe("createAppeal: валидация", () => {
     if (!r.ok) throw new Error("ожидался успех");
     expect((await appealRow(r.value.id)).fields).toEqual({ text: "Хочу пересдать этот предмет", disciplineId: calculus });
   });
+
+  // Число вне int4 дошло бы до Postgres и уронило запрос (500): отсекаем на валидации.
+  it("disciplineId вне диапазона int4 или не положительный — ошибка валидации, а не исключение БД", async () => {
+    for (const bad of [2_147_483_648, 1e15, 0, -1]) {
+      expect(await createAppeal(alina, "study_retake", { text: "Хочу пересдать этот предмет", disciplineId: bad }, NOW))
+        .toMatchObject({ ok: false, error: "validation", fieldErrors: { disciplineId: expect.any(String) } });
+    }
+  });
 });
 
 describe("createAppeal: двойная отправка", () => {

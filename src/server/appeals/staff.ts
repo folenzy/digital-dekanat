@@ -2,6 +2,7 @@ import "server-only";
 import { and, asc, count, eq, gte, inArray, lt, lte, sql } from "drizzle-orm";
 import type { StaffViewer } from "../auth/viewer";
 import { db } from "../db/client";
+import { isDbId } from "../db/ids";
 import { appealMessages, appeals, appealTypes, departments, faculties, groups, staff, students } from "../db/schema";
 import { LIMITS } from "../limits";
 import { mskDdMm } from "../time";
@@ -32,7 +33,7 @@ export async function listQueue(
   v: StaffViewer, tab: StaffTab, departmentId?: number, now: Date = new Date(),
 ): Promise<QueueItem[]> {
   if (!Object.hasOwn(TAB_STATUSES, tab)) return [];
-  if (departmentId !== undefined && !Number.isInteger(departmentId)) return [];
+  if (departmentId !== undefined && !isDbId(departmentId)) return [];
   const rows = await db
     .select({
       ...listColumns,

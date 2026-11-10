@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { appealStatusEnum } from "../db/schema";
+import { dbId } from "../db/ids";
 
 export type AppealTopic = "certificates" | "study" | "stipend";
 export type AppealKind = "certificate" | "application" | "question";
@@ -24,7 +25,7 @@ const certFields = z.object({
 
 const studyFields = z.object({
   text: z.string().trim().min(10).max(2000),
-  disciplineId: z.number().int().optional(),
+  disciplineId: dbId.optional(),
 });
 
 const stipendFields = z.object({

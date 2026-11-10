@@ -26,15 +26,34 @@ export async function reserveAction(
   userId: string, action: string, limit: number, windowMs: number, now: Date,
 ): Promise<number | null> {
   const since = new Date(now.getTime() - windowMs);
-  return db.transaction(async (tx) => {
-    // Своё пространство ключей (первый ключ 'limits'): не пересекается с блокировкой создания обращений.
-    await tx.execute(sql`select pg_advisory_xact_lock(hashtext('limits'), hashtext(${`${userId}:${action}`}))`);
-    const [{ n }] = await tx.select({ n: count() }).from(actionLog)
-      .where(and(eq(actionLog.userId, userId), eq(actionLog.action, action), gt(actionLog.createdAt, since)));
-    if (n >= limit) return null;
-    const [mine] = await tx.insert(actionLog).values({ userId, action, createdAt: now }).returning({ id: actionLog.id });
-    return mine.id;
-  });
+  try {
+    return await db.transaction(async (tx) => {
+      // Флуд одним (общим) аккаунтом не должен занять все соединения пула ожиданием блокировки:
+      // дольше LOCK_TIMEOUT не ждём, отказ — как при исчерпанном лимите (fail closed).
+      await tx.execute(sql.raw(`set local lock_timeout = '${LOCK_TIMEOUT}'`));
+      // Своё пространство ключей (первый ключ 'limits'): не пересекается с блокировкой создания обращений.
+      await tx.execute(sql`select pg_advisory_xact_lock(hashtext('limits'), hashtext(${`${userId}:${action}`}))`);
+      const [{ n }] = await tx.select({ n: count() }).from(actionLog)
+        .where(and(eq(actionLog.userId, userId), eq(actionLog.action, action), gt(actionLog.createdAt, since)));
+      if (n >= limit) return null;
+      const [mine] = await tx.insert(actionLog).values({ userId, action, createdAt: now }).returning({ id: actionLog.id });
+      return mine.id;
+    });
+  } catch (e) {
+    if (isLockTimeout(e)) return null;
+    throw e;
+  }
+}
+
+/** Константа, не ввод: SET не принимает параметры, поэтому sql.raw. */
+const LOCK_TIMEOUT = "2s";
+
+/** 55P03 lock_not_available — сработал lock_timeout. Drizzle заворачивает ошибку драйвера в cause. */
+function isLockTimeout(e: unknown): boolean {
+  for (let cur: unknown = e; cur && typeof cur === "object"; cur = (cur as { cause?: unknown }).cause) {
+    if ((cur as { code?: unknown }).code === "55P03") return true;
+  }
+  return false;
 }
 
 /** true — действие разрешено и учтено; false — лимит в окне исчерпан. */
