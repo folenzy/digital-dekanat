@@ -5,7 +5,9 @@
 # и передаёт приложению свой — с настоящим адресом клиента. По нему приложение ограничивает попытки входа.
 
 {$SITE_HOST} {
-	encode zstd gzip
+	# сжимаем всё, кроме потока событий: gzip/zstd могут держать SSE в буфере
+	@compress not path /api/events*
+	encode @compress zstd gzip
 	header Strict-Transport-Security "max-age=31536000"
 
 	# Служебные маршруты (ночной сброс демо) — только из внутренней сети Docker, снаружи их «нет»

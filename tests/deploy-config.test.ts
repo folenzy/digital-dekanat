@@ -34,3 +34,12 @@ describe("deploy/demo-reset.sh", () => {
     expect(init).toBeLessThan(sh.indexOf("trap "));
   });
 });
+
+describe("deploy/Caddyfile: сжатие и SSE", () => {
+  it("поток /api/events исключён из encode (иначе gzip может буферизовать события)", () => {
+    const c = code(read("Caddyfile"));
+    expect(c).toMatch(/^\s*@compress not path \/api\/events\*\s*$/m);
+    expect(c).toMatch(/^\s*encode @compress zstd gzip\s*$/m);
+    expect(c).not.toMatch(/^\s*encode zstd gzip\s*$/m);
+  });
+});
