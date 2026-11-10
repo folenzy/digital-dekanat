@@ -1,0 +1,18 @@
+# Caddy: HTTPS (сертификат Let's Encrypt выпускается сам), сжатие, HSTS, прокси на приложение.
+# Адрес сайта — SITE_HOST из deploy/.env: <IP-через-дефисы>.sslip.io или свой домен (docs/DEPLOY.md).
+#
+# trusted_proxies намеренно не задан: тогда Caddy не верит X-Forwarded-For, присланному клиентом,
+# и передаёт приложению свой — с настоящим адресом клиента. По нему приложение ограничивает попытки входа.
+
+{$SITE_HOST} {
+	encode zstd gzip
+	header Strict-Transport-Security "max-age=31536000"
+
+	# Служебные маршруты (ночной сброс демо) — только из внутренней сети Docker, снаружи их «нет»
+	respond /api/internal/* 404
+
+	reverse_proxy app:3000 {
+		# поток событий /api/events (SSE): отдаём сразу, без буферизации
+		flush_interval -1
+	}
+}

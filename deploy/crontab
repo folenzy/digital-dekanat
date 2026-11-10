@@ -1,0 +1,5 @@
+# Расписание cron-контейнера (deploy/docker-compose.yml). Время — Europe/Moscow (переменная TZ).
+# Вывод заданий: docker compose logs cron
+# мин час день мес день_недели команда
+30 3 * * * sh /deploy/backup.sh
+0 4 * * * sh /deploy/demo-reset.sh
