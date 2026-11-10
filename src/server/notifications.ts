@@ -1,3 +1,4 @@
+import "server-only";
 import { and, count, desc, eq, isNull, sql } from "drizzle-orm";
 import type { Viewer } from "./auth/viewer";
 import { db } from "./db/client";

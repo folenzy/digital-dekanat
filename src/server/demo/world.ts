@@ -1,6 +1,6 @@
 import { sql } from "drizzle-orm";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
-import { staffHref, studentHref } from "@/lib/hrefs";
+import { staffHref, studentHref } from "../../lib/hrefs";
 import { APPEAL_TYPES } from "../appeals/types";
 import { hashPassword } from "../auth/password";
 import { db as appDb } from "../db/client";

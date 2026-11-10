@@ -1,3 +1,4 @@
+import "server-only";
 import { asc, eq } from "drizzle-orm";
 import type { StaffViewer, StudentViewer } from "./auth/viewer";
 import { db } from "./db/client";

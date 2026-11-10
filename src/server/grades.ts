@@ -1,3 +1,4 @@
+import "server-only";
 import { and, asc, eq, inArray, isNull, lte, or } from "drizzle-orm";
 import type { StudentViewer } from "./auth/viewer";
 import { db } from "./db/client";

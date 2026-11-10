@@ -1,3 +1,4 @@
+import "server-only";
 import { and, gte, lte } from "drizzle-orm";
 import type { StudentViewer } from "./auth/viewer";
 import { audienceFilter } from "./audience";

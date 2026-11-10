@@ -30,7 +30,7 @@ export function resetDemoWorld(): void {
   // Проверяем ровно тот адрес, который получат скрипты: loadEnvFile в них не перезаписывает переданный env.
   const url = localDatabaseUrl();
   for (const script of ["scripts/migrate.ts", "scripts/demo-reset.ts"]) {
-    execFileSync(process.execPath, [tsx, script], {
+    execFileSync(process.execPath, [tsx, "--conditions=react-server", script], {
       cwd: root,
       env: { ...process.env, DATABASE_URL: url },
       stdio: ["ignore", "inherit", "inherit"],
