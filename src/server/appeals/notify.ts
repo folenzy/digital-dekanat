@@ -6,8 +6,7 @@ import type { Tx } from "./access";
 
 // Уведомления по обращениям: строки notifications пишутся в транзакции действия, realtime — после коммита.
 
-export const studentHref = (appealId: string) => `/dekanat/${appealId}`;
-export const staffHref = (appealId: string) => `/staff/appeals/${appealId}`;
+export { staffHref, studentHref } from "@/lib/hrefs";
 
 export type Notice = { kind: string; title: string; body: string };
 

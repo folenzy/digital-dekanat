@@ -2,16 +2,19 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronLeft, CircleCheck, PackageCheck } from "lucide-react";
+import { studentHref } from "@/lib/hrefs";
 import { getMyAppeal } from "@/server/appeals/service";
 import type { AppealDetail } from "@/server/appeals/types";
 import { requireStudent } from "@/server/auth/viewer";
 import { mskTime, ruDate, ruRelativeDate, ruWhen } from "@/server/format";
+import { markReadByHref } from "@/server/notifications";
 import { Countdown } from "@/ui/appeals/Countdown";
 import { FieldsSummary } from "@/ui/appeals/FieldsSummary";
 import { personShortName } from "@/ui/appeals/labels";
 import { Thread } from "@/ui/appeals/Thread";
 import { Timeline } from "@/ui/appeals/Timeline";
 import { Button } from "@/ui/Button";
+import { RefreshOnce } from "@/ui/RefreshOnce";
 import { Section } from "@/ui/Section";
 import { StatusBadge } from "@/ui/StatusBadge";
 import { SubmitButton } from "@/ui/SubmitButton";
@@ -109,12 +112,15 @@ export default async function AppealPage({ params, searchParams }: PageProps<"/d
   const [{ id }, sp] = await Promise.all([params, searchParams]);
   const a = await getMyAppeal(v, id, now);
   if (!a) notFound();
+  // открыл карточку — уведомления о ней (ответ сотрудника, «готово») больше не новые
+  const marked = await markReadByHref(v, studentHref(a.id));
 
   const running = a.status === "submitted" || a.status === "in_progress";
   const writable = a.status !== "rejected" && a.status !== "closed";
 
   return (
     <>
+      {marked > 0 && <RefreshOnce />}
       <Link href="/dekanat" className={styles.back}>
         <ChevronLeft aria-hidden="true" />
         Мои обращения

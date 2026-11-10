@@ -1,3 +1,4 @@
+import { studentHref } from "@/lib/hrefs";
 import type { StudentViewer } from "./auth/viewer";
 import { getMyAppeal, listMyAppeals } from "./appeals/service";
 import type { AppealStatus } from "./appeals/types";
@@ -102,7 +103,7 @@ export function computeNudges(ctx: NudgeContext, now: Date): Nudge[] {
         id: `needs_info:${a.id}`, kind: "needs_info",
         title: `Ответь на вопрос по обращению ${a.number}`,
         body: `${a.typeTitle}: деканату нужно уточнение. Ответь, и мы продолжим работу.`,
-        action: { label: "Ответить", href: `/dekanat/${a.id}` },
+        action: { label: "Ответить", href: studentHref(a.id) },
       });
     }
   }
@@ -113,7 +114,7 @@ export function computeNudges(ctx: NudgeContext, now: Date): Nudge[] {
         id: `cert_ready:${a.id}`, kind: "cert_ready",
         title: `Справка готова, забери в ${a.pickup.place} до ${ruDate(a.pickup.until)}`,
         body: `${a.typeTitle}, обращение ${a.number}.`,
-        action: { label: "Открыть обращение", href: `/dekanat/${a.id}` },
+        action: { label: "Открыть обращение", href: studentHref(a.id) },
       });
     }
   }

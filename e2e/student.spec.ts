@@ -182,6 +182,22 @@ test.describe("Алина", () => {
     });
   });
 
+  test.describe("карточка обращения гасит уведомления о нём (меняет данные — свой свежий демо-мир)", () => {
+    test.beforeAll(() => resetDemoWorld());
+    test.afterAll(() => resetDemoWorld());
+
+    test("после открытия карточки счётчик колокольчика уменьшается", async ({ page }) => {
+      await signIn(page, "alina");
+      const bell = page.getByRole("link", { name: BELL });
+      await expect(bell).toHaveAttribute("aria-label", "Уведомления: 4 непрочитанных");
+      await page.goto("/dekanat");
+      await page.getByRole("link", { name: /Справка для военкомата/ }).first().click();
+      await page.waitForURL(/\/dekanat\/[0-9a-f-]{36}$/);
+      await expect(page.getByRole("heading", { level: 1 })).toHaveText("Справка для военкомата");
+      await expect(page.getByRole("link", { name: BELL })).toHaveAttribute("aria-label", "Уведомления: 3 непрочитанных");
+    });
+  });
+
   test("Профиль, О проекте, выход", async ({ page }) => {
     await signIn(page, "alina");
     await page.goto("/profile");

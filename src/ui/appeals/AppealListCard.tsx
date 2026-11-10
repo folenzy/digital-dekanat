@@ -1,4 +1,5 @@
 import type { AppealListItem } from "@/server/appeals/types";
+import { studentHref } from "@/lib/hrefs";
 import { Card } from "../Card";
 import { StatusBadge } from "../StatusBadge";
 import { appealPromise } from "../student/today";
@@ -11,7 +12,7 @@ export function AppealListCard({ appeal: a, now }: { appeal: AppealListItem; now
   const promise = appealPromise(a, now);
   return (
     <Card
-      href={`/dekanat/${a.id}`}
+      href={studentHref(a.id)}
       variant={a.status === "needs_info" ? "accent" : "paper"}
       kicker={`Обращение ${a.number}`}
       title={a.type.title}

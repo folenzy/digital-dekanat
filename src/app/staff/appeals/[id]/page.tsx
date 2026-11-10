@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronLeft, CircleCheck, CircleX, MessageCircleQuestionMark, Send } from "lucide-react";
+import { staffHref } from "@/lib/hrefs";
 import { getQueueAppeal } from "@/server/appeals/staff";
 import { APPEAL_TEXT_LIMITS, type QueueAppealDetail } from "@/server/appeals/types";
 import { requireStaff } from "@/server/auth/viewer";
@@ -20,7 +21,7 @@ import { StatusBadge } from "@/ui/StatusBadge";
 import { replyAction, requestInfoAction } from "../../actions";
 import { queueHref } from "../../params";
 import { ReadyForm } from "./ReadyForm";
-import { RefreshOnce } from "./RefreshOnce";
+import { RefreshOnce } from "@/ui/RefreshOnce";
 import { RejectForm } from "./RejectForm";
 import { TakeForm } from "./TakeForm";
 import { TextActionForm } from "./TextActionForm";
@@ -189,7 +190,7 @@ export default async function StaffAppealPage({ params }: PageProps<"/staff/appe
   const a = await getQueueAppeal(v, id, now);
   if (!a) notFound();
   // открыл карточку — уведомления о ней (новое обращение, сообщение студента) больше не новые
-  const marked = await markReadByHref(v, `/staff/appeals/${a.id}`);
+  const marked = await markReadByHref(v, staffHref(a.id));
 
   const running = a.status === "submitted" || a.status === "in_progress";
   const writable = a.status !== "rejected" && a.status !== "closed";

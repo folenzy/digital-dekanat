@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
+import { staffHref, studentHref } from "@/lib/hrefs";
 import { APPEAL_TYPES } from "../appeals/types";
 import { hashPassword } from "../auth/password";
 import { db as appDb } from "../db/client";
@@ -373,7 +374,7 @@ export async function buildDemoWorld(db: Db, now: Date, passwords: DemoPasswords
     // ---------- уведомления ----------
     const hAgo = (h: number) => new Date(now.getTime() - h * HOUR_MS);
     await notify(alina.userId, "appeal_status", `Обращение ${aMil.number} принято в работу`,
-      "Справку для военкомата готовит Ирина Николаевна Белова. Ответим в обещанный срок.", aTaken, `/dekanat/${aMil.id}`);
+      "Справку для военкомата готовит Ирина Николаевна Белова. Ответим в обещанный срок.", aTaken, studentHref(aMil.id));
     await notify(alina.userId, "schedule_change", "Изменение в расписании", scheduleNotes["ПМИ-25-1"], hAgo(1), "/schedule");
     await notify(alina.userId, "announcement", "Зимняя сессия начинается 22 декабря",
       "Проверь, какие контрольные точки ещё не сданы.", hAgo(24), "/");
@@ -383,9 +384,9 @@ export async function buildDemoWorld(db: Db, now: Date, passwords: DemoPasswords
       "Здесь расписание, учёба и деканат в одном месте.", hAgo(72), "/", true);
 
     await notify(denis.userId, "appeal_message", `Нужно уточнение по обращению ${dRetake.number}`,
-      "Сотрудник деканата задал вопрос по пересдаче. Ответь, чтобы мы продолжили.", dAsked, `/dekanat/${dRetake.id}`);
+      "Сотрудник деканата задал вопрос по пересдаче. Ответь, чтобы мы продолжили.", dAsked, studentHref(dRetake.id));
     await notify(denis.userId, "appeal_status", `Справка по обращению ${dCert.number} готова`,
-      `Забери справку: ${pickupPlace}, до ${ddmm(mskDateKey(pickupUntil))}.`, cReady, `/dekanat/${dCert.id}`);
+      `Забери справку: ${pickupPlace}, до ${ddmm(mskDateKey(pickupUntil))}.`, cReady, studentHref(dCert.id));
     await notify(denis.userId, "schedule_change", "Изменение в расписании", scheduleNotes["ЭК-24-2"], hAgo(1), "/schedule");
     await notify(denis.userId, "deadline", "Скоро срок сдачи лабораторной работы",
       "Лабораторная работа №3 по эконометрике: срок через 3 дня, работа обязательная для допуска.", hAgo(2), "/study");
@@ -394,11 +395,11 @@ export async function buildDemoWorld(db: Db, now: Date, passwords: DemoPasswords
 
     // Ирина получает уведомления о новых обращениях в своих отделах
     await notify(uIrina.id, "appeal_new", `Новое обращение ${nStudy.number}`,
-      "Индивидуальный график, учебный отдел.", nStudy.createdAt, `/staff/appeals/${nStudy.id}`);
+      "Индивидуальный график, учебный отдел.", nStudy.createdAt, staffHref(nStudy.id));
     await notify(uIrina.id, "appeal_new", `Новое обращение ${nStip.number}`,
-      "Вопрос по выплате, стипендиальный отдел.", nStip.createdAt, `/staff/appeals/${nStip.id}`);
+      "Вопрос по выплате, стипендиальный отдел.", nStip.createdAt, staffHref(nStip.id));
     await notify(uIrina.id, "appeal_new", `Новое обращение ${nLate.number}`,
-      "Другой учебный вопрос, учебный отдел.", nLate.createdAt, `/staff/appeals/${nLate.id}`);
+      "Другой учебный вопрос, учебный отдел.", nLate.createdAt, staffHref(nLate.id));
 
     // ---------- база ответов ----------
     await tx.insert(s.kbArticles).values(KB_ARTICLES.map((a) => ({

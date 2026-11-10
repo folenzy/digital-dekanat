@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { QueueItem } from "@/server/appeals/types";
 import { mskTime, ruRelativeDate, ruWhen } from "@/server/format";
+import { staffHref } from "@/lib/hrefs";
 import { personShortName } from "../appeals/labels";
 import { StatusBadge } from "../StatusBadge";
 import { QueueTimer } from "./QueueTimer";
@@ -26,7 +27,7 @@ function note(a: QueueItem, now: Date): string {
 export function QueueCard({ appeal: a, now }: { appeal: QueueItem; now: Date }) {
   const running = a.status === "submitted" || a.status === "in_progress";
   return (
-    <Link href={`/staff/appeals/${a.id}`} className={styles.link} data-overdue={a.overdue || undefined}>
+    <Link href={staffHref(a.id)} className={styles.link} data-overdue={a.overdue || undefined}>
       <div className={styles.ticket} data-surface="paper" data-running={running || undefined}>
         <div className={styles.main}>
           <p className={styles.kicker}>
