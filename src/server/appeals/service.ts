@@ -7,7 +7,7 @@ import { LIMITS, releaseAction, reserveAction } from "../limits";
 import { addEvent, runAppealAction, studentScope } from "./access";
 import { listColumns, loadAppealDetail, toListItem } from "./detail";
 import { departmentStaffUserIds, excerpt, insertNotifications, publishSafe, staffHref } from "./notify";
-import { fail, fieldError, fieldErrorsOf, isUuid, ok, type Result } from "./result";
+import { fail, fieldError, fieldErrorsOf, isUuid, ok, type AppealActionResult, type Result } from "./result";
 import { slaDueAt } from "./sla";
 import {
   APPEAL_TYPES, isAppealTypeCode, messageTextSchema, type AppealDetail, type AppealListItem, type AppealStatus,
@@ -20,7 +20,6 @@ const ACTIVE: AppealStatus[] = ["submitted", "in_progress", "needs_info", "ready
 const DONE: AppealStatus[] = ["rejected", "closed"];
 
 export type CreatedAppeal = { id: string; number: string };
-export type AppealActionResult = Result<{ status: AppealStatus }>;
 
 type Select = Pick<typeof db, "select">;
 

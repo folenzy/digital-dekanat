@@ -1,7 +1,7 @@
 import type { AppealListItem } from "@/server/appeals/types";
 import { mskTime, pairName, plural, prettyTime, ruDateKey, ruRelativeDate, ruWeekday } from "@/server/format";
 import type { Lesson } from "@/server/schedule";
-import { mskDateKey, mskMinutes, shiftDateKey } from "@/server/time";
+import { mskDateKey, mskMinutes, shiftDateKey, toMin } from "@/server/time";
 
 // Тексты экрана «Сегодня»: одна-две фразы, которые отвечают «что у меня сейчас и что ждёт ответа».
 
@@ -11,7 +11,6 @@ const PAIRS: readonly [string, string, string] = ["пара", "пары", "па�
 const PAIR_WORDS = ["", "одна", "две", "три", "четыре", "пять", "шесть"];
 const BY_N = ["", "одному обращению", "двум обращениям", "трём обращениям"];
 
-const toMin = (hhmm: string) => Number(hhmm.slice(0, 2)) * 60 + Number(hhmm.slice(3, 5));
 
 /** «завтра, 2-я пара в 10:40» или «понедельник, 16 ноября, 2-я пара в 10:40». */
 export function nextLessonPhrase(next: NextLesson, now: Date): string {

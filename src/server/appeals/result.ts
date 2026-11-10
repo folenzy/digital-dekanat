@@ -1,4 +1,5 @@
 import type { z } from "zod";
+import type { AppealStatus } from "./types";
 
 // Ожидаемые отказы возвращаются значением, а не исключением; экран переводит код в текст.
 export type AppealError = "not_found" | "bad_transition" | "rate_limited" | "validation" | "closed";
@@ -63,3 +64,6 @@ export function fieldErrorsOf(error: z.ZodError): Record<string, string> {
   }
   return out;
 }
+
+/** Результат действия над обращением (студента или сотрудника): новый статус. */
+export type AppealActionResult = Result<{ status: AppealStatus }>;

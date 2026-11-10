@@ -4,7 +4,7 @@ import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 import { requireStudent } from "@/server/auth/viewer";
 import { plural, ruDateKey, ruDayTitle, ruWeekdayShort } from "@/server/format";
 import { getWeek, type Lesson } from "@/server/schedule";
-import { mskAt, mskMinutes, shiftDateKey } from "@/server/time";
+import { mskAt, mskMinutes, shiftDateKey, toMin } from "@/server/time";
 import { Badge } from "@/ui/Badge";
 import { Button } from "@/ui/Button";
 import { EmptyState } from "@/ui/EmptyState";
@@ -20,7 +20,6 @@ const PAIRS: readonly [string, string, string] = ["пара", "пары", "па�
 /** «в понедельник», «во вторник»… — для пустого дня. */
 const ON_DAY = ["в воскресенье", "в понедельник", "во вторник", "в среду", "в четверг", "в пятницу", "в субботу"];
 
-const toMin = (hhmm: string) => Number(hhmm.slice(0, 2)) * 60 + Number(hhmm.slice(3, 5));
 
 /** Состояния пар сегодняшнего дня: идёт, следующая, прошла. Для других дней — без отметок. */
 function statesFor(lessons: Lesson[], isToday: boolean, minutes: number): (LessonState | undefined)[] {

@@ -2,6 +2,9 @@
 const MSK_OFFSET_MS = 3 * 3600_000;
 const DAY_MS = 86_400_000;
 
+/** «HH:MM» → минуты от полуночи. */
+export const toMin = (hhmm: string): number => Number(hhmm.slice(0, 2)) * 60 + Number(hhmm.slice(3, 5));
+
 function mskShifted(d: Date): Date {
   return new Date(d.getTime() + MSK_OFFSET_MS);
 }

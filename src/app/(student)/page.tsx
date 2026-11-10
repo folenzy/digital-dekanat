@@ -8,7 +8,7 @@ import { dayDiff, greeting, mskTime, plural, ruDate, ruDayTitle, ruWhen } from "
 import { getNudges, type Nudge, type NudgeKind } from "@/server/nudges";
 import { getProfile } from "@/server/profile";
 import { getTodayOverview, type Lesson } from "@/server/schedule";
-import { mskDateKey, mskMinutes, shiftDateKey } from "@/server/time";
+import { mskDateKey, mskMinutes, shiftDateKey, toMin } from "@/server/time";
 import { Badge } from "@/ui/Badge";
 import { AppealListCard } from "@/ui/appeals/AppealListCard";
 import { Button } from "@/ui/Button";
@@ -30,7 +30,6 @@ const NUDGE_KICKER: Record<NudgeKind, string> = {
   schedule_change: "Расписание",
 };
 
-const toMin = (hhmm: string) => Number(hhmm.slice(0, 2)) * 60 + Number(hhmm.slice(3, 5));
 const DAYS: readonly [string, string, string] = ["день", "дня", "дней"];
 
 function NudgeCard({ nudge, first }: { nudge: Nudge; first: boolean }) {

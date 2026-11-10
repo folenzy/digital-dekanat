@@ -9,7 +9,7 @@ import { mskDdMm } from "../time";
 import { addEvent, runAppealAction, staffScope, type LockedAppeal } from "./access";
 import { listColumns, loadAppealDetail, staffDisplayName, studentFullName, toListItem } from "./detail";
 import { excerpt } from "./notify";
-import { fail, fieldError, fieldErrorsOf, isUuid, type Result } from "./result";
+import { fail, fieldError, fieldErrorsOf, isUuid, type AppealActionResult } from "./result";
 import { SLA_RUNNING_STATUSES } from "./sla";
 import {
   messageTextSchema, pickupSchema, rejectReasonSchema, type AppealStatus, type DepartmentCode, type DepartmentInfo,
@@ -17,8 +17,6 @@ import {
 } from "./types";
 
 // Кабинет сотрудника: только обращения отделов из v.departmentIds. Действовать может любой сотрудник отдела.
-
-export type AppealActionResult = Result<{ status: AppealStatus }>;
 
 const TAB_STATUSES: Record<StaffTab, AppealStatus[]> = {
   new: ["submitted"],

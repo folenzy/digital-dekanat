@@ -1,9 +1,10 @@
+import "server-only";
 import { and, eq, inArray } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import type { StudentViewer } from "./auth/viewer";
 import { db } from "./db/client";
 import { disciplines, rooms, scheduleChanges, scheduleSlots, teachers } from "./db/schema";
-import { mskAt, mskDateKey, mskMinutes, mskWeekday, shiftDateKey, weekParity } from "./time";
+import { mskAt, mskDateKey, mskMinutes, mskWeekday, shiftDateKey, toMin, weekParity } from "./time";
 
 export const PAIR_TIMES: Record<number, readonly [start: string, end: string]> = {
   1: ["09:00", "10:30"],
@@ -26,7 +27,6 @@ export type Lesson = {
   change?: LessonChange; cancelled: boolean;
 };
 
-const toMin = (hhmm: string) => Number(hhmm.slice(0, 2)) * 60 + Number(hhmm.slice(3, 5));
 const noonOf = (key: string) => mskAt(key, "12:00");
 const UNKNOWN = "уточняется";
 
