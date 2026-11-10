@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isSafeHref, parseLiveEvent } from "@/ui/live/LiveEvents";
+import { isSafeHref, parseLiveEvent, showsToast } from "@/ui/live/LiveEvents";
 
 describe("клиентская проверка событий", () => {
   it("href только относительный на этом же сайте", () => {
@@ -18,5 +18,13 @@ describe("клиентская проверка событий", () => {
       .toEqual({ type: "notification", title: "Привет" });
     expect(parseLiveEvent('{"type":"appeal_updated","href":"/dekanat/1","appealId":"a"}'))
       .toEqual({ type: "appeal_updated", href: "/dekanat/1", appealId: "a" });
+  });
+});
+
+describe("тост по событию", () => {
+  it("appeal_updated только обновляет экран — без общего «Новое уведомление»", () => {
+    expect(showsToast({ type: "appeal_updated", appealId: "a" })).toBe(false);
+    expect(showsToast({ type: "notification", title: "Привет" })).toBe(true);
+    expect(showsToast({ type: "announcement", title: "Объявление" })).toBe(true);
   });
 });

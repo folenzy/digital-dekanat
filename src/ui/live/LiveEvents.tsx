@@ -37,6 +37,9 @@ export function parseLiveEvent(raw: string): LiveEventDetail | null {
   return out;
 }
 
+/** appeal_updated только перерисовывает экран; тост показывает парное событие notification (с текстом). */
+export const showsToast = (d: LiveEventDetail): boolean => d.type !== "appeal_updated";
+
 const expire = () => {
   // Полная перезагрузка нужна намеренно: сбросить клиентское состояние сессии.
   // eslint-disable-next-line @next/next/no-location-assign-relative-destination
@@ -64,9 +67,11 @@ export function LiveEvents() {
       es.onmessage = (e: MessageEvent<string>) => {
         const detail = parseLiveEvent(e.data);
         if (!detail) return;
-        setToast((prev) => ({ detail, seq: (prev?.seq ?? 0) + 1 }));
-        clearTimeout(hideTimer.current);
-        hideTimer.current = setTimeout(() => setToast(null), TOAST_MS);
+        if (showsToast(detail)) {
+          setToast((prev) => ({ detail, seq: (prev?.seq ?? 0) + 1 }));
+          clearTimeout(hideTimer.current);
+          hideTimer.current = setTimeout(() => setToast(null), TOAST_MS);
+        }
         window.dispatchEvent(new CustomEvent<LiveEventDetail>("ns:live", { detail }));
         router.refresh();
       };
