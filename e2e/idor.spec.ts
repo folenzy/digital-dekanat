@@ -146,3 +146,29 @@ test("Ирина не вызывает действия студента: пов
   await alina.ctx.close();
   await irina.ctx.close();
 });
+
+// CSRF: чужой сайт может заставить браузер отправить POST с куками жертвы (SameSite=Lax их не пошлёт
+// для фонового POST, но это вторая линия). Первая — Next сверяет Origin запроса серверного действия с Host.
+test("CSRF: действие с чужим Origin не выполняется даже с куками владельца", async ({ browser }) => {
+  const alinaAppeal = await appealIdOf("alina.mironova", "Справка для военкомата");
+  const alina = await openAs(browser, "alina");
+  await alina.page.goto(`/dekanat/${alinaAppeal}`);
+  await alina.page.getByLabel("Сообщение").fill("Легальное сообщение для проверки Origin");
+  const action = await captureAction(alina.page, () => alina.page.getByRole("button", { name: "Отправить" }).click());
+  await expect(alina.page.locator('[data-author="student"]').last()).toContainText("Легальное сообщение для проверки Origin");
+  const before = await messageCount(alinaAppeal);
+
+  const forged = await alina.ctx.request.post(action.url, {
+    headers: { ...action.headers, origin: "https://evil.example" }, data: action.body, maxRedirects: 0,
+  });
+  expect(forged.status()).toBeGreaterThanOrEqual(400);
+  expect(await messageCount(alinaAppeal)).toBe(before);
+
+  // контроль: тот же запрос со своим Origin проходит
+  const own = await alina.ctx.request.post(action.url, {
+    headers: { ...action.headers, origin: new URL(action.url).origin }, data: action.body, maxRedirects: 0,
+  });
+  expect(own.status()).toBeLessThan(400);
+  expect(await messageCount(alinaAppeal)).toBe(before + 1);
+  await alina.ctx.close();
+});
