@@ -1,0 +1,111 @@
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--tap);
+  max-width: 100%;
+  padding: 10px var(--space-5);
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-ui);
+  font-size: var(--text-md);
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+}
+
+.btn:disabled:not([aria-busy]) {
+  opacity: 0.55;
+}
+
+.btn[aria-busy] {
+  cursor: progress;
+}
+
+.primary {
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+}
+
+.primary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--btn-bg) 88%, var(--ink));
+}
+
+.secondary {
+  background: transparent;
+  color: var(--fg);
+  border-color: var(--btn-border);
+}
+
+.secondary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--fg) 6%, transparent);
+}
+
+.ghost {
+  background: transparent;
+  color: var(--fg);
+  padding-inline: var(--space-3);
+}
+
+.ghost:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--fg) 7%, transparent);
+}
+
+.full {
+  width: 100%;
+}
+
+.icon {
+  display: inline-flex;
+  flex: none;
+}
+
+.icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.spinner {
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn {
+    transition: none;
+  }
+
+  .btn:active:not(:disabled) {
+    transform: none;
+  }
+
+  .spinner {
+    animation: none;
+  }
+}

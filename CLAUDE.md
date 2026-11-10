@@ -22,4 +22,13 @@ TypeScript, Next.js (App Router), PostgreSQL (Drizzle ORM), Docker Compose, Cadd
 - `docs/process/TOOLS.md` — все инструменты и зачем.
 
 ## Команды
-(заполняется после каркаса)
+- `npm run db:up` — поднять Postgres (dev :5432 `nasvyazi`, test :5433 `nasvyazi_test`, tmpfs) через `docker-compose.dev.yml`.
+- `npm run dev | build | start | lint` — Next.js. `npm test` — Vitest (нужна поднятая test-БД, `DATABASE_URL_TEST` из `.env`). `npm run test:e2e` — Playwright (папка `e2e/`, сам собирает и стартует на :3100). Скриншоты в `docs/screenshots/` пишутся только с `SCREENSHOTS=1` (bash: `SCREENSHOTS=1 npm run test:e2e`, PowerShell: `$env:SCREENSHOTS=1; npm run test:e2e`).
+- `npm run db:generate | db:migrate | demo:reset` — Drizzle/демо; ссылаются на `drizzle.config.ts`, `scripts/migrate.ts`, `scripts/demo-reset.ts` (появятся в следующих задачах).
+- `cp .env.example .env` — локальные переменные (не коммитить).
+
+### Next.js 16 (сверено с `node_modules/next/dist/docs`)
+- `middleware.ts` устарел и переименован в `proxy.ts` (в корне или `src/`), та же функциональность. Использовать `proxy.ts`.
+- `instrumentation.ts` (корень или `src/`) экспортирует `register()` (один раз при старте сервера) и опционально `onRequestError`.
+- Каркас создан с `cacheComponents`/`partialPrefetching` в конфиге; они убраны из `next.config.ts` (динамические страницы с БД требуют иначе Suspense вокруг всего).
+- Vitest-конфиг — `vitest.config.mts` (ESM без предупреждения), `server-only` в тестах заменён пустым модулем.

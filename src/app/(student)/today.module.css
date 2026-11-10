@@ -1,0 +1,116 @@
+/* «Сегодня»: блоки по важности, одна колонка. */
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stack + .stack {
+  margin-top: var(--space-3);
+}
+
+.nudgeText {
+  color: var(--fg-muted);
+  font-size: var(--text-sm);
+  line-height: var(--leading-body);
+}
+
+.nudgeAction {
+  margin-top: var(--space-4);
+}
+
+.quiet {
+  margin: 0 0 var(--space-3);
+  color: var(--fg-muted);
+  text-wrap: pretty;
+}
+
+.quiet:last-child {
+  margin-bottom: 0;
+}
+
+.stack + .quiet {
+  margin-top: var(--space-3);
+}
+
+.dept {
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--fg-muted);
+}
+
+/* Дедлайны — строки одного листа, разделённые линовкой */
+.deadlines {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.deadlines li + li {
+  border-top: 1px solid var(--line);
+}
+
+.deadline {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: var(--tap);
+  padding: var(--space-3) var(--space-4);
+  color: var(--fg);
+  text-decoration: none;
+}
+
+a.deadline:hover {
+  background: color-mix(in srgb, var(--accent) 5%, transparent);
+}
+
+a.deadline:focus-visible {
+  outline-offset: -3px;
+}
+
+.deadlineTitle {
+  font-weight: 600;
+  line-height: var(--leading-snug);
+  overflow-wrap: break-word;
+}
+
+a.deadline .deadlineTitle {
+  color: var(--fg-accent);
+}
+
+.deadlineDue {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--fg-muted);
+}
+
+.important {
+  margin-bottom: var(--space-2);
+}
+
+/* Последнее объявление: первые строки, полный текст — во вкладке «Объявления» */
+.announcement {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+  overflow: hidden;
+  color: var(--fg);
+}
+
+@media (min-width: 600px) {
+  .deadline {
+    padding: var(--space-3) var(--space-5);
+  }
+}

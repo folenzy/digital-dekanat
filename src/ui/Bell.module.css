@@ -1,0 +1,86 @@
+.bell,
+.row {
+  color: var(--fg);
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+
+.bell {
+  display: inline-grid;
+  place-items: center;
+  width: var(--tap);
+  height: var(--tap);
+  margin-right: -10px;
+  border-radius: var(--radius-pill);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--tap);
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-md);
+  color: var(--fg-muted);
+  font-weight: 500;
+}
+
+.row:hover {
+  color: var(--fg);
+}
+
+.rowIcon {
+  flex: none;
+  width: 20px;
+  height: 20px;
+}
+
+.bell:hover,
+.row:hover {
+  background: color-mix(in srgb, var(--fg) 6%, transparent);
+}
+
+.glyph {
+  position: relative;
+  display: inline-flex;
+}
+
+.glyph svg {
+  width: 22px;
+  height: 22px;
+}
+
+.badge {
+  min-width: 19px;
+  height: 19px;
+  padding: 0 5px;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: var(--paper);
+  box-shadow: 0 0 0 2px var(--surface);
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 19px;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.glyph .badge {
+  position: absolute;
+  top: -7px;
+  left: 12px;
+}
+
+/* Число — из data-count через ::before: оно рисуется, но не входит в видимый текст ссылки,
+   иначе «Уведомления 6» не совпало бы с подписью «Уведомления: 6 непрочитанных» (WCAG 2.5.3) */
+.row .badge::before {
+  content: attr(data-count);
+}
+
+.row .badge {
+  margin-left: auto;
+  box-shadow: none;
+}

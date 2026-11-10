@@ -1,0 +1,103 @@
+# Прод-стек «На связи» для VPS (1 vCPU, 1 ГБ RAM). Пошагово для новичка — docs/DEPLOY.md.
+# Значения берутся из deploy/.env (образец — deploy/.env.example; сам .env не коммитить).
+# Наружу открыт только Caddy (80/443). Приложение, база и cron видны лишь во внутренней сети Docker.
+#
+# Локально (из корня репозитория):  docker compose -f deploy/docker-compose.yml up -d --build
+# На сервере (из папки с этим файлом): docker compose up -d   — образ nasvyazi-app загружен через docker load.
+
+name: nasvyazi
+
+# Логи Docker по умолчанию растут без предела — на маленьком диске VPS ограничиваем.
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  app:
+    image: nasvyazi-app:latest
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    platform: linux/amd64
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?задай DATABASE_URL в deploy/.env}
+      DEMO_PASSWORD_ALINA: ${DEMO_PASSWORD_ALINA:?задай DEMO_PASSWORD_ALINA в deploy/.env}
+      DEMO_PASSWORD_DENIS: ${DEMO_PASSWORD_DENIS:?задай DEMO_PASSWORD_DENIS в deploy/.env}
+      DEMO_PASSWORD_IRINA: ${DEMO_PASSWORD_IRINA:?задай DEMO_PASSWORD_IRINA в deploy/.env}
+      DEMO_RESET_TOKEN: ${DEMO_RESET_TOKEN:?задай DEMO_RESET_TOKEN в deploy/.env}
+      COOKIE_SECURE: ${COOKIE_SECURE:-true}
+    # только для соседей по сети Docker (Caddy, cron); на хосте порт не публикуется
+    expose:
+      - "3000"
+    depends_on:
+      db:
+        condition: service_healthy
+    logging: *logging
+
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    # урезанная память под 1 ГБ RAM
+    command: ["postgres", "-c", "shared_buffers=64MB", "-c", "max_connections=30"]
+    environment:
+      POSTGRES_USER: nasvyazi
+      POSTGRES_DB: nasvyazi
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?задай POSTGRES_PASSWORD в deploy/.env}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nasvyazi -d nasvyazi"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    logging: *logging
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp" # HTTP/3
+    environment:
+      SITE_HOST: ${SITE_HOST:?задай SITE_HOST в deploy/.env}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data # сертификаты: не удалять, иначе Let's Encrypt выдаст новые (есть лимиты)
+      - caddy-config:/config
+    depends_on:
+      - app
+    logging: *logging
+
+  # Ночной сброс демо (04:00 МСК) и бэкап базы (03:30 МСК): busybox crond из образа postgres,
+  # там же pg_dump той же версии, что и сервер.
+  cron:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    command: ["sh", "-c", "install -m 600 /deploy/crontab /etc/crontabs/root && exec crond -f -l 8"]
+    environment:
+      TZ: Europe/Moscow
+      DEMO_RESET_TOKEN: ${DEMO_RESET_TOKEN:?задай DEMO_RESET_TOKEN в deploy/.env}
+      PGHOST: db
+      PGUSER: nasvyazi
+      PGDATABASE: nasvyazi
+      PGPASSWORD: ${POSTGRES_PASSWORD:?задай POSTGRES_PASSWORD в deploy/.env}
+    volumes:
+      - ./crontab:/deploy/crontab:ro
+      - ./demo-reset.sh:/deploy/demo-reset.sh:ro
+      - ./backup.sh:/deploy/backup.sh:ro
+      - ${BACKUP_DIR:-./backups}:/backups
+    depends_on:
+      db:
+        condition: service_healthy
+      app:
+        condition: service_started
+    logging: *logging
+
+volumes:
+  db-data:
+  caddy-data:
+  caddy-config:

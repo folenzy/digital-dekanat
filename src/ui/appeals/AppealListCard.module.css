@@ -1,0 +1,32 @@
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+
+.promise {
+  font-size: var(--text-sm);
+  color: var(--fg-muted);
+}
+
+.promise[data-tone="danger"] {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.promise[data-tone="warn"] {
+  color: var(--warn);
+  font-weight: 600;
+}
+
+.promise[data-tone="ok"] {
+  color: var(--ok);
+  font-weight: 600;
+}
+
+.dept {
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--fg-muted);
+}

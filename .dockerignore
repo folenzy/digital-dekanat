@@ -1,0 +1,28 @@
+# Контекст сборки образа (deploy/Dockerfile). Ничего секретного: `next build` копирует .env
+# в .next/standalone, поэтому файлы окружения в контекст не попадают вовсе.
+.env*
+**/.env*
+
+# Ставится и собирается заново внутри образа
+node_modules
+.next
+*.tsbuildinfo
+next-env.d.ts
+
+# Тесты, отчёты, документы и рабочие файлы — в образе не нужны
+.git
+.superpowers
+docs
+prompts
+e2e
+tests
+coverage
+test-results
+playwright-report
+blob-report
+playwright.config.ts
+vitest.config.mts
+scripts
+deploy
+backups
+*.md
