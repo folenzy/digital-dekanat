@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { collectConsoleErrors, resetDemoWorld, shoot, signIn, waitForEventStream } from "./demo";
+import { collectConsoleErrors, resetDemoWorld, screenshotsEnabled, shoot, signIn, waitForEventStream } from "./demo";
 
 // Главная история продукта целиком, в двух браузерах одновременно — она же сценарий демо-видео:
 // Алина подаёт обращение → Ирина видит его в «Новых», берёт и отвечает → у Алины без перезагрузки
@@ -77,7 +77,7 @@ test("Алина → Ирина → Алина: обращение, взять, 
   await expect(alina.locator('[data-author="staff"]').last()).toContainText(answer, { timeout: REALTIME_MS });
   // снимок окна, а не всей страницы: тост закреплён на экране и в длинном снимке оказался бы посреди карточки
   await alina.evaluate(() => window.scrollTo(0, 0));
-  await alina.screenshot({ path: `docs/screenshots/05-realtime-toast-${width}.png` });
+  if (screenshotsEnabled()) await alina.screenshot({ path: `docs/screenshots/05-realtime-toast-${width}.png` });
 
   // 4. Ирина отмечает справку готовой
   const decision = irina.getByRole("region", { name: "Решение" });

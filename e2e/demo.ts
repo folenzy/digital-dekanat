@@ -66,12 +66,18 @@ export async function hasNoHorizontalScroll(page: Page): Promise<boolean> {
   return page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth);
 }
 
+/** Скриншоты пишутся только по запросу: SCREENSHOTS=1 npx playwright test (иначе каждый прогон перезаписывал бы ~100 PNG). */
+export function screenshotsEnabled(): boolean {
+  return process.env.SCREENSHOTS === "1";
+}
+
 /**
  * Скриншот всей страницы → docs/screenshots/<серия>-<экран>-<ширина>.png (серия: 02 — экраны студента,
  * 03 — деканат, 04 — кабинет сотрудника). Фиксированную нижнюю панель на время снимка делаем статичной,
- * иначе Chromium нарисует её посреди длинного снимка.
+ * иначе Chromium нарисует её посреди длинного снимка. Без SCREENSHOTS=1 ничего не делает.
  */
 export async function shoot(page: Page, name: string, width: number, series = "02"): Promise<void> {
+  if (!screenshotsEnabled()) return;
   await page.evaluate(() => document.fonts.ready);
   await page.screenshot({
     path: `docs/screenshots/${series}-${name}-${width}.png`,

@@ -23,7 +23,7 @@ TypeScript, Next.js (App Router), PostgreSQL (Drizzle ORM), Docker Compose, Cadd
 
 ## Команды
 - `npm run db:up` — поднять Postgres (dev :5432 `nasvyazi`, test :5433 `nasvyazi_test`, tmpfs) через `docker-compose.dev.yml`.
-- `npm run dev | build | start | lint` — Next.js. `npm test` — Vitest (нужна поднятая test-БД, `DATABASE_URL_TEST` из `.env`). `npm run test:e2e` — Playwright (папка `e2e/`, сам собирает и стартует на :3100).
+- `npm run dev | build | start | lint` — Next.js. `npm test` — Vitest (нужна поднятая test-БД, `DATABASE_URL_TEST` из `.env`). `npm run test:e2e` — Playwright (папка `e2e/`, сам собирает и стартует на :3100). Скриншоты в `docs/screenshots/` пишутся только с `SCREENSHOTS=1` (bash: `SCREENSHOTS=1 npm run test:e2e`, PowerShell: `$env:SCREENSHOTS=1; npm run test:e2e`).
 - `npm run db:generate | db:migrate | demo:reset` — Drizzle/демо; ссылаются на `drizzle.config.ts`, `scripts/migrate.ts`, `scripts/demo-reset.ts` (появятся в следующих задачах).
 - `cp .env.example .env` — локальные переменные (не коммитить).
 
