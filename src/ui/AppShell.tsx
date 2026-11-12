@@ -7,6 +7,7 @@ import { LiveEvents } from "./live/LiveEvents";
 import { Logo } from "./Logo";
 import { bellHref, navItems, type ShellRole } from "./nav";
 import { SideNav } from "./SideNav";
+import { SwipeNav } from "./SwipeNav";
 import styles from "./AppShell.module.css";
 
 // Оболочка кабинета. Рендерится на сервере из layout: роль, имя и число непрочитанных берутся из сессии там же.
@@ -25,7 +26,8 @@ type AppShellProps = {
 };
 
 export function AppShell({ role, userName, unread, children, live = true }: AppShellProps) {
-  const home = navItems(role)[0].href;
+  const items = navItems(role);
+  const home = items[0].href;
   return (
     <div className={styles.shell}>
       <a href="#main" className={styles.skip}>
@@ -42,7 +44,10 @@ export function AppShell({ role, userName, unread, children, live = true }: AppS
             <Bell key={unread} initial={unread} href={bellHref(role)} />
           </header>
           <main id="main" className={styles.main} tabIndex={-1}>
-            <div className={styles.content}>{children}</div>
+            {/* На телефоне между разделами можно листать пальцем; нижняя панель остаётся */}
+            <SwipeNav items={items.map(({ href, label }) => ({ href, label }))} className={styles.content}>
+              {children}
+            </SwipeNav>
           </main>
         </div>
       </div>

@@ -27,7 +27,7 @@ export default defineConfig({
     {
       name: "desktop-1280",
       use: { ...devices["Desktop Chrome"], viewport: { width: 1280, height: 800 } },
-      testIgnore: /mobile.spec.ts/, // телефонный файл сам задаёт 360×740
+      testIgnore: /(mobile|swipe).spec.ts/, // телефонные файлы: mobile сам задаёт 360×740, свайп — только тач
     },
   ],
   webServer: {

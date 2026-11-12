@@ -1,7 +1,7 @@
 import { Inbox } from "lucide-react";
 import type { ReactElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { AppShell } from "@/ui/AppShell";
 import { Bell, badgeText, bellLabel, countsAsUnread } from "@/ui/Bell";
 import { Button } from "@/ui/Button";
@@ -14,6 +14,12 @@ import { PageHeader } from "@/ui/PageHeader";
 import { Skeleton, SkeletonCard } from "@/ui/Skeleton";
 import { STATUS_META, StatusBadge } from "@/ui/StatusBadge";
 import { Toast } from "@/ui/Toast";
+
+// Вне приложения роутера Next нет: оболочке (свайп между разделами) хватает заглушки с push.
+vi.mock("next/navigation", async (original) => ({
+  ...(await original<typeof import("next/navigation")>()),
+  useRouter: () => ({ push: () => {}, prefetch: () => {} }),
+}));
 
 // Разметка компонентов на сервере (как их отдаёт Next): доступность и контракт, без браузера.
 const html = (el: ReactElement) => renderToStaticMarkup(el);
