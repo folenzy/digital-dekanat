@@ -26,8 +26,10 @@
   font-weight: 500;
 }
 
-.row:hover {
-  color: var(--fg);
+@media (hover: hover) and (pointer: fine) {
+  .row:hover {
+    color: var(--fg);
+  }
 }
 
 .rowIcon {
@@ -36,9 +38,11 @@
   height: 20px;
 }
 
-.bell:hover,
-.row:hover {
-  background: color-mix(in srgb, var(--fg) 6%, transparent);
+@media (hover: hover) and (pointer: fine) {
+  .bell:hover,
+  .row:hover {
+    background: color-mix(in srgb, var(--fg) 6%, transparent);
+  }
 }
 
 .glyph {
@@ -66,6 +70,15 @@
   font-variant-numeric: tabular-nums;
   text-align: center;
   white-space: nowrap;
+  /* Новое число появляется с лёгким «хлопком»: пришло уведомление */
+  transition: transform 220ms var(--ease-out), opacity var(--dur-fast) var(--ease-out);
+}
+
+@starting-style {
+  .badge {
+    opacity: 0;
+    transform: scale(0.7);
+  }
 }
 
 .glyph .badge {

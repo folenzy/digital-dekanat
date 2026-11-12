@@ -28,7 +28,9 @@
   justify-content: space-between;
   height: var(--header-h);
   padding: 0 var(--gutter);
-  background: var(--bg);
+  background: color-mix(in srgb, var(--bg) 90%, transparent);
+  -webkit-backdrop-filter: saturate(1.6) blur(20px);
+  backdrop-filter: saturate(1.6) blur(20px);
   border-bottom: 1px solid var(--line);
 }
 

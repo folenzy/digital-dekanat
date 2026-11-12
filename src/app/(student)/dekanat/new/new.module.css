@@ -36,8 +36,10 @@
   color: var(--ink);
 }
 
-a.stepLink:hover {
-  text-decoration: underline;
+@media (hover: hover) and (pointer: fine) {
+  a.stepLink:hover {
+    text-decoration: underline;
+  }
 }
 
 .step[data-state="current"] .stepLink {
@@ -110,11 +112,17 @@ a.stepLink:hover {
   background: var(--surface);
   color: var(--fg);
   text-decoration: none;
-  transition: border-color var(--dur-fast) var(--ease-out);
+  transition: border-color var(--dur-fast) var(--ease-out), transform var(--dur-press) var(--ease-out);
 }
 
-.choice:hover {
-  border-color: var(--line-strong);
+.choice:active {
+  transform: scale(0.985);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .choice:hover {
+    border-color: var(--line-strong);
+  }
 }
 
 .choice:focus-visible {
@@ -184,9 +192,11 @@ a.stepLink:hover {
   transition: transform var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
 }
 
-.choice:hover .chevron {
-  color: var(--accent);
-  transform: translateX(2px);
+@media (hover: hover) and (pointer: fine) {
+  .choice:hover .chevron {
+    color: var(--accent);
+    transform: translateX(2px);
+  }
 }
 
 /* Форма шага 3 */

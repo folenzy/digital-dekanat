@@ -19,7 +19,7 @@
   transition:
     background-color var(--dur-fast) var(--ease-out),
     border-color var(--dur-fast) var(--ease-out),
-    transform var(--dur-fast) var(--ease-out);
+    transform var(--dur-press) var(--ease-out);
 }
 
 .btn:focus-visible {
@@ -27,8 +27,9 @@
   outline-offset: 2px;
 }
 
+/* Нажатие: кнопка чуть сжимается — интерфейс «услышал» палец */
 .btn:active:not(:disabled) {
-  transform: translateY(1px);
+  transform: scale(var(--press-scale));
 }
 
 .btn:disabled {
@@ -48,8 +49,10 @@
   color: var(--btn-fg);
 }
 
-.primary:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--btn-bg) 88%, var(--ink));
+@media (hover: hover) and (pointer: fine) {
+  .primary:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--btn-bg) 88%, var(--ink));
+  }
 }
 
 .secondary {
@@ -58,8 +61,10 @@
   border-color: var(--btn-border);
 }
 
-.secondary:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--fg) 6%, transparent);
+@media (hover: hover) and (pointer: fine) {
+  .secondary:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--fg) 6%, transparent);
+  }
 }
 
 .ghost {
@@ -68,8 +73,10 @@
   padding-inline: var(--space-3);
 }
 
-.ghost:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--fg) 7%, transparent);
+@media (hover: hover) and (pointer: fine) {
+  .ghost:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--fg) 7%, transparent);
+  }
 }
 
 .full {
@@ -86,8 +93,9 @@
   height: 18px;
 }
 
+/* Быстрый спиннер: то же время ожидания ощущается короче */
 .spinner {
-  animation: spin 0.9s linear infinite;
+  animation: spin 0.6s linear infinite;
 }
 
 @keyframes spin {

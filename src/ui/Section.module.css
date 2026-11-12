@@ -31,8 +31,10 @@
   text-decoration: none;
 }
 
-.action a:hover {
-  text-decoration: underline;
+@media (hover: hover) and (pointer: fine) {
+  .action a:hover {
+    text-decoration: underline;
+  }
 }
 
 @media (min-width: 600px) {

@@ -35,12 +35,14 @@
   text-align: left;
   cursor: pointer;
   overflow-wrap: break-word;
-  transition: border-color var(--dur-fast) var(--ease-out);
+  transition: border-color var(--dur-fast) var(--ease-out), transform var(--dur-press) var(--ease-out);
   -webkit-tap-highlight-color: transparent;
 }
 
-.item:hover {
-  border-color: var(--line-strong);
+@media (hover: hover) and (pointer: fine) {
+  .item:hover {
+    border-color: var(--line-strong);
+  }
 }
 
 .item:focus-visible {
@@ -128,4 +130,8 @@
   .item {
     padding: var(--space-4) var(--space-5);
   }
+}
+
+.item:active {
+  transform: scale(0.985);
 }

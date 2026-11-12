@@ -87,9 +87,11 @@
   text-decoration: none;
 }
 
-.depts a:hover {
-  color: var(--ink);
-  border-color: var(--ink);
+@media (hover: hover) and (pointer: fine) {
+  .depts a:hover {
+    color: var(--ink);
+    border-color: var(--ink);
+  }
 }
 
 .depts a[aria-current="page"] {

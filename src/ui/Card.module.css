@@ -7,6 +7,7 @@
   border-radius: var(--radius-lg);
   padding: var(--space-4);
   overflow-wrap: anywhere;
+  box-shadow: var(--shadow-sheet);
 }
 
 @media (min-width: 600px) {
@@ -23,16 +24,23 @@
 
 .accent {
   border-color: var(--accent);
-  box-shadow: inset 0 0 0 0.5px var(--accent);
+  box-shadow: inset 0 0 0 0.5px var(--accent), var(--shadow-sheet);
 }
 
 .link {
   text-decoration: none;
-  transition: border-color var(--dur-fast) var(--ease-out);
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color var(--dur-fast) var(--ease-out), transform var(--dur-press) var(--ease-out);
 }
 
-.link.paper:hover {
-  border-color: var(--line-strong);
+.link:active {
+  transform: scale(0.985);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .link.paper:hover {
+    border-color: var(--line-strong);
+  }
 }
 
 .link:focus-visible {
