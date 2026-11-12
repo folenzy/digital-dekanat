@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { BellRing, CircleCheck, Info, Languages, LogOut, PencilLine, TriangleAlert } from "lucide-react";
+import { BellRing, CircleCheck, Info, Languages, LogOut, PencilLine, SunMoon, TriangleAlert } from "lucide-react";
 import { logoutAction } from "@/app/(auth)/login/actions";
 import { cleanStress, personName } from "@/lib/stress";
+import { themeLabel } from "@/lib/theme";
 import { requireStudent } from "@/server/auth/viewer";
 import { getProfile } from "@/server/profile";
 import { getSettings, profileCompletion, type CompletionItem } from "@/server/settings";
 import { languageLabel, NOTIFY_CATEGORIES } from "@/server/settings-options";
+import { currentTheme } from "@/server/theme";
 import { SettingsList } from "@/ui/profile/SettingsList";
 import { SubmitButton } from "@/ui/SubmitButton";
 import styles from "./profile.module.css";
@@ -28,6 +30,7 @@ const SAVED: Record<string, string> = {
   stress: "Ударения сохранены: сотрудники деканата увидят твоё имя с ними.",
   language: "Язык обучения сохранён.",
   notifications: "Настройки уведомлений сохранены.",
+  theme: "Тема оформления сохранена на этом устройстве.",
 };
 
 const MISSING: Record<CompletionItem, { href: string; label: string }> = {
@@ -38,7 +41,7 @@ const MISSING: Record<CompletionItem, { href: string; label: string }> = {
 
 export default async function ProfilePage({ searchParams }: PageProps<"/profile">) {
   const v = await requireStudent();
-  const [p, s, sp] = await Promise.all([getProfile(v), getSettings(v), searchParams]);
+  const [p, s, sp, theme] = await Promise.all([getProfile(v), getSettings(v), searchParams, currentTheme()]);
   const completion = profileCompletion(s);
   const saved = typeof sp.saved === "string" ? SAVED[sp.saved] : undefined;
   const hasStress = Object.keys(cleanStress(s.name, s.stress)).length > 0;
@@ -78,6 +81,7 @@ export default async function ProfilePage({ searchParams }: PageProps<"/profile"
             href: "/profile/notifications", icon: <BellRing />, label: "Уведомления",
             value: mutedCount === 0 ? "все включены" : `выключено: ${mutedCount} из ${NOTIFY_CATEGORIES.length}`,
           },
+          { href: "/profile/theme", icon: <SunMoon />, label: "Оформление", value: themeLabel(theme).toLowerCase() },
         ]}
       />
 

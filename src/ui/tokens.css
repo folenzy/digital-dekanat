@@ -33,10 +33,19 @@
   --neutral-tint: #ECE5D8;
 
   /* Типы занятий: плашка в карточке пары и точки под днями недели. Цвет — быстрый сигнал,
-     рядом всегда код (ЛК / ПР / ЛБ) и название для скринридера. */
-  --lesson-lecture: #2E5272;   /* лекция — синие чернила */
-  --lesson-practice: #1F6B63;  /* практика — бирюзовый */
+     рядом всегда код (ЛК / ПР / ЛБ) и название для скринридера. Плашка одинакова в обеих темах:
+     цветной фон и белый текст. */
+  --lesson-lecture: #1E6FD9;   /* лекция — голубая */
+  --lesson-practice: #0B7F8C;  /* практика — лазурная */
   --lesson-lab: #85570A;       /* лабораторная — охра */
+  --on-type: #FFFFFF;          /* текст на плашке типа */
+  /* Точки под днями недели: на листке дня и на выбранном (тёмном) листке */
+  --dot-lecture: #1E6FD9;
+  --dot-practice: #0B7F8C;
+  --dot-lab: #85570A;
+  --dot-lecture-inv: #8FBFFF;
+  --dot-practice-inv: #6FD3DC;
+  --dot-lab-inv: #E3B565;
 
   /* Шрифты: self-host @fontsource-variable (кириллица), подключены в src/app/layout.tsx */
   --font-display: "Literata Variable", "PT Serif", Georgia, serif;
@@ -136,4 +145,56 @@
   --btn-bg: var(--accent-2);
   --btn-fg: var(--ink);
   --btn-border: rgba(255, 253, 248, 0.4);
+}
+
+/*
+ * Тёмная тема «Ночная смена»: сине-серые поверхности, голубой акцент.
+ * Имена токенов те же, значения — зеркальные по роли: --ink здесь светлый (текст и «важные» плашки),
+ * --paper и --bg — тёмные. Поэтому компоненты не знают о теме, а tests/ui/contrast.test.ts
+ * проверяет те же пары «текст/фон» на этой палитре.
+ * Включается атрибутом data-theme="dark" на <html> (src/app/layout.tsx читает его из cookie).
+ */
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: #0E1218;        /* фон страницы */
+  --paper: #171C25;     /* карточки, панели навигации */
+  --line: #262E3B;      /* тонкие границы */
+  --ink: #E6EBF2;       /* основной текст; «важные» плашки — светлые на тёмном */
+  --muted: #98A4B5;     /* вторичный текст в карточке */
+  --accent: #7DB1FF;    /* голубой: ссылки в карточке, основная кнопка */
+  --accent-2: #1F5FBF;  /* синий: акцент на светлой плашке */
+
+  --muted-strong: #A6B1C2;
+  --accent-strong: #93BEFF;
+  --ink-muted: #4E596B;      /* вторичный текст на светлой плашке */
+  --line-strong: #647087;
+  --focus: #8AB8FF;
+
+  --ok: #7FD6A0;
+  --ok-tint: #15301F;
+  --warn: #F0C36A;
+  --warn-tint: #33280F;
+  --danger: #FF9A8E;
+  --danger-tint: #3A1A17;
+  --info: #8FC1FF;
+  --info-tint: #142A45;
+  --accent-tint: #172B4A;
+  --neutral-tint: #212836;
+
+  /* Плашки типов те же; точки светлее, чтобы читались на тёмном листке дня, и темнее — на выбранном (светлом) */
+  --dot-lecture: #6AA8FF;
+  --dot-practice: #4FCBD6;
+  --dot-lab: #E3B565;
+  --dot-lecture-inv: #1E6FD9;
+  --dot-practice-inv: #0B7F8C;
+  --dot-lab-inv: #85570A;
+
+  --shadow-sheet: 0 1px 0 rgba(0, 0, 0, 0.25);
+  --shadow-float: 0 18px 40px -16px rgba(0, 0, 0, 0.7), 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+/* «Важная» плашка в тёмной теме светлая — рамка второстепенной кнопки на ней тёмная, а не светлая */
+[data-theme="dark"] [data-surface="ink"] {
+  --btn-border: rgba(14, 18, 24, 0.4);
 }

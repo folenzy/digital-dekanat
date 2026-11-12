@@ -13,7 +13,10 @@ function readTokens(src: string): Record<string, string> {
   return out;
 }
 
-const t = readTokens(css);
+// Светлая тема — блок :root; тёмная — блок [data-theme="dark"] поверх светлой (в нём только отличия).
+const darkAt = css.indexOf('[data-theme="dark"] {');
+const t = readTokens(css.slice(0, darkAt));
+const dark = { ...t, ...readTokens(css.slice(darkAt)) };
 
 function channel(v: number): number {
   const s = v / 255;
@@ -61,13 +64,16 @@ const PAIRS: Pair[] = [
   ["danger", "paper", TEXT, "«Просрочено» в карточке"],
   ["danger", "bg", TEXT, "ошибка на фоне страницы"],
   ["info", "paper", TEXT, "статусный текст без подложки"],
-  ["paper", "lesson-lecture", TEXT, "плашка «ЛК» в карточке пары"],
-  ["paper", "lesson-practice", TEXT, "плашка «ПР» в карточке пары"],
-  ["paper", "lesson-lab", TEXT, "плашка «ЛБ» в карточке пары"],
-  ["paper", "muted-strong", TEXT, "плашка типа у прошедшей и отменённой пары"],
-  ["lesson-lecture", "paper", NON_TEXT, "точка лекции под днём недели"],
-  ["lesson-practice", "paper", NON_TEXT, "точка практики под днём недели"],
-  ["lesson-lab", "paper", NON_TEXT, "точка лабораторной под днём недели"],
+  ["on-type", "lesson-lecture", TEXT, "плашка «ЛК» в карточке пары"],
+  ["on-type", "lesson-practice", TEXT, "плашка «ПР» в карточке пары"],
+  ["on-type", "lesson-lab", TEXT, "плашка «ЛБ» в карточке пары"],
+  ["dot-lecture", "paper", NON_TEXT, "точка лекции под днём недели"],
+  ["dot-practice", "paper", NON_TEXT, "точка практики под днём недели"],
+  ["dot-lab", "paper", NON_TEXT, "точка лабораторной под днём недели"],
+  ["dot-lecture-inv", "ink", NON_TEXT, "точка лекции на выбранном дне"],
+  ["dot-practice-inv", "ink", NON_TEXT, "точка практики на выбранном дне"],
+  ["dot-lab-inv", "ink", NON_TEXT, "точка лабораторной на выбранном дне"],
+  ["muted-strong", "paper", TEXT, "номер пары и подсказки на подкрашенной подложке"],
   ["focus", "bg", NON_TEXT, "кольцо фокуса на фоне страницы"],
   ["focus", "paper", NON_TEXT, "кольцо фокуса в карточке"],
   ["accent-2", "ink", NON_TEXT, "кольцо фокуса в тёмной карточке"],
@@ -87,6 +93,19 @@ describe("палитра «Бумага»", () => {
     expect(t[fg], `нет токена --${fg}`).toBeDefined();
     expect(t[bg], `нет токена --${bg}`).toBeDefined();
     expect(contrast(t[fg], t[bg])).toBeGreaterThanOrEqual(min);
+  });
+
+  it.each(PAIRS)("тёмная тема: %s на %s ≥ %d:1 (%s)", (fg, bg, min) => {
+    expect(dark[fg], `нет токена --${fg}`).toBeDefined();
+    expect(dark[bg], `нет токена --${bg}`).toBeDefined();
+    expect(contrast(dark[fg], dark[bg])).toBeGreaterThanOrEqual(min);
+  });
+
+  it("тёмная тема задаёт свои значения всем цветам палитры, а не наследует светлые", () => {
+    const palette = ["bg", "paper", "line", "ink", "muted", "accent", "accent-2", "muted-strong", "accent-strong",
+      "ink-muted", "line-strong", "focus", "ok", "ok-tint", "warn", "warn-tint", "danger", "danger-tint",
+      "info", "info-tint", "accent-tint", "neutral-tint"];
+    for (const name of palette) expect(dark[name], `--${name} не переопределён в тёмной теме`).not.toBe(t[name]);
   });
 
   it("сверка формулы: чёрный на белом 21:1, белый на белом 1:1", () => {

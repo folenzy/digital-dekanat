@@ -6,6 +6,8 @@ import "@fontsource-variable/literata/opsz.css";
 import "@fontsource-variable/golos-text/wght.css";
 import "@/ui/tokens.css";
 import "./globals.css";
+import { THEME_COLOR } from "@/lib/theme";
+import { currentTheme } from "@/server/theme";
 
 export const metadata: Metadata = {
   title: { default: "На связи — цифровой деканат", template: "%s — На связи" },
@@ -15,19 +17,24 @@ export const metadata: Metadata = {
   applicationName: "На связи",
 };
 
-export const viewport: Viewport = {
-  width: "device-width",
-  initialScale: 1,
-  viewportFit: "cover",
-  themeColor: "#F4EFE6",
-};
+// Цвет системной панели браузера — под выбранную тему (cookie), поэтому не константа, а функция.
+export async function generateViewport(): Promise<Viewport> {
+  return {
+    width: "device-width",
+    initialScale: 1,
+    viewportFit: "cover",
+    themeColor: THEME_COLOR[await currentTheme()],
+  };
+}
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   // CSP с nonce (src/proxy.ts) требует рендера на каждый запрос: в статической странице скрипты остались бы
   // без nonce, и браузер их заблокировал бы. connection() гарантирует это для любой будущей страницы.
   await connection();
+  // Тема приходит с сервером в первом же байте разметки: без встроенного скрипта (CSP) и без вспышки светлого.
+  const theme = await currentTheme();
   return (
-    <html lang="ru">
+    <html lang="ru" data-theme={theme}>
       <body>{children}</body>
     </html>
   );
