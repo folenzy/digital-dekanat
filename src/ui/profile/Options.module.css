@@ -1,0 +1,115 @@
+/* Списки выбора на страницах настроек: язык (radio) и уведомления (checkbox). */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.group {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-sheet);
+  overflow: hidden;
+}
+
+.list li + li {
+  border-top: 1px solid var(--line);
+}
+
+.option {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  min-height: 56px;
+  padding: var(--space-4);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+
+.option:active {
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+.option[data-locked] {
+  cursor: default;
+}
+
+.option[data-locked]:active {
+  background: none;
+}
+
+.option:has(input:checked) {
+  background: color-mix(in srgb, var(--accent) 6%, transparent);
+}
+
+.option input {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  margin: 1px 0 0;
+  accent-color: var(--accent);
+}
+
+.lock {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  margin-top: 1px;
+  color: var(--fg-muted);
+}
+
+.optionLabel {
+  display: block;
+  font-weight: 600;
+}
+
+.optionHint {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted-strong); /* отмеченная строка подкрашена: обычный вторичный цвет на ней не дотягивает до 4,5:1 */
+  font-size: var(--text-sm);
+}
+
+.error {
+  margin: 0;
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.cancel {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap);
+  padding: 0 var(--space-4);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-pill);
+  color: var(--ink);
+  font-weight: 600;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform var(--dur-press) var(--ease-out);
+}
+
+.cancel:active {
+  transform: scale(var(--press-scale));
+}

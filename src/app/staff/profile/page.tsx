@@ -1,26 +1,47 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Info, LogOut } from "lucide-react";
+import { CircleCheck, Info, LogOut, PencilLine } from "lucide-react";
 import { logoutAction } from "@/app/(auth)/login/actions";
 import { requireStaff } from "@/server/auth/viewer";
+import { cleanStress, personName } from "@/lib/stress";
 import { getStaffProfile } from "@/server/profile";
+import { getSettings } from "@/server/settings";
 import { PageHeader } from "@/ui/PageHeader";
+import { SettingsList } from "@/ui/profile/SettingsList";
 import { SubmitButton } from "@/ui/SubmitButton";
 import styles from "./profile.module.css";
 
 export const metadata: Metadata = { title: "Профиль" };
 
-export default async function StaffProfilePage() {
+export default async function StaffProfilePage({ searchParams }: PageProps<"/staff/profile">) {
   const v = await requireStaff();
-  const p = await getStaffProfile(v);
+  const [p, s, sp] = await Promise.all([getStaffProfile(v), getSettings(v), searchParams]);
   if (!p) notFound();
+  const hasStress = Object.keys(cleanStress(s.name, s.stress)).length > 0;
 
   return (
     <>
       <div className={styles.identity}>
         <span className={styles.avatar} aria-hidden="true">{p.initials}</span>
-        <PageHeader title={p.fullName} subtitle={p.position} />
+        <PageHeader title={personName(s.name, { order: "official", stress: s.stress, show: true })} subtitle={p.position} />
+      </div>
+
+      {sp.saved === "stress" && (
+        <p className={styles.saved} role="status">
+          <CircleCheck aria-hidden="true" />
+          Ударения сохранены: студенты увидят твоё имя с ними.
+        </p>
+      )}
+
+      <div className={styles.settings}>
+        <SettingsList
+          label="Настройки профиля"
+          rows={[{
+            href: "/staff/profile/stress", icon: <PencilLine />, label: "Ударения в имени",
+            value: hasStress ? "расставлены" : "не указаны",
+          }]}
+        />
       </div>
 
       <section className={styles.sheet} data-surface="paper" aria-labelledby="deps-title">

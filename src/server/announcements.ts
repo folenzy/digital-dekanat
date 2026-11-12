@@ -8,7 +8,8 @@ import { consumeAction, LIMITS } from "./limits";
 import { audienceFilter } from "./audience";
 import { db } from "./db/client";
 import { dbId } from "./db/ids";
-import { announcements, faculties, groups, staff, students } from "./db/schema";
+import { announcements, faculties, groups, staff, students, users } from "./db/schema";
+import { cleanMuted } from "./settings-options";
 
 export type AnnouncementView = {
   id: number; title: string; body: string; important: boolean; publishedAt: Date;
@@ -144,8 +145,9 @@ export async function createAnnouncement(
       audienceGroupId: audience.groupId ?? null,
     }).returning({ id: announcements.id });
 
-    const targets = await tx.select({ userId: students.userId }).from(students)
+    const targets = await tx.select({ userId: students.userId, muted: users.notifyMuted }).from(students)
       .innerJoin(groups, eq(groups.id, students.groupId))
+      .innerJoin(users, eq(users.id, students.userId))
       .where(and(
         audience.facultyId === undefined ? undefined : eq(groups.facultyId, audience.facultyId),
         audience.course === undefined ? undefined : eq(groups.course, audience.course),
@@ -158,9 +160,12 @@ export async function createAnnouncement(
         { kind: "announcement", title, body: excerpt(body), href: HREF }, now,
       );
     }
-    return { id: row.id, userIds };
+    // Запись-уведомление получает каждый (выключенная категория скрывает её при чтении, а не теряет).
+    // Всплывающее событие — только тем, кто объявления не выключил.
+    const liveIds = targets.filter((t) => !cleanMuted(t.muted).includes("announcements")).map((t) => t.userId);
+    return { id: row.id, userIds, liveIds };
   });
 
-  await publishSafe(recipients.userIds, { type: "announcement", title, href: HREF });
+  await publishSafe(recipients.liveIds, { type: "announcement", title, href: HREF });
   return ok({ id: recipients.id, recipients: recipients.userIds.length });
 }
