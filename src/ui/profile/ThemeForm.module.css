@@ -55,6 +55,7 @@
   --paper: #FFFDF8;
   --line: #E4DCCD;
   --ink: #1D1B17;
+  --plate: #1D1B17;
   --accent: #B4552D;
 }
 
@@ -69,7 +70,7 @@
 .sampleHero {
   flex: 1.2;
   border-radius: 8px;
-  background: var(--ink);
+  background: var(--plate);
 }
 
 .sampleCard {

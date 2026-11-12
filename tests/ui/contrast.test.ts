@@ -44,15 +44,18 @@ const PAIRS: Pair[] = [
   ["muted", "paper", TEXT, "вторичный текст в карточке, подписи нижней навигации"],
   ["muted-strong", "bg", TEXT, "вторичный текст на фоне страницы (дата, подзаголовок)"],
   ["muted-strong", "paper", TEXT, "вторичный текст в карточке (запасной)"],
-  ["paper", "ink", TEXT, "текст в тёмной карточке «важное», тост"],
+  ["paper", "ink", TEXT, "ссылка «к содержимому», номер пройденного шага"],
   ["bg", "ink", TEXT, "пометка «Концепт для конкурса»"],
-  ["ink-muted", "ink", TEXT, "вторичный текст в тёмной карточке"],
+  ["on-plate", "plate", TEXT, "текст в «важной» плашке, тост, выбранный день"],
+  ["ink-muted", "plate", TEXT, "вторичный текст в «важной» плашке"],
   ["accent", "paper", TEXT, "надзаголовок и ссылка в карточке"],
   ["accent-strong", "bg", TEXT, "ссылка на фоне страницы"],
   ["accent-strong", "paper", TEXT, "ссылка в карточке (запасной)"],
-  ["paper", "accent", TEXT, "основная кнопка, счётчик на колокольчике"],
-  ["accent-2", "ink", TEXT, "надзаголовок и ссылка в тёмной карточке"],
-  ["ink", "accent-2", TEXT, "основная кнопка в тёмной карточке"],
+  ["on-accent", "accent-fill", TEXT, "основная кнопка, счётчик на колокольчике"],
+  ["accent-fill", "paper", NON_TEXT, "заливка без текста в карточке: полоса прогресса, закладка раздела"],
+  ["accent-fill", "bg", NON_TEXT, "заливка без текста на фоне страницы"],
+  ["accent-2", "plate", TEXT, "надзаголовок и ссылка в «важной» плашке"],
+  ["on-accent-2", "accent-2", TEXT, "основная кнопка в «важной» плашке"],
   ["ok", "ok-tint", TEXT, "бейдж «Готово»"],
   ["warn", "warn-tint", TEXT, "бейдж «Нужно уточнение»"],
   ["danger", "danger-tint", TEXT, "бейдж «Отклонено»"],
@@ -70,13 +73,13 @@ const PAIRS: Pair[] = [
   ["dot-lecture", "paper", NON_TEXT, "точка лекции под днём недели"],
   ["dot-practice", "paper", NON_TEXT, "точка практики под днём недели"],
   ["dot-lab", "paper", NON_TEXT, "точка лабораторной под днём недели"],
-  ["dot-lecture-inv", "ink", NON_TEXT, "точка лекции на выбранном дне"],
-  ["dot-practice-inv", "ink", NON_TEXT, "точка практики на выбранном дне"],
-  ["dot-lab-inv", "ink", NON_TEXT, "точка лабораторной на выбранном дне"],
+  ["dot-lecture-inv", "plate", NON_TEXT, "точка лекции на выбранном дне"],
+  ["dot-practice-inv", "plate", NON_TEXT, "точка практики на выбранном дне"],
+  ["dot-lab-inv", "plate", NON_TEXT, "точка лабораторной на выбранном дне"],
   ["muted-strong", "paper", TEXT, "номер пары и подсказки на подкрашенной подложке"],
   ["focus", "bg", NON_TEXT, "кольцо фокуса на фоне страницы"],
   ["focus", "paper", NON_TEXT, "кольцо фокуса в карточке"],
-  ["accent-2", "ink", NON_TEXT, "кольцо фокуса в тёмной карточке"],
+  ["accent-2", "plate", NON_TEXT, "кольцо фокуса в «важной» плашке"],
   ["line-strong", "paper", NON_TEXT, "граница поля ввода в карточке"],
   ["line-strong", "bg", NON_TEXT, "граница поля ввода на фоне страницы"],
 ];
@@ -87,6 +90,14 @@ describe("палитра «Бумага»", () => {
       bg: "#F4EFE6", paper: "#FFFDF8", line: "#E4DCCD", ink: "#1D1B17",
       muted: "#7A7166", accent: "#B4552D", "accent-2": "#E2774A",
     });
+  });
+
+  it("в светлой теме заливки — те же чернила и терракота, что были до появления тёмной", () => {
+    expect(t.plate).toBe(t.ink);
+    expect(t["on-plate"]).toBe(t.paper);
+    expect(t["accent-fill"]).toBe(t.accent);
+    expect(t["on-accent"]).toBe(t.paper);
+    expect(t["on-accent-2"]).toBe(t.ink);
   });
 
   it.each(PAIRS)("%s на %s ≥ %d:1 (%s)", (fg, bg, min) => {
@@ -104,7 +115,7 @@ describe("палитра «Бумага»", () => {
   it("тёмная тема задаёт свои значения всем цветам палитры, а не наследует светлые", () => {
     const palette = ["bg", "paper", "line", "ink", "muted", "accent", "accent-2", "muted-strong", "accent-strong",
       "ink-muted", "line-strong", "focus", "ok", "ok-tint", "warn", "warn-tint", "danger", "danger-tint",
-      "info", "info-tint", "accent-tint", "neutral-tint"];
+      "info", "info-tint", "accent-tint", "neutral-tint", "plate", "on-plate", "accent-fill", "on-accent", "on-accent-2"];
     for (const name of palette) expect(dark[name], `--${name} не переопределён в тёмной теме`).not.toBe(t[name]);
   });
 
@@ -114,7 +125,8 @@ describe("палитра «Бумага»", () => {
   });
 
   it("таблица контраста для отчёта", () => {
-    const rows = PAIRS.map(([fg, bg, min, use]) => `| --${fg} | --${bg} | ${contrast(t[fg], t[bg]).toFixed(2)} | ${min} | ${use} |`);
+    const rows = PAIRS.map(([fg, bg, min, use]) =>
+      `| --${fg} | --${bg} | ${contrast(t[fg], t[bg]).toFixed(2)} | ${contrast(dark[fg], dark[bg]).toFixed(2)} | ${min} | ${use} |`);
     if (process.env.PRINT_CONTRAST) console.log(rows.join("\n"));
     expect(rows).toHaveLength(PAIRS.length);
   });

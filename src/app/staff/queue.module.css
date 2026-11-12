@@ -95,9 +95,9 @@
 }
 
 .depts a[aria-current="page"] {
-  border-color: var(--ink);
-  background: var(--ink);
-  color: var(--paper);
+  border-color: var(--plate);
+  background: var(--plate);
+  color: var(--on-plate);
 }
 
 .depts a:focus-visible {

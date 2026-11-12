@@ -100,9 +100,9 @@
 
 /* Выбранная ударная гласная */
 .vowel input:checked + .tile {
-  border-color: var(--ink);
-  background: var(--ink);
-  color: var(--paper);
+  border-color: var(--plate);
+  background: var(--plate);
+  color: var(--on-plate);
 }
 
 .vowel input:focus-visible + .tile {
