@@ -23,6 +23,24 @@ export function nextLessonPhrase(next: NextLesson, now: Date): string {
   return `${day}, ${pairName(next.pair)} в ${prettyTime(next.start)}`;
 }
 
+const IN_WEEKDAY: Record<string, string> = {
+  понедельник: "В понедельник",
+  вторник: "Во вторник",
+  среда: "В среду",
+  четверг: "В четверг",
+  пятница: "В пятницу",
+  суббота: "В субботу",
+  воскресенье: "В воскресенье",
+};
+
+/** Как назвать день следующих пар: «Завтра», «Послезавтра», дальше — «В понедельник». День считается по Москве. */
+export function nextDayLabel(dateKey: string, now: Date): string {
+  const today = mskDateKey(now);
+  if (dateKey === shiftDateKey(today, 1)) return "Завтра";
+  if (dateKey === shiftDateKey(today, 2)) return "Послезавтра";
+  return IN_WEEKDAY[ruWeekday(dateKey)] ?? ruDateKey(dateKey);
+}
+
 function lessonsSentence(
   lessons: Lesson[], current: Lesson | undefined, next: NextLesson | undefined, now: Date,
 ): string | null {

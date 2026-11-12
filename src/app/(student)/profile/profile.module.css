@@ -90,8 +90,10 @@
   text-decoration: none;
 }
 
-.about:hover {
-  border-color: var(--line-strong);
+@media (hover: hover) and (pointer: fine) {
+  .about:hover {
+    border-color: var(--line-strong);
+  }
 }
 
 .about svg {

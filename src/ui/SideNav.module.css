@@ -48,9 +48,11 @@
   transition: background-color var(--dur-fast) var(--ease-out);
 }
 
-.link:hover {
-  color: var(--fg);
-  background: color-mix(in srgb, var(--fg) 5%, transparent);
+@media (hover: hover) and (pointer: fine) {
+  .link:hover {
+    color: var(--fg);
+    background: color-mix(in srgb, var(--fg) 5%, transparent);
+  }
 }
 
 .icon {

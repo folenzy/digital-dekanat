@@ -112,8 +112,10 @@
   cursor: pointer;
 }
 
-.reveal:hover {
-  color: var(--fg);
+@media (hover: hover) and (pointer: fine) {
+  .reveal:hover {
+    color: var(--fg);
+  }
 }
 
 .reveal svg {

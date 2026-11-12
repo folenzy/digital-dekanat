@@ -1,14 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Sunrise } from "lucide-react";
 import { listMyAppeals } from "@/server/appeals/service";
 import { requireStudent } from "@/server/auth/viewer";
 import { listAnnouncementsFor } from "@/server/announcements";
 import { listUpcomingDeadlines } from "@/server/deadlines";
-import { dayDiff, greeting, mskTime, plural, ruDate, ruDayTitle, ruWhen } from "@/server/format";
+import { dayDiff, greeting, mskTime, plural, ruDate, ruDateKey, ruDayTitle, ruWeekday, ruWhen } from "@/server/format";
 import { getNudges, type Nudge, type NudgeKind } from "@/server/nudges";
 import { getProfile } from "@/server/profile";
-import { getTodayOverview, type Lesson } from "@/server/schedule";
-import { mskDateKey, mskMinutes, shiftDateKey, toMin } from "@/server/time";
+import { getDay, getTodayOverview, type Lesson } from "@/server/schedule";
+import { mskAt, mskDateKey, mskMinutes, toMin } from "@/server/time";
 import { Badge } from "@/ui/Badge";
 import { AppealListCard } from "@/ui/appeals/AppealListCard";
 import { Button } from "@/ui/Button";
@@ -16,7 +17,7 @@ import { Card } from "@/ui/Card";
 import { PageHeader } from "@/ui/PageHeader";
 import { Section } from "@/ui/Section";
 import { LessonCard, type LessonState } from "@/ui/student/LessonCard";
-import { nextLessonPhrase, todaySummary } from "@/ui/student/today";
+import { nextDayLabel, todaySummary } from "@/ui/student/today";
 import styles from "./today.module.css";
 
 export const metadata: Metadata = { title: "Сегодня" };
@@ -74,13 +75,18 @@ export default async function TodayPage() {
   const active = lessons.filter((l) => !l.cancelled);
   const nextToday = next && next.dateKey === today ? next : undefined;
   const minutes = mskMinutes(now);
+  // Сегодняшние пары закончились (или их не было) — следующий учебный день показываем отдельным блоком,
+  // чтобы завтрашнее расписание нельзя было принять за сегодняшнее.
+  const nextDayKey = !current && !nextToday && next ? next.dateKey : null;
+  const nextDayLessons = nextDayKey ? await getDay(v, mskAt(nextDayKey, "12:00")) : [];
+  const finishedToday = active.length > 0 && nextDayKey !== null;
   // сначала то, что ждёт тебя: уточнение, затем готовое, затем то, что в работе
   const urgency = { needs_info: 0, ready: 1, in_progress: 2, submitted: 3, rejected: 4, closed: 5 } as const;
   const myAppeals = [...appeals].sort((a, b) => urgency[a.status] - urgency[b.status]);
   const latest = [...announcements].sort((a, b) => +b.publishedAt - +a.publishedAt)[0];
 
   return (
-    <>
+    <div className={styles.page}>
       <PageHeader
         kicker={ruDayTitle(today)}
         title={`${greeting(now)}, ${profile.firstName}`}
@@ -96,43 +102,39 @@ export default async function TodayPage() {
       )}
 
       <Section title="Пары сегодня" action={<Link href="/schedule">Все пары</Link>}>
-        {active.length === 0 ? (
-          <>
-            <p className={styles.quiet}>
-              {next ? `Сегодня пар нет. Следующая — ${nextLessonPhrase(next, now)}` : "Сегодня пар нет."}
-            </p>
-            {lessons.length > 0 && (
-              <ol className={styles.stack}>
-                {lessons.map((l) => <li key={l.pair}><LessonCard lesson={l} /></li>)}
-              </ol>
-            )}
-            {next && (
-              <div className={styles.stack}>
-                <LessonCard lesson={next} kicker="Следующая пара" />
-              </div>
-            )}
-          </>
-        ) : (
-          <>
-            <ol className={styles.stack}>
-              {lessons.map((l) => (
-                <li key={`${l.pair}-${l.discipline}`}>
-                  <LessonCard lesson={l} state={lessonState(l, current, nextToday, minutes)} />
-                </li>
-              ))}
-            </ol>
-            {/* пары закончились: сводка вверху уже сказала об этом — здесь просто карточка следующей */}
-            {!current && !nextToday && next && (
-              <div className={styles.stack}>
-                <LessonCard
-                  lesson={next}
-                  kicker={`Следующая пара, ${next.dateKey === shiftDateKey(today, 1) ? "завтра" : ruDayTitle(next.dateKey).toLowerCase()}`}
-                />
-              </div>
-            )}
-          </>
+        {active.length === 0 && <p className={styles.quiet}>Сегодня пар нет.</p>}
+        {lessons.length > 0 && (
+          <ol className={styles.stack}>
+            {lessons.map((l) => (
+              <li key={`${l.pair}-${l.discipline}`}>
+                <LessonCard lesson={l} state={lessonState(l, current, nextToday, minutes)} />
+              </li>
+            ))}
+          </ol>
         )}
+        {finishedToday && <p className={styles.done}>На сегодня всё — пары закончились.</p>}
       </Section>
+
+      {/* Следующий учебный день — отдельный блок на другой подложке и с плашкой дня */}
+      {nextDayKey && (
+        <section className={styles.nextDay} aria-labelledby="next-day">
+          <div className={styles.nextDayHead}>
+            <h2 className={styles.nextDayTitle} id="next-day">
+              <span className={styles.dayChip}>
+                <Sunrise aria-hidden="true" className={styles.dayChipIcon} />
+                {nextDayLabel(nextDayKey, now)}
+              </span>
+              <span className={styles.nextDayDate}>{ruWeekday(nextDayKey)}, {ruDateKey(nextDayKey)}</span>
+            </h2>
+            <Link href={`/schedule?date=${nextDayKey}`} className={styles.nextDayLink}>Весь день</Link>
+          </div>
+          <ol className={styles.stack}>
+            {nextDayLessons.map((l) => (
+              <li key={`${l.pair}-${l.discipline}`}><LessonCard lesson={l} compact /></li>
+            ))}
+          </ol>
+        </section>
+      )}
 
       <Section title="Мои обращения" action={appeals.length > 0 ? <Link href="/dekanat">Все обращения</Link> : undefined}>
         {appeals.length === 0 ? (
@@ -190,6 +192,6 @@ export default async function TodayPage() {
           <p className={styles.quiet}>Объявлений пока нет.</p>
         )}
       </Section>
-    </>
+    </div>
   );
 }

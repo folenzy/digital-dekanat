@@ -59,8 +59,10 @@ a {
   text-underline-offset: 0.2em;
 }
 
-a:hover {
-  text-decoration-thickness: 2px;
+@media (hover: hover) and (pointer: fine) {
+  a:hover {
+    text-decoration-thickness: 2px;
+  }
 }
 
 button,
@@ -69,6 +71,18 @@ select,
 textarea {
   font: inherit;
   color: inherit;
+}
+
+/* Без задержки двойного тапа на всём, что нажимается */
+a,
+button,
+summary,
+label,
+input,
+select,
+textarea,
+[role="button"] {
+  touch-action: manipulation;
 }
 
 img,
@@ -85,6 +99,11 @@ video {
 ::selection {
   background: var(--accent-tint);
   color: var(--ink);
+}
+
+/* Пока лист раздела едет под пальцем (SwipeNav), страница не должна получать горизонтальную прокрутку */
+html[data-swiping] {
+  overflow-x: clip;
 }
 
 /* Утилиты */

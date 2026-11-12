@@ -48,7 +48,7 @@ export function Bell({ initial, href, withLabel = false }: BellProps) {
   const badge = badgeText(count);
   // Значок: у иконки — счётчик на её углу; в строке с подписью — счётчик в конце строки.
   const counter = badge && (
-    <span className={styles.badge} aria-hidden="true">
+    <span key={badge} className={styles.badge} aria-hidden="true">
       {badge}
     </span>
   );
@@ -57,7 +57,7 @@ export function Bell({ initial, href, withLabel = false }: BellProps) {
       <Link href={href} className={styles.row} aria-label={bellLabel(count)}>
         <BellIcon aria-hidden="true" className={styles.rowIcon} />
         <span aria-hidden="true">Уведомления</span>
-        {badge && <span className={styles.badge} aria-hidden="true" data-count={badge} />}
+        {badge && <span key={badge} className={styles.badge} aria-hidden="true" data-count={badge} />}
       </Link>
     );
   }

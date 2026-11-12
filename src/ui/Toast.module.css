@@ -33,7 +33,17 @@
   background: var(--surface);
   color: var(--fg);
   box-shadow: var(--shadow-float);
-  animation: toast-in var(--dur-slow) var(--ease-out);
+  /* Вход — переходом через @starting-style: его можно прервать, в отличие от keyframes.
+     Тост поднимается снизу — оттуда же, где живёт (над нижней панелью). */
+  transform-origin: bottom center;
+  transition: opacity var(--dur) var(--ease-out), transform var(--dur-slow) var(--ease-out);
+}
+
+@starting-style {
+  .toast {
+    opacity: 0;
+    transform: translateY(16px) scale(0.96);
+  }
 }
 
 .icon {
@@ -85,9 +95,11 @@
   cursor: pointer;
 }
 
-.close:hover {
-  color: var(--fg);
-  background: color-mix(in srgb, var(--fg) 10%, transparent);
+@media (hover: hover) and (pointer: fine) {
+  .close:hover {
+    color: var(--fg);
+    background: color-mix(in srgb, var(--fg) 10%, transparent);
+  }
 }
 
 .close svg {
@@ -95,15 +107,14 @@
   height: 18px;
 }
 
-@keyframes toast-in {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .toast {
-    animation: none;
+    transition: opacity var(--dur) ease;
+  }
+
+  @starting-style {
+    .toast {
+      transform: none;
+    }
   }
 }

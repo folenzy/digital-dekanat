@@ -23,7 +23,11 @@
   background: var(--surface);
   color: var(--fg);
   overflow-wrap: anywhere;
-  transition: border-color var(--dur-fast) var(--ease-out);
+  transition: border-color var(--dur-fast) var(--ease-out), transform var(--dur-press) var(--ease-out);
+}
+
+.ticket:active {
+  transform: scale(0.985);
 }
 
 .ticket[data-running] {
@@ -36,8 +40,10 @@
       bottom / 100% 51% no-repeat;
 }
 
-.link:hover .ticket {
-  border-color: var(--line-strong);
+@media (hover: hover) and (pointer: fine) {
+  .link:hover .ticket {
+    border-color: var(--line-strong);
+  }
 }
 
 /* Просрочено: красный край талона и корешок */

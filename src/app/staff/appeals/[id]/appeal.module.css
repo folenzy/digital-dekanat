@@ -13,8 +13,10 @@
   text-decoration: none;
 }
 
-.back:hover {
-  text-decoration: underline;
+@media (hover: hover) and (pointer: fine) {
+  .back:hover {
+    text-decoration: underline;
+  }
 }
 
 .back svg {
@@ -283,8 +285,10 @@
   transform: rotate(-135deg);
 }
 
-.summary:hover {
-  background: color-mix(in srgb, var(--fg) 4%, transparent);
+@media (hover: hover) and (pointer: fine) {
+  .summary:hover {
+    background: color-mix(in srgb, var(--fg) 4%, transparent);
+  }
 }
 
 .summary:focus-visible {

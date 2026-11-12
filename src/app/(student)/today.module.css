@@ -1,5 +1,35 @@
 /* «Сегодня»: блоки по важности, одна колонка. */
 
+/* Первое открытие кабинета: блоки проявляются каскадом (30–50 мс между ними).
+   Только при первом входе: при переключении вкладок и после свайпа каскада нет —
+   то, что видят десятки раз в день, не должно заставлять ждать. */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+.page > * {
+  animation: rise 320ms var(--ease-out) backwards;
+}
+
+.page > :nth-child(2) { animation-delay: 45ms; }
+.page > :nth-child(3) { animation-delay: 90ms; }
+.page > :nth-child(4) { animation-delay: 135ms; }
+.page > :nth-child(n + 5) { animation-delay: 180ms; }
+
+:global(html[data-entered]) .page > *,
+:global([data-swipe-enter]) .page > * {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page > * {
+    animation: none;
+  }
+}
+
 .stack {
   display: flex;
   flex-direction: column;
@@ -68,8 +98,10 @@
   text-decoration: none;
 }
 
-a.deadline:hover {
-  background: color-mix(in srgb, var(--accent) 5%, transparent);
+@media (hover: hover) and (pointer: fine) {
+  a.deadline:hover {
+    background: color-mix(in srgb, var(--accent) 5%, transparent);
+  }
 }
 
 a.deadline:focus-visible {
@@ -112,5 +144,99 @@ a.deadline .deadlineTitle {
 @media (min-width: 600px) {
   .deadline {
     padding: var(--space-3) var(--space-5);
+  }
+}
+
+/* «На сегодня всё» — тихая черта под сегодняшними парами */
+.done {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: var(--space-4) 0 0;
+  color: var(--fg-muted);
+  font-size: var(--text-sm);
+}
+
+.done::before,
+.done::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+/* Следующий учебный день: другая подложка, пунктирный контур и плашка дня — это ещё не сегодня */
+.nextDay {
+  margin-top: var(--space-6);
+  padding: var(--space-4);
+  border: 1px dashed var(--line-strong);
+  border-radius: calc(var(--radius-lg) + 4px);
+  background: color-mix(in srgb, var(--neutral-tint) 60%, transparent);
+}
+
+.nextDayHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.nextDayTitle {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: var(--text-md);
+  font-weight: 600;
+  line-height: var(--leading-snug);
+  letter-spacing: 0;
+}
+
+.dayChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px 5px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--ink);
+  color: var(--paper);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.dayChipIcon {
+  width: 16px;
+  height: 16px;
+  color: var(--accent-2);
+}
+
+.nextDayDate {
+  color: var(--ink);
+}
+
+.nextDayLink {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  min-height: var(--tap);
+  color: var(--accent-strong);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .nextDayLink:hover {
+    text-decoration: underline;
+  }
+}
+
+@media (min-width: 600px) {
+  .nextDay {
+    padding: var(--space-5);
   }
 }
