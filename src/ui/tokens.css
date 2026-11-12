@@ -32,6 +32,12 @@
   --accent-tint: #F6E2D6;
   --neutral-tint: #ECE5D8;
 
+  /* Типы занятий: плашка в карточке пары и точки под днями недели. Цвет — быстрый сигнал,
+     рядом всегда код (ЛК / ПР / ЛБ) и название для скринридера. */
+  --lesson-lecture: #2E5272;   /* лекция — синие чернила */
+  --lesson-practice: #1F6B63;  /* практика — бирюзовый */
+  --lesson-lab: #85570A;       /* лабораторная — охра */
+
   /* Шрифты: self-host @fontsource-variable (кириллица), подключены в src/app/layout.tsx */
   --font-display: "Literata Variable", "PT Serif", Georgia, serif;
   --font-ui: "Golos Text Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;

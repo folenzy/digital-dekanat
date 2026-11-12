@@ -1,10 +1,7 @@
-/* Пара: слева время, как в ежедневнике, справа — что, где и кто. */
+/* Пара: сверху тип, номер и время; название; под чертой — аудитория слева и преподаватель справа. */
 
 .lesson {
   position: relative;
-  display: grid;
-  grid-template-columns: 4rem minmax(0, 1fr);
-  column-gap: var(--space-3);
   padding: var(--space-4);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
@@ -16,43 +13,77 @@
 
 @media (min-width: 600px) {
   .lesson {
-    grid-template-columns: 5rem minmax(0, 1fr);
-    column-gap: var(--space-4);
     padding: var(--space-5);
   }
 }
 
-.time {
+/* Верхняя строка: [тип] [номер пары] ............ время */
+.top {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
 }
 
-.start {
-  font-size: var(--text-2xl);
-  font-weight: 600;
+/* Тип занятия: лекция — синяя, практика — бирюзовая, лабораторная — охра */
+.type {
+  display: inline-grid;
+  place-items: center;
+  min-width: 2.5rem;
+  height: 1.625rem;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-pill);
+  color: var(--paper);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.04em;
   line-height: 1;
-  letter-spacing: -0.02em;
+}
+
+.type[data-type="lecture"] {
+  background: var(--lesson-lecture);
+}
+
+.type[data-type="practice"] {
+  background: var(--lesson-practice);
+}
+
+.type[data-type="lab"] {
+  background: var(--lesson-lab);
+}
+
+.pair {
+  display: inline-flex;
+  align-items: center;
+  height: 1.625rem;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--neutral-tint);
+  color: var(--muted-strong); /* на серой подложке обычный вторичный цвет не дотягивает до 4,5:1 */
+  font-size: var(--text-xs);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.time {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin-left: auto;
+  font-size: var(--text-md);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
 }
 
 .oldStart {
-  font-family: var(--font-display);
   font-size: var(--text-sm);
+  font-weight: 400;
   color: var(--fg-muted);
-}
-
-.end {
-  font-size: var(--text-sm);
-  color: var(--fg-muted);
-}
-
-.body {
-  min-width: 0;
 }
 
 .kicker {
-  margin: 0 0 2px;
+  margin: var(--space-3) 0 -4px;
   font-size: var(--text-sm);
   font-weight: 600;
   line-height: var(--leading-snug);
@@ -60,7 +91,7 @@
 }
 
 .title {
-  margin: 0;
+  margin: var(--space-3) 0 0;
   font-family: var(--font-ui);
   font-size: var(--text-lg);
   font-weight: 600;
@@ -68,20 +99,39 @@
   hyphens: auto;
 }
 
-.meta,
-.detail {
-  margin: 2px 0 0;
+/* Под чертой: где и кто */
+.foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 2px var(--space-4);
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--line);
   font-size: var(--text-sm);
   line-height: var(--leading-snug);
-  color: var(--fg-muted);
 }
 
-.meta {
-  margin-top: var(--space-1);
+.room,
+.teacher {
+  margin: 0;
+}
+
+.room {
+  color: var(--fg);
+  font-weight: 500;
+}
+
+.teacher {
+  color: var(--fg-muted);
+  text-align: right;
 }
 
 .was {
   text-decoration-thickness: 1.5px;
+  color: var(--fg-muted);
+  font-weight: 400;
 }
 
 .arrow {
@@ -117,31 +167,39 @@
   content: "";
   position: absolute;
   top: -1px;
-  right: var(--space-5);
+  left: 50%;
   width: 12px;
-  height: 20px;
+  height: 14px;
+  margin-left: -6px;
   background: var(--accent);
   clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 68%, 0 100%);
 }
 
-.lesson[data-state="current"] .title {
-  padding-right: var(--space-6);
+/* Прошедшая пара — тише, но читается (вторичный цвет, без прозрачности); плашка типа бледнеет */
+.lesson[data-state="past"] .time,
+.lesson[data-state="past"] .title,
+.lesson[data-state="past"] .room {
+  color: var(--fg-muted);
 }
 
-/* Прошедшая пара — тише, но читается (вторичный цвет, без прозрачности) */
-.lesson[data-state="past"] .start,
-.lesson[data-state="past"] .title {
-  color: var(--fg-muted);
+.lesson[data-state="past"] .type {
+  background: var(--muted-strong);
 }
 
 /* Отменённая — пунктирная рамка и зачёркнутое название */
 .lesson[data-cancelled] {
   border-style: dashed;
   border-color: var(--line-strong);
+  box-shadow: none;
 }
 
-.lesson[data-cancelled] .start {
+.lesson[data-cancelled] .time,
+.lesson[data-cancelled] .room {
   color: var(--fg-muted);
+}
+
+.lesson[data-cancelled] .type {
+  background: var(--muted-strong);
 }
 
 /* Плотная карточка для недели */
@@ -149,12 +207,14 @@
   padding: var(--space-3) var(--space-4);
 }
 
-.lesson[data-compact] .start {
-  font-size: var(--text-xl);
+.lesson[data-compact] .title {
+  margin-top: var(--space-2);
+  font-size: var(--text-md);
 }
 
-.lesson[data-compact] .title {
-  font-size: var(--text-md);
+.lesson[data-compact] .foot {
+  margin-top: var(--space-2);
+  padding-top: var(--space-2);
 }
 
 .lesson[data-compact] .badges {

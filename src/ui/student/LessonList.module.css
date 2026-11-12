@@ -1,0 +1,45 @@
+/* Список пар дня с перерывами между ними. */
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Перерыв — тихая строка между карточками: слева что, справа сколько */
+.gap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: 2rem;
+  padding: 0 var(--space-4);
+  border: 1px dashed var(--line);
+  border-radius: var(--radius-md);
+  color: var(--fg-muted);
+  font-size: var(--text-sm);
+}
+
+/* Окно (свободная пара и больше) заметнее обычного перерыва: это время, которое можно занять */
+.gap[data-kind="window"] {
+  min-height: 2.5rem;
+  border-style: solid;
+  border-color: var(--line);
+  background: color-mix(in srgb, var(--neutral-tint) 55%, transparent);
+  color: var(--fg);
+  font-weight: 500;
+}
+
+.list[data-compact] .gap {
+  min-height: 1.75rem;
+  font-size: var(--text-xs);
+}
+
+@media (min-width: 600px) {
+  .gap {
+    padding: 0 var(--space-5);
+  }
+}

@@ -16,7 +16,8 @@ import { Button } from "@/ui/Button";
 import { Card } from "@/ui/Card";
 import { PageHeader } from "@/ui/PageHeader";
 import { Section } from "@/ui/Section";
-import { LessonCard, type LessonState } from "@/ui/student/LessonCard";
+import type { LessonState } from "@/ui/student/LessonCard";
+import { LessonList } from "@/ui/student/LessonList";
 import { nextDayLabel, todaySummary } from "@/ui/student/today";
 import styles from "./today.module.css";
 
@@ -104,13 +105,7 @@ export default async function TodayPage() {
       <Section title="Пары сегодня" action={<Link href="/schedule">Все пары</Link>}>
         {active.length === 0 && <p className={styles.quiet}>Сегодня пар нет.</p>}
         {lessons.length > 0 && (
-          <ol className={styles.stack}>
-            {lessons.map((l) => (
-              <li key={`${l.pair}-${l.discipline}`}>
-                <LessonCard lesson={l} state={lessonState(l, current, nextToday, minutes)} />
-              </li>
-            ))}
-          </ol>
+          <LessonList lessons={lessons} states={lessons.map((l) => lessonState(l, current, nextToday, minutes))} />
         )}
         {finishedToday && <p className={styles.done}>На сегодня всё — пары закончились.</p>}
       </Section>
@@ -128,11 +123,7 @@ export default async function TodayPage() {
             </h2>
             <Link href={`/schedule?date=${nextDayKey}`} className={styles.nextDayLink}>Весь день</Link>
           </div>
-          <ol className={styles.stack}>
-            {nextDayLessons.map((l) => (
-              <li key={`${l.pair}-${l.discipline}`}><LessonCard lesson={l} compact /></li>
-            ))}
-          </ol>
+          <LessonList lessons={nextDayLessons} compact />
         </section>
       )}
 

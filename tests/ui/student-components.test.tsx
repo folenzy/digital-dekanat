@@ -18,7 +18,8 @@ describe("LessonCard", () => {
     const out = html(<LessonCard lesson={lesson({})} state="current" />);
     expect(out).toContain('data-state="current"');
     expect(out).toContain("Идёт сейчас");
-    expect(out).toContain("2-⁠я пара, лекция");
+    expect(out).toContain("2-⁠я пара");
+    expect(out).toContain('<span class="sr-only">Лекция</span>');
     expect(out).toContain("корпус А");
     expect(out).toContain("Ковалёва М. А.");
   });

@@ -104,15 +104,60 @@
   margin-top: 3px;
 }
 
+/* Точка — пара; цвет — тип занятия (те же цвета, что у плашек в карточках) */
 .dot {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
+  flex: none;
   border-radius: 50%;
   background: var(--line-strong);
 }
 
-.dot[data-changed] {
+.dot[data-type="lecture"] {
+  background: var(--lesson-lecture);
+}
+
+.dot[data-type="practice"] {
+  background: var(--lesson-practice);
+}
+
+.dot[data-type="lab"] {
+  background: var(--lesson-lab);
+}
+
+/* В этот день есть изменения — терракотовая метка в углу листка */
+.changedMark {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
   background: var(--accent);
+  box-shadow: 0 0 0 2px var(--paper);
+}
+
+.changedMark[data-inline] {
+  position: static;
+  box-shadow: none;
+}
+
+/* Что значат точки */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+  margin: 0 0 var(--space-5);
+  padding: 0;
+  list-style: none;
+  color: var(--fg-muted);
+  font-size: var(--text-xs);
+}
+
+.legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 /* Сегодня — терракотовая черта снизу; выбранный день — тёмный листок */
@@ -137,12 +182,22 @@
   color: var(--ink-muted);
 }
 
-.dayLink[aria-current="page"] .dot {
-  background: var(--ink-muted);
+/* На тёмном листке выбранного дня точки светлее, чтобы не терялись */
+.dayLink[aria-current="page"] .dot[data-type="lecture"] {
+  background: #8FB4D6;
 }
 
-.dayLink[aria-current="page"] .dot[data-changed] {
+.dayLink[aria-current="page"] .dot[data-type="practice"] {
+  background: #7CCFC4;
+}
+
+.dayLink[aria-current="page"] .dot[data-type="lab"] {
+  background: #E3B565;
+}
+
+.dayLink[aria-current="page"] .changedMark {
   background: var(--accent-2);
+  box-shadow: 0 0 0 2px var(--ink);
 }
 
 .dayLink[aria-current="page"][data-today]::after {
@@ -183,14 +238,6 @@
   color: var(--fg-muted);
 }
 
-.lessons {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
 
 .week {
   display: flex;
