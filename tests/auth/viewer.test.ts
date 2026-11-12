@@ -26,6 +26,7 @@ describe("viewerForUser", () => {
       expect(await viewerForUser(r.user_id)).toEqual({
         userId: r.user_id, role: "student", studentId: r.id, groupId: r.group_id,
         facultyId: r.faculty_id, course: r.course,
+        showStress: true, notifyMuted: [], // настройки показа по умолчанию
       });
     }
     const alina = await viewerForUser((await studentRow("alina.mironova")).user_id);
@@ -41,6 +42,7 @@ describe("viewerForUser", () => {
     expect(deps).toHaveLength(3);
     expect(await viewerForUser(irina.user_id)).toEqual({
       userId: irina.user_id, role: "staff", staffId: irina.id, departmentIds: deps.map((d) => d.id),
+      showStress: true, notifyMuted: [],
     });
   });
 

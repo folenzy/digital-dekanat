@@ -127,7 +127,7 @@ export async function listMyAppeals(
 /** Карточка своего обращения; чужое, несуществующее или кривой id → null (страница 404). */
 export async function getMyAppeal(v: StudentViewer, id: string, now: Date = new Date()): Promise<AppealDetail | null> {
   if (!isUuid(id)) return null;
-  return (await loadAppealDetail(studentScope(v), id, now))?.detail ?? null;
+  return (await loadAppealDetail(studentScope(v), id, now, v.showStress))?.detail ?? null;
 }
 
 /**

@@ -36,7 +36,8 @@ export async function listQueue(
     .select({
       ...listColumns,
       stLast: students.lastName, stFirst: students.firstName, stMiddle: students.middleName, group: groups.name,
-      asLast: staff.lastName, asFirst: staff.firstName, asMiddle: staff.middleName,
+      stStress: students.nameStress,
+      asLast: staff.lastName, asFirst: staff.firstName, asMiddle: staff.middleName, asStress: staff.nameStress,
     })
     .from(appeals)
     .innerJoin(appealTypes, eq(appealTypes.code, appeals.typeCode))
@@ -52,9 +53,13 @@ export async function listQueue(
   return rows.map((r) => ({
     ...toListItem(r, now),
     assignee: r.asLast !== null && r.asFirst !== null
-      ? staffDisplayName({ lastName: r.asLast, firstName: r.asFirst, middleName: r.asMiddle }) : null,
+      ? staffDisplayName({ lastName: r.asLast, firstName: r.asFirst, middleName: r.asMiddle, stress: r.asStress }, v.showStress)
+      : null,
     student: {
-      fullName: studentFullName({ lastName: r.stLast, firstName: r.stFirst, middleName: r.stMiddle }), group: r.group,
+      fullName: studentFullName(
+        { lastName: r.stLast, firstName: r.stFirst, middleName: r.stMiddle, stress: r.stStress }, v.showStress,
+      ),
+      group: r.group,
     },
   }));
 }
@@ -72,12 +77,12 @@ export async function getQueueAppeal(
   v: StaffViewer, id: string, now: Date = new Date(),
 ): Promise<QueueAppealDetail | null> {
   if (!isUuid(id)) return null;
-  const found = await loadAppealDetail(staffScope(v), id, now);
+  const found = await loadAppealDetail(staffScope(v), id, now, v.showStress);
   if (!found) return null;
   const [st] = await db
     .select({
       lastName: students.lastName, firstName: students.firstName, middleName: students.middleName,
-      faculty: faculties.name, group: groups.name, course: groups.course,
+      stress: students.nameStress, faculty: faculties.name, group: groups.name, course: groups.course,
     })
     .from(students)
     .innerJoin(groups, eq(groups.id, students.groupId))
@@ -85,7 +90,7 @@ export async function getQueueAppeal(
     .where(eq(students.id, found.studentId));
   return {
     ...found.detail,
-    student: { fullName: studentFullName(st), faculty: st.faculty, group: st.group, course: st.course },
+    student: { fullName: studentFullName(st, v.showStress), faculty: st.faculty, group: st.group, course: st.course },
   };
 }
 

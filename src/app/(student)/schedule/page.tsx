@@ -10,7 +10,10 @@ import { Button } from "@/ui/Button";
 import { EmptyState } from "@/ui/EmptyState";
 import { PageHeader } from "@/ui/PageHeader";
 import { Tabs } from "@/ui/Tabs";
-import { LessonCard, type LessonState } from "@/ui/student/LessonCard";
+import type { LessonState } from "@/ui/student/LessonCard";
+import { LessonList } from "@/ui/student/LessonList";
+import { LESSON_TYPE_LABEL } from "@/ui/student/labels";
+import { typeDots } from "@/ui/student/schedule-view";
 import { mondayOf, parseScheduleParams, scheduleHref, weekLabel } from "@/ui/student/schedule-params";
 import styles from "./schedule.module.css";
 
@@ -35,20 +38,7 @@ function statesFor(lessons: Lesson[], isToday: boolean, minutes: number): (Lesso
   });
 }
 
-function LessonList({ lessons, isToday, minutes, compact = false }: {
-  lessons: Lesson[]; isToday: boolean; minutes: number; compact?: boolean;
-}) {
-  const states = statesFor(lessons, isToday, minutes);
-  return (
-    <ol className={styles.lessons}>
-      {lessons.map((l, i) => (
-        <li key={`${l.pair}-${l.discipline}`}>
-          <LessonCard lesson={l} state={states[i]} compact={compact} />
-        </li>
-      ))}
-    </ol>
-  );
-}
+const TYPES = ["lecture", "practice", "lab"] as const;
 
 export default async function SchedulePage({ searchParams }: PageProps<"/schedule">) {
   const v = await requireStudent();
@@ -105,6 +95,7 @@ export default async function SchedulePage({ searchParams }: PageProps<"/schedul
           <ul className={styles.stripList}>
             {week.days.map((d) => {
               const count = d.lessons.filter((l) => !l.cancelled).length;
+              const dots = typeDots(d.lessons);
               const changed = d.lessons.some((l) => l.change || l.cancelled);
               return (
                 <li key={d.dateKey}>
@@ -118,10 +109,9 @@ export default async function SchedulePage({ searchParams }: PageProps<"/schedul
                     <span className={styles.dayShort}>{ruWeekdayShort(d.dateKey)}</span>
                     <span className={`${styles.dayNum} num`}>{Number(d.dateKey.slice(8, 10))}</span>
                     <span className={styles.dots} aria-hidden="true">
-                      {Array.from({ length: Math.min(count, 4) }, (_, i) => (
-                        <span key={i} className={styles.dot} data-changed={changed || undefined} />
-                      ))}
+                      {dots.map((type, i) => <span key={i} className={styles.dot} data-type={type} />)}
                     </span>
+                    {changed && <span className={styles.changedMark} aria-hidden="true" />}
                     <span className="sr-only">
                       , {ruDateKey(d.dateKey)}
                       {d.dateKey === today ? ", сегодня" : ""}
@@ -134,6 +124,21 @@ export default async function SchedulePage({ searchParams }: PageProps<"/schedul
             })}
           </ul>
         </nav>
+      )}
+
+      {view === "day" && (
+        <ul className={styles.legend} aria-label="Обозначения типов занятий">
+          {TYPES.map((t) => (
+            <li key={t}>
+              <span className={styles.dot} data-type={t} aria-hidden="true" />
+              {LESSON_TYPE_LABEL[t]}
+            </li>
+          ))}
+          <li>
+            <span className={styles.changedMark} data-inline aria-hidden="true" />
+            есть изменения
+          </li>
+        </ul>
       )}
 
       {!atToday && (
@@ -153,7 +158,7 @@ export default async function SchedulePage({ searchParams }: PageProps<"/schedul
           </h2>
           {sundayNote && <p className={styles.note}>Сегодня воскресенье, поэтому показываем понедельник.</p>}
           {day.lessons.length ? (
-            <LessonList lessons={day.lessons} isToday={day.dateKey === today} minutes={minutes} />
+            <LessonList lessons={day.lessons} states={statesFor(day.lessons, day.dateKey === today, minutes)} titleAs="h3" />
           ) : (
             <EmptyState
               titleAs="h3"
@@ -174,7 +179,7 @@ export default async function SchedulePage({ searchParams }: PageProps<"/schedul
                 {d.dateKey === today && <Badge tone="accent">сегодня</Badge>}
               </h2>
               {d.lessons.length ? (
-                <LessonList lessons={d.lessons} isToday={d.dateKey === today} minutes={minutes} compact />
+                <LessonList lessons={d.lessons} states={statesFor(d.lessons, d.dateKey === today, minutes)} compact titleAs="h3" />
               ) : (
                 <p className={styles.free}>Пар нет</p>
               )}

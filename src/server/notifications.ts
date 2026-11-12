@@ -1,8 +1,9 @@
 import "server-only";
-import { and, count, desc, eq, isNull, sql } from "drizzle-orm";
+import { and, count, desc, eq, isNull, notInArray, sql, type SQL } from "drizzle-orm";
 import type { Viewer } from "./auth/viewer";
 import { db } from "./db/client";
 import { notifications } from "./db/schema";
+import { mutedKinds } from "./settings-options";
 
 export type NotificationView = {
   id: number; kind: string; title: string; body: string; href: string | null;
@@ -11,13 +12,19 @@ export type NotificationView = {
 
 // Все функции берут пользователя только из Viewer и всегда фильтруют по user_id.
 
+/** Свои уведомления без категорий, которые человек выключил в настройках. */
+function visible(v: Viewer): SQL | undefined {
+  const kinds = mutedKinds(v.notifyMuted ?? []);
+  return and(eq(notifications.userId, v.userId), kinds.length ? notInArray(notifications.kind, kinds) : undefined);
+}
+
 export async function listNotifications(
   v: Viewer, opts: { unreadOnly?: boolean } = {},
 ): Promise<NotificationView[]> {
   const rows = await db
     .select()
     .from(notifications)
-    .where(and(eq(notifications.userId, v.userId), opts.unreadOnly ? isNull(notifications.readAt) : undefined))
+    .where(and(visible(v), opts.unreadOnly ? isNull(notifications.readAt) : undefined))
     .orderBy(desc(notifications.createdAt), desc(notifications.id));
   return rows.map((n) => ({
     id: n.id, kind: n.kind, title: n.title, body: n.body, href: n.href,
@@ -27,7 +34,7 @@ export async function listNotifications(
 
 export async function unreadCount(v: Viewer): Promise<number> {
   const [r] = await db.select({ n: count() }).from(notifications)
-    .where(and(eq(notifications.userId, v.userId), isNull(notifications.readAt)));
+    .where(and(visible(v), isNull(notifications.readAt)));
   return r.n;
 }
 
@@ -53,11 +60,11 @@ export async function markReadByHref(v: Viewer, href: string): Promise<number> {
   return rows.length;
 }
 
-/** Помечает прочитанными все свои непрочитанные; возвращает, сколько изменено. */
+/** Помечает прочитанными все свои видимые непрочитанные (скрытые настройками не трогает); возвращает, сколько изменено. */
 export async function markAllRead(v: Viewer): Promise<number> {
   const rows = await db.update(notifications)
     .set({ readAt: sql`now()` })
-    .where(and(eq(notifications.userId, v.userId), isNull(notifications.readAt)))
+    .where(and(visible(v), isNull(notifications.readAt)))
     .returning({ id: notifications.id });
   return rows.length;
 }
