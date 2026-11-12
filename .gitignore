@@ -27,6 +27,8 @@ blob-report/
 Thumbs.db
 *.log
 backups/
+# образы для выкладки (docker save) — сотни мегабайт, в репозиторий не кладём
+*.tar
 /node_modules
 /.pnp
 .pnp.*
