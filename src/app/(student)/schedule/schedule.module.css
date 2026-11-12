@@ -114,15 +114,15 @@
 }
 
 .dot[data-type="lecture"] {
-  background: var(--lesson-lecture);
+  background: var(--dot-lecture);
 }
 
 .dot[data-type="practice"] {
-  background: var(--lesson-practice);
+  background: var(--dot-practice);
 }
 
 .dot[data-type="lab"] {
-  background: var(--lesson-lab);
+  background: var(--dot-lab);
 }
 
 /* В этот день есть изменения — терракотовая метка в углу листка */
@@ -184,15 +184,15 @@
 
 /* На тёмном листке выбранного дня точки светлее, чтобы не терялись */
 .dayLink[aria-current="page"] .dot[data-type="lecture"] {
-  background: #8FB4D6;
+  background: var(--dot-lecture-inv);
 }
 
 .dayLink[aria-current="page"] .dot[data-type="practice"] {
-  background: #7CCFC4;
+  background: var(--dot-practice-inv);
 }
 
 .dayLink[aria-current="page"] .dot[data-type="lab"] {
-  background: #E3B565;
+  background: var(--dot-lab-inv);
 }
 
 .dayLink[aria-current="page"] .changedMark {
