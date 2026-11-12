@@ -137,6 +137,7 @@ test("студент: все экраны и по карточке на кажд
     "/dekanat/new", "/dekanat/new?topic=study", "/dekanat/new?type=cert_military",
     "/dekanat/new?type=stip_increased&prefill=1",
     "/notifications", "/notifications?tab=announcements", "/profile", "/about",
+    "/profile/stress", "/profile/language", "/profile/notifications",
   ];
   const alina = await session(browser, "alina");
   for (const path of common) await visit(alina.page, path, alina.errors);
@@ -159,7 +160,7 @@ test("сотрудник: очередь, вкладки, объявления, 
   test.setTimeout(180_000);
   const irina = await session(browser, "irina");
   const tabs = ["/staff", "/staff?tab=in_progress", "/staff?tab=waiting", "/staff?tab=closed"];
-  for (const path of [...tabs, "/staff/announcements", "/staff/profile", "/about"]) {
+  for (const path of [...tabs, "/staff/announcements", "/staff/profile", "/staff/profile/stress", "/about"]) {
     await visit(irina.page, path, irina.errors);
   }
 

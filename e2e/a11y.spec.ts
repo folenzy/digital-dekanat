@@ -51,6 +51,7 @@ test("страницы студента", async ({ page }) => {
     "/", "/schedule", "/schedule?view=week", "/study", "/study?tab=session", "/study?tab=history",
     "/dekanat", "/dekanat?q=справка", "/dekanat/new", "/dekanat/new?type=cert_military", "/dekanat/new?type=stip_increased&prefill=1",
     `/dekanat/${card}`, "/notifications", "/notifications?tab=announcements", "/profile", "/about",
+    "/profile/stress", "/profile/language", "/profile/notifications",
   ]) {
     await page.goto(path);
     await scan(page, path);
@@ -76,7 +77,7 @@ test("кабинет сотрудника", async ({ page }) => {
   await signIn(page, "irina");
   for (const path of [
     "/staff", "/staff?tab=in_progress", "/staff?tab=waiting", "/staff?tab=closed",
-    `/staff/appeals/${card}`, "/staff/announcements", "/staff/profile",
+    `/staff/appeals/${card}`, "/staff/announcements", "/staff/profile", "/staff/profile/stress",
   ]) {
     await page.goto(path);
     await scan(page, path);
