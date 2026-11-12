@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CircleCheck, Info, LogOut, PencilLine } from "lucide-react";
+import { CircleCheck, Info, LogOut, PencilLine, SunMoon } from "lucide-react";
 import { logoutAction } from "@/app/(auth)/login/actions";
 import { requireStaff } from "@/server/auth/viewer";
 import { cleanStress, personName } from "@/lib/stress";
+import { themeLabel } from "@/lib/theme";
 import { getStaffProfile } from "@/server/profile";
 import { getSettings } from "@/server/settings";
+import { currentTheme } from "@/server/theme";
 import { PageHeader } from "@/ui/PageHeader";
 import { SettingsList } from "@/ui/profile/SettingsList";
 import { SubmitButton } from "@/ui/SubmitButton";
@@ -14,11 +16,18 @@ import styles from "./profile.module.css";
 
 export const metadata: Metadata = { title: "Профиль" };
 
+/** ?saved=… после сохранения настройки: только известные значения, текст — фиксированный. */
+const SAVED: Record<string, string> = {
+  stress: "Ударения сохранены: студенты увидят твоё имя с ними.",
+  theme: "Тема оформления сохранена на этом устройстве.",
+};
+
 export default async function StaffProfilePage({ searchParams }: PageProps<"/staff/profile">) {
   const v = await requireStaff();
-  const [p, s, sp] = await Promise.all([getStaffProfile(v), getSettings(v), searchParams]);
+  const [p, s, sp, theme] = await Promise.all([getStaffProfile(v), getSettings(v), searchParams, currentTheme()]);
   if (!p) notFound();
   const hasStress = Object.keys(cleanStress(s.name, s.stress)).length > 0;
+  const saved = typeof sp.saved === "string" ? SAVED[sp.saved] : undefined;
 
   return (
     <>
@@ -27,20 +36,23 @@ export default async function StaffProfilePage({ searchParams }: PageProps<"/sta
         <PageHeader title={personName(s.name, { order: "official", stress: s.stress, show: true })} subtitle={p.position} />
       </div>
 
-      {sp.saved === "stress" && (
+      {saved && (
         <p className={styles.saved} role="status">
           <CircleCheck aria-hidden="true" />
-          Ударения сохранены: студенты увидят твоё имя с ними.
+          {saved}
         </p>
       )}
 
       <div className={styles.settings}>
         <SettingsList
           label="Настройки профиля"
-          rows={[{
-            href: "/staff/profile/stress", icon: <PencilLine />, label: "Ударения в имени",
-            value: hasStress ? "расставлены" : "не указаны",
-          }]}
+          rows={[
+            {
+              href: "/staff/profile/stress", icon: <PencilLine />, label: "Ударения в имени",
+              value: hasStress ? "расставлены" : "не указаны",
+            },
+            { href: "/staff/profile/theme", icon: <SunMoon />, label: "Оформление", value: themeLabel(theme).toLowerCase() },
+          ]}
         />
       </div>
 
