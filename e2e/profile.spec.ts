@@ -22,7 +22,7 @@ test("профиль: почта, строки настроек и плашка 
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Миронова Алина Сергеевна");
   await expect(page.getByText("alina.mironova@orientir-uni.example").first()).toBeVisible();
   await expect(settings(page).getByRole("link")).toHaveText([
-    /Язык обучения.*не выбран/, /Ударения в имени.*не указаны/, /Уведомления.*все включены/,
+    /Язык обучения.*не выбран/, /Ударения в имени.*не указаны/, /Уведомления.*все включены/, /Оформление.*светлая/,
   ]);
   // почта есть, языка и ударений нет — заполнено 1 из 3
   await expect(page.getByRole("heading", { name: /Заполни профиль \(1 из 3\)/ })).toBeVisible();
