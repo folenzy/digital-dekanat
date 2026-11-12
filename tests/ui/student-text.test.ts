@@ -6,7 +6,7 @@ import type { AppealListItem } from "@/server/appeals/types";
 import type { Lesson } from "@/server/schedule";
 import { buildingName, CHANGE_META, gradeLabel, LESSON_TYPE_LABEL, VERDICT_COPY } from "@/ui/student/labels";
 import { parseScheduleParams, weekLabel } from "@/ui/student/schedule-params";
-import { appealPromise, nextLessonPhrase, todaySummary } from "@/ui/student/today";
+import { appealPromise, nextDayLabel, nextLessonPhrase, todaySummary } from "@/ui/student/today";
 import { isSafeHref } from "@/ui/safe-href";
 
 // Тексты экранов студента: чистые функции, без БД. Время — по Москве (UTC+3).
@@ -166,6 +166,30 @@ describe("сводка на «Сегодня»", () => {
       .toContain("Справка готова, её можно забрать.");
     expect(todaySummary({ ...base, appeals: [appeal({})] }, SUN))
       .toContain("Обращение в работе, ответ завтра до 18:00.");
+  });
+});
+
+describe("подпись дня следующих пар — чтобы завтрашнее не спутать с сегодняшним", () => {
+  // 2026-11-11 — среда
+  const WED = new Date("2026-11-11T15:00:00Z");
+
+  it("завтра и послезавтра называются словами", () => {
+    expect(nextDayLabel("2026-11-12", WED)).toBe("Завтра");
+    expect(nextDayLabel("2026-11-13", WED)).toBe("Послезавтра");
+  });
+
+  it("дальше — день недели с правильным предлогом", () => {
+    expect(nextDayLabel("2026-11-14", WED)).toBe("В субботу");
+    expect(nextDayLabel("2026-11-16", WED)).toBe("В понедельник");
+    expect(nextDayLabel("2026-11-17", WED)).toBe("Во вторник");
+    expect(nextDayLabel("2026-11-18", WED)).toBe("В среду");
+    expect(nextDayLabel("2026-11-20", WED)).toBe("В пятницу");
+  });
+
+  it("поздним вечером по Москве «завтра» считается от московской даты, а не от UTC", () => {
+    // 21:30 UTC среды — в Москве уже четверг, 00:30
+    const lateWed = new Date("2026-11-11T21:30:00Z");
+    expect(nextDayLabel("2026-11-13", lateWed)).toBe("Завтра");
   });
 });
 
