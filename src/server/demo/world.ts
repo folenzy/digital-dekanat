@@ -147,6 +147,7 @@ export async function buildDemoWorld(db: Db, now: Date, passwords: DemoPasswords
         userId: u.id, lastName: p.lastName, firstName: p.firstName, middleName: p.middleName,
         groupId: groupId.get(p.group)!, studyForm: p.studyForm, funding: p.funding,
         recordBookNo: p.recordBookNo, email: p.email, curatorName: p.curatorName,
+        nameStress: "nameStress" in p ? p.nameStress : null,
       }).returning();
       students[key] = { id: st.id, userId: u.id };
     }

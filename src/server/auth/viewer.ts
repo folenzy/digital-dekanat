@@ -5,21 +5,24 @@ import { cookies } from "next/headers";
 import { notFound, redirect, unstable_rethrow } from "next/navigation";
 import { db } from "../db/client";
 import { groups, staff, staffDepartments, students, users } from "../db/schema";
+import { cleanMuted } from "../settings-options";
 import { SESSION_COOKIE } from "./cookie";
 import { getSessionUser } from "./session";
 
 // Кто смотрит. Все функции чтения и записи данных берут studentId/staffId только отсюда.
-export type StudentViewer = {
+/** Настройки показа того, кто смотрит: видеть ли ударения в чужих именах и какие категории уведомлений скрыты. */
+type ViewPrefs = { showStress: boolean; notifyMuted: string[] };
+export type StudentViewer = ViewPrefs & {
   userId: string; role: "student"; studentId: number; groupId: number; facultyId: number; course: number;
 };
-export type StaffViewer = { userId: string; role: "staff"; staffId: number; departmentIds: number[] };
+export type StaffViewer = ViewPrefs & { userId: string; role: "staff"; staffId: number; departmentIds: number[] };
 export type Viewer = StudentViewer | StaffViewer;
 
 /** Viewer по id пользователя; null, если пользователя или его профиля студента/сотрудника нет. */
 export async function viewerForUser(userId: string): Promise<Viewer | null> {
   const [row] = await db
     .select({
-      role: users.role, studentId: students.id, groupId: groups.id, facultyId: groups.facultyId,
+      role: users.role, showStress: users.showStress, notifyMuted: users.notifyMuted, studentId: students.id, groupId: groups.id, facultyId: groups.facultyId,
       course: groups.course, staffId: staff.id,
     })
     .from(users)
@@ -29,12 +32,13 @@ export async function viewerForUser(userId: string): Promise<Viewer | null> {
     .where(eq(users.id, userId))
     .limit(1);
   if (!row) return null;
+  const prefs: ViewPrefs = { showStress: row.showStress, notifyMuted: cleanMuted(row.notifyMuted) };
 
   if (row.role === "student") {
     if (row.studentId === null || row.groupId === null || row.facultyId === null || row.course === null) return null;
     return {
       userId, role: "student", studentId: row.studentId, groupId: row.groupId,
-      facultyId: row.facultyId, course: row.course,
+      facultyId: row.facultyId, course: row.course, ...prefs,
     };
   }
 
@@ -44,7 +48,7 @@ export async function viewerForUser(userId: string): Promise<Viewer | null> {
     .from(staffDepartments)
     .where(eq(staffDepartments.staffId, row.staffId))
     .orderBy(staffDepartments.departmentId);
-  return { userId, role: "staff", staffId: row.staffId, departmentIds: deps.map((d) => d.id) };
+  return { userId, role: "staff", staffId: row.staffId, departmentIds: deps.map((d) => d.id), ...prefs };
 }
 
 // Один запрос к БД на рендер страницы, сколько бы раз ни вызывали require*/getViewer.

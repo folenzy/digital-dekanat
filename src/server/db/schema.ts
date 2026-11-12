@@ -30,6 +30,10 @@ export const users = pgTable("users", {
   passwordHash: text("password_hash"),
   role: roleEnum("role").notNull(),
   isDemo: boolean("is_demo").notNull().default(false),
+  /** Показывать ли этому пользователю ударения в именах других людей. */
+  showStress: boolean("show_stress").notNull().default(true),
+  /** Выключенные категории уведомлений: массив из 'schedule' | 'deadlines' | 'announcements'. */
+  notifyMuted: jsonb("notify_muted").notNull().default(sql`'[]'::jsonb`),
   createdAt: createdAt(),
 });
 
@@ -92,6 +96,10 @@ export const students = pgTable("students", {
   recordBookNo: text("record_book_no").notNull().unique(),
   email: text("email"),
   curatorName: text("curator_name"),
+  /** Ударения в ФИО: { last?, first?, middle? } — индекс ударной гласной (см. src/lib/stress.ts). */
+  nameStress: jsonb("name_stress"),
+  /** Иностранный язык обучения: код из STUDY_LANGUAGES (src/server/settings.ts); null — не выбран. */
+  studyLanguage: text("study_language"),
 }, (t) => [index("students_group_idx").on(t.groupId)]);
 
 export const departments = pgTable("departments", {
@@ -107,6 +115,8 @@ export const staff = pgTable("staff", {
   firstName: text("first_name").notNull(),
   middleName: text("middle_name"),
   position: text("position").notNull(),
+  /** Ударения в ФИО — как у студентов. */
+  nameStress: jsonb("name_stress"),
 });
 
 export const staffDepartments = pgTable("staff_departments", {

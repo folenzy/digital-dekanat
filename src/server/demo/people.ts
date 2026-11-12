@@ -177,6 +177,8 @@ export const STUDENTS = {
   sokolova: {
     login: null as string | null,
     lastName: "Соколова", firstName: "Милана", middleName: "Андреевна",
+    // сама расставила ударения (Соколо́ва Мила́на Андре́евна): сотрудник видит их в очереди
+    nameStress: { last: 5, first: 3, middle: 4 },
     group: "ЭК-24-1", studyForm: "очная", funding: "бюджет",
     recordBookNo: "ОР-24-0388", email: "milana.sokolova@orientir-uni.example",
     curatorName: "Власова Екатерина Романовна",

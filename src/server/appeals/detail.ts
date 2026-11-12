@@ -1,5 +1,6 @@
 import "server-only";
 import { and, asc, eq, type SQL } from "drizzle-orm";
+import { personName } from "@/lib/stress";
 import { db } from "../db/client";
 import {
   appealEvents, appealMessages, appeals, appealTypes, departments, disciplines, staff, students,
@@ -12,16 +13,17 @@ import type {
 
 // Чтение обращений для экранов: строка списка и карточка (общая часть для студента и сотрудника).
 
-type Person = { lastName: string; firstName: string; middleName: string | null };
+/** Человек и ударения, которые он сам расставил в своём ФИО (см. src/lib/stress.ts). */
+type Person = { lastName: string; firstName: string; middleName: string | null; stress?: unknown };
 
-/** Студент — официально: «Миронова Алина Сергеевна». */
-export function studentFullName(p: Person): string {
-  return [p.lastName, p.firstName, p.middleName].filter(Boolean).join(" ");
+/** Студент — официально: «Миронова Алина Сергеевна». show — показывать ли ударения тому, кто смотрит. */
+export function studentFullName(p: Person, show = false): string {
+  return personName(p, { order: "official", stress: p.stress, show });
 }
 
 /** Сотрудник — как представляется студенту: «Ирина Николаевна Белова». */
-export function staffDisplayName(p: Person): string {
-  return [p.firstName, p.middleName, p.lastName].filter(Boolean).join(" ");
+export function staffDisplayName(p: Person, show = false): string {
+  return personName(p, { order: "display", stress: p.stress, show });
 }
 
 /** Колонки строки списка; запрос строится от appeals с join appeal_types и departments. */
@@ -48,16 +50,17 @@ export function toListItem(r: ListRow, now: Date): AppealListItem {
   };
 }
 
-type PersonCols = { lastName: string | null; firstName: string | null; middleName: string | null };
+type PersonCols = { lastName: string | null; firstName: string | null; middleName: string | null; stress?: unknown };
 const asPerson = (p: PersonCols): Person | null =>
-  p.lastName !== null && p.firstName !== null ? { lastName: p.lastName, firstName: p.firstName, middleName: p.middleName } : null;
+  p.lastName !== null && p.firstName !== null
+    ? { lastName: p.lastName, firstName: p.firstName, middleName: p.middleName, stress: p.stress } : null;
 
 /**
  * Карточка обращения, если оно попадает в `scope` (studentScope / staffScope). Таймлайн и переписка
  * читаются только после того, как само обращение найдено в пределах видимости.
  */
 export async function loadAppealDetail(
-  scope: SQL, id: string, now: Date,
+  scope: SQL, id: string, now: Date, showStress = false,
 ): Promise<{ detail: AppealDetail; studentId: number } | null> {
   const [row] = await db
     .select({
@@ -65,6 +68,7 @@ export async function loadAppealDetail(
       studentId: appeals.studentId, fields: appeals.fields, pickupPlace: appeals.pickupPlace,
       pickupUntil: appeals.pickupUntil, rejectReason: appeals.rejectReason,
       assigneeLast: staff.lastName, assigneeFirst: staff.firstName, assigneeMiddle: staff.middleName,
+      assigneeStress: staff.nameStress,
     })
     .from(appeals)
     .innerJoin(appealTypes, eq(appealTypes.code, appeals.typeCode))
@@ -76,16 +80,18 @@ export async function loadAppealDetail(
 
   const fields = (row.fields ?? {}) as Record<string, unknown>;
   const [events, messages, disciplineName] = await Promise.all([
-    loadEvents(id), loadMessages(id), loadDisciplineName(fields.disciplineId),
+    loadEvents(id, showStress), loadMessages(id, showStress), loadDisciplineName(fields.disciplineId),
   ]);
-  const assignee = asPerson({ lastName: row.assigneeLast, firstName: row.assigneeFirst, middleName: row.assigneeMiddle });
+  const assignee = asPerson({
+    lastName: row.assigneeLast, firstName: row.assigneeFirst, middleName: row.assigneeMiddle, stress: row.assigneeStress,
+  });
   const detail: AppealDetail = {
     ...toListItem(row, now),
     fields,
     disciplineName,
     pickup: row.pickupPlace !== null && row.pickupUntil !== null ? { place: row.pickupPlace, until: row.pickupUntil } : null,
     rejectReason: row.rejectReason,
-    assignee: assignee ? staffDisplayName(assignee) : null,
+    assignee: assignee ? staffDisplayName(assignee, showStress) : null,
     events,
     messages,
   };
@@ -102,18 +108,23 @@ async function loadDisciplineName(disciplineId: unknown): Promise<string | null>
 const personColumns = {
   stLast: students.lastName, stFirst: students.firstName, stMiddle: students.middleName,
   sfLast: staff.lastName, sfFirst: staff.firstName, sfMiddle: staff.middleName,
+  stStress: students.nameStress, sfStress: staff.nameStress,
 };
-type PersonRow = { [K in keyof typeof personColumns]: string | null };
+type PersonRow = {
+  stLast: string | null; stFirst: string | null; stMiddle: string | null;
+  sfLast: string | null; sfFirst: string | null; sfMiddle: string | null;
+  stStress: unknown; sfStress: unknown;
+};
 
-function whoIs(r: PersonRow): { role: "student" | "staff"; name: string } | null {
-  const sf = asPerson({ lastName: r.sfLast, firstName: r.sfFirst, middleName: r.sfMiddle });
-  if (sf) return { role: "staff", name: staffDisplayName(sf) };
-  const st = asPerson({ lastName: r.stLast, firstName: r.stFirst, middleName: r.stMiddle });
-  if (st) return { role: "student", name: studentFullName(st) };
+function whoIs(r: PersonRow, show: boolean): { role: "student" | "staff"; name: string } | null {
+  const sf = asPerson({ lastName: r.sfLast, firstName: r.sfFirst, middleName: r.sfMiddle, stress: r.sfStress });
+  if (sf) return { role: "staff", name: staffDisplayName(sf, show) };
+  const st = asPerson({ lastName: r.stLast, firstName: r.stFirst, middleName: r.stMiddle, stress: r.stStress });
+  if (st) return { role: "student", name: studentFullName(st, show) };
   return null;
 }
 
-async function loadEvents(appealId: string): Promise<AppealEventView[]> {
+async function loadEvents(appealId: string, show: boolean): Promise<AppealEventView[]> {
   const rows = await db
     .select({ kind: appealEvents.kind, text: appealEvents.text, at: appealEvents.createdAt, ...personColumns })
     .from(appealEvents)
@@ -122,13 +133,13 @@ async function loadEvents(appealId: string): Promise<AppealEventView[]> {
     .where(eq(appealEvents.appealId, appealId))
     .orderBy(asc(appealEvents.createdAt), asc(appealEvents.id));
   return rows.map((r) => {
-    const who = whoIs(r);
+    const who = whoIs(r, show);
     const base = { kind: r.kind as AppealEventKind, text: r.text, at: r.at };
     return who ? { ...base, actor: who.role, actorName: who.name } : { ...base, actor: "system" as const };
   });
 }
 
-async function loadMessages(appealId: string): Promise<AppealMessageView[]> {
+async function loadMessages(appealId: string, show: boolean): Promise<AppealMessageView[]> {
   const rows = await db
     .select({ id: appealMessages.id, body: appealMessages.body, at: appealMessages.createdAt, ...personColumns })
     .from(appealMessages)
@@ -137,7 +148,7 @@ async function loadMessages(appealId: string): Promise<AppealMessageView[]> {
     .where(eq(appealMessages.appealId, appealId))
     .orderBy(asc(appealMessages.createdAt), asc(appealMessages.id));
   return rows.map((r) => {
-    const who = whoIs(r);
+    const who = whoIs(r, show);
     return { id: r.id, body: r.body, at: r.at, author: who?.role ?? "student", authorName: who?.name ?? "" };
   });
 }
