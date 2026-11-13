@@ -228,7 +228,8 @@ test.describe("Алина", () => {
 
 test("Денис: на «Сегодня» деканат ждёт ответа, в «Учёбе» — «Есть долги»", async ({ page }) => {
   await signIn(page, "denis");
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText(/, Денис$/);
+  // заголовок — день, а не приветствие; чей это кабинет, видно по содержимому: вопрос деканата — только у Дениса
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(/^[А-Я][а-я]+, \d{1,2} [а-я]+$/);
   await expect(page.getByText(/Ответь на вопрос по обращению/)).toBeVisible();
   await expectFits(page);
   await shoot(page, "today-denis", widthOf(page));
