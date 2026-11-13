@@ -63,9 +63,9 @@
 
 /* Порог пройден: «отпусти — и перейдёшь» */
 .hint[data-armed] {
-  background: var(--ink);
-  border-color: var(--ink);
-  color: var(--paper);
+  background: var(--plate);
+  border-color: var(--plate);
+  color: var(--on-plate);
 }
 
 .hintIcon {

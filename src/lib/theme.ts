@@ -4,7 +4,7 @@
 
 export const THEMES = [
   { code: "light", label: "Светлая", hint: "«Бумага»: кремовый лист, терракотовый акцент" },
-  { code: "dark", label: "Тёмная", hint: "«Ночная смена»: сине-серые тона, голубой акцент" },
+  { code: "dark", label: "Тёмная", hint: "«Ночная смена»: чёрный фон, серые карточки, синий акцент" },
 ] as const;
 export type Theme = (typeof THEMES)[number]["code"];
 
@@ -12,7 +12,7 @@ export const THEME_COOKIE = "ns_theme";
 export const DEFAULT_THEME: Theme = "light";
 
 /** Цвет системной панели браузера под тему (совпадает с --bg в src/ui/tokens.css). */
-export const THEME_COLOR: Record<Theme, string> = { light: "#F4EFE6", dark: "#0E1218" };
+export const THEME_COLOR: Record<Theme, string> = { light: "#F4EFE6", dark: "#000000" };
 
 /** Тема из значения cookie или формы: всё незнакомое — светлая. */
 export function parseTheme(value: unknown): Theme {

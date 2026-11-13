@@ -76,7 +76,7 @@
   right: var(--space-4);
   width: 10px;
   height: 16px;
-  background: var(--accent);
+  background: var(--accent-fill);
   clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 68%, 0 100%);
 }
 

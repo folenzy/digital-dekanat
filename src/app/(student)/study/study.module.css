@@ -139,7 +139,7 @@
 
 .barFill {
   left: 0;
-  background: var(--accent);
+  background: var(--accent-fill);
 }
 
 .barAhead {

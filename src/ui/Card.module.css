@@ -19,7 +19,7 @@
 /* .paper — вид по умолчанию, отдельных правил нет (класс нужен для :hover ниже) */
 
 .ink {
-  border-color: var(--ink);
+  border-color: var(--plate);
 }
 
 .accent {

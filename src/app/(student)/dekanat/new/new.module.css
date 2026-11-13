@@ -66,8 +66,8 @@
 }
 
 .step[data-state="current"] .stepNum {
-  background: var(--accent);
-  color: var(--paper);
+  background: var(--accent-fill);
+  color: var(--on-accent);
 }
 
 /* Текст, перенесённый из «Спроси деканат» */

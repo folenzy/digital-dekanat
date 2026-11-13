@@ -133,7 +133,7 @@
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: var(--accent);
+  background: var(--accent-fill);
   box-shadow: 0 0 0 2px var(--paper);
 }
 
@@ -169,20 +169,20 @@
   bottom: -1px;
   height: 3px;
   border-radius: 3px 3px 0 0;
-  background: var(--accent);
+  background: var(--accent-fill);
 }
 
 .dayLink[aria-current="page"] {
-  border-color: var(--ink);
-  background: var(--ink);
-  color: var(--paper);
+  border-color: var(--plate);
+  background: var(--plate);
+  color: var(--on-plate);
 }
 
 .dayLink[aria-current="page"] .dayShort {
   color: var(--ink-muted);
 }
 
-/* На тёмном листке выбранного дня точки светлее, чтобы не терялись */
+/* На залитом листке выбранного дня точки светлее, чтобы не терялись */
 .dayLink[aria-current="page"] .dot[data-type="lecture"] {
   background: var(--dot-lecture-inv);
 }
@@ -197,7 +197,7 @@
 
 .dayLink[aria-current="page"] .changedMark {
   background: var(--accent-2);
-  box-shadow: 0 0 0 2px var(--ink);
+  box-shadow: 0 0 0 2px var(--plate);
 }
 
 .dayLink[aria-current="page"][data-today]::after {

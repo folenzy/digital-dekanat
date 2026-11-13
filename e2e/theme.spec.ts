@@ -59,8 +59,8 @@ test("студент включает тёмную тему: она держит
   await page.waitForURL("**/profile?saved=theme");
   await expect(page.getByRole("status").filter({ hasText: "Тема оформления сохранена" })).toBeVisible();
   expect(await themeOf(page)).toBe("dark");
-  expect(await bgOf(page)).toBe("rgb(14, 18, 24)");
-  await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute("content", "#0E1218");
+  expect(await bgOf(page)).toBe("rgb(0, 0, 0)");
+  await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute("content", "#000000");
   await expect(settings(page).getByRole("link", { name: /Оформление/ })).toContainText("тёмная");
   await shoot(page, "profile-dark", widthOf(page), "08");
 

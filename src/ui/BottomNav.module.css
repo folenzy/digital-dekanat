@@ -110,7 +110,7 @@
   width: 14px;
   height: 12px;
   margin: 0 auto;
-  background: var(--accent);
+  background: var(--accent-fill);
   clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 64%, 0 100%);
 }
 
