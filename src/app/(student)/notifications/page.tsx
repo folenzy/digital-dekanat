@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import { AlarmClock, Bell, CalendarClock, CheckCheck, FileText, Megaphone, MessageCircle } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+import { CheckCheck, Megaphone } from "lucide-react";
 import { requireStudent } from "@/server/auth/viewer";
 import { listAnnouncementsFor } from "@/server/announcements";
 import { ruWhen } from "@/server/format";
@@ -17,14 +16,6 @@ import { NotificationsEmpty } from "./NotificationsEmpty";
 import styles from "./notifications.module.css";
 
 export const metadata: Metadata = { title: "Уведомления" };
-
-const KIND_ICON: Record<string, LucideIcon> = {
-  appeal_status: FileText,
-  appeal_message: MessageCircle,
-  schedule_change: CalendarClock,
-  deadline: AlarmClock,
-  announcement: Megaphone,
-};
 
 export default async function NotificationsPage({ searchParams }: PageProps<"/notifications">) {
   const v = await requireStudent();
@@ -71,13 +62,11 @@ export default async function NotificationsPage({ searchParams }: PageProps<"/no
           ) : (
             <ul className={styles.list}>
               {shown.map((n) => {
-                const Icon = KIND_ICON[n.kind] ?? Bell;
                 return (
                   <li key={n.id}>
                     <form action={openNotificationAction}>
                       <input type="hidden" name="id" value={n.id} />
                       <ItemButton className={styles.item}>
-                        <span className={styles.icon} aria-hidden="true"><Icon /></span>
                         <span className={styles.text}>
                           <span className={styles.title}>
                             {!n.read && <span className="sr-only">Новое: </span>}
