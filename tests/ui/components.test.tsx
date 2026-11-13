@@ -147,7 +147,7 @@ describe("Card, PageHeader, Toast, Logo, ConceptBanner", () => {
   });
 
   it("ConceptBanner: пометка дословно", () => {
-    expect(CONCEPT_TEXT).toBe("Концепт для конкурса · не официальный сервис");
+    expect(CONCEPT_TEXT).toBe("Концепт для конкурса, не официальный сервис");
     expect(html(<ConceptBanner />)).toContain(CONCEPT_TEXT);
   });
 });

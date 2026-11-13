@@ -11,11 +11,10 @@
 
 .title {
   margin: 0;
-  font-family: var(--font-display);
   font-size: var(--text-3xl);
-  font-weight: 600;
+  font-weight: 700;
   line-height: var(--leading-tight);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.015em;
   color: var(--fg);
   text-wrap: balance;
 }

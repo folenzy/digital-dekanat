@@ -61,7 +61,10 @@ const PAIRS: Pair[] = [
   ["danger", "danger-tint", TEXT, "бейдж «Отклонено»"],
   ["info", "info-tint", TEXT, "бейдж «Отправлено»"],
   ["accent-strong", "accent-tint", TEXT, "бейдж «В работе»"],
-  ["muted-strong", "neutral-tint", TEXT, "бейдж «Закрыто»"],
+  ["muted-strong", "neutral-tint", TEXT, "бейдж «Закрыто», текст на утопленном сером"],
+  ["ink", "neutral-tint", TEXT, "выбранная вкладка, шапка таблицы"],
+  ["accent", "neutral-tint", TEXT, "ссылка на утопленном сером"],
+  ["danger", "neutral-tint", TEXT, "«просрочено» в шапке таблицы"],
   ["ok", "paper", TEXT, "статусный текст без подложки"],
   ["warn", "paper", TEXT, "статусный текст без подложки"],
   ["danger", "paper", TEXT, "«Просрочено» в карточке"],
@@ -84,20 +87,24 @@ const PAIRS: Pair[] = [
   ["line-strong", "bg", NON_TEXT, "граница поля ввода на фоне страницы"],
 ];
 
-describe("палитра «Бумага»", () => {
-  it("базовые токены совпадают со спекой §11", () => {
+describe("палитра «Ведомость»", () => {
+  it("базовые токены совпадают с DESIGN.md", () => {
     expect(t).toMatchObject({
-      bg: "#F4EFE6", paper: "#FFFDF8", line: "#E4DCCD", ink: "#1D1B17",
-      muted: "#7A7166", accent: "#B4552D", "accent-2": "#E2774A",
+      bg: "#FFFFFF", paper: "#FFFFFF", line: "#E1E4E8", ink: "#14161A", muted: "#5C6370",
+      "neutral-tint": "#F3F4F6", "line-strong": "#868C98", accent: "#1A63C8", "accent-fill": "#1E6FD9",
     });
   });
 
-  it("в светлой теме заливки — те же чернила и терракота, что были до появления тёмной", () => {
-    expect(t.plate).toBe(t.ink);
-    expect(t["on-plate"]).toBe(t.paper);
-    expect(t["accent-fill"]).toBe(t.accent);
-    expect(t["on-accent"]).toBe(t.paper);
-    expect(t["on-accent-2"]).toBe(t.ink);
+  it("акцент один на обе темы: заливка и плашка «важное» совпадают в светлой и тёмной", () => {
+    for (const name of ["accent-fill", "on-accent", "plate", "on-plate", "ink-muted", "accent-2", "on-accent-2"]) {
+      expect(dark[name], `--${name}`).toBe(t[name]);
+    }
+  });
+
+  it("типы занятий одного цвета в обеих темах (выбор человека)", () => {
+    for (const name of ["lesson-lecture", "lesson-practice", "lesson-lab", "on-type"]) {
+      expect(dark[name], `--${name}`).toBe(t[name]);
+    }
   });
 
   it.each(PAIRS)("%s на %s ≥ %d:1 (%s)", (fg, bg, min) => {
@@ -112,10 +119,10 @@ describe("палитра «Бумага»", () => {
     expect(contrast(dark[fg], dark[bg])).toBeGreaterThanOrEqual(min);
   });
 
-  it("тёмная тема задаёт свои значения всем цветам палитры, а не наследует светлые", () => {
-    const palette = ["bg", "paper", "line", "ink", "muted", "accent", "accent-2", "muted-strong", "accent-strong",
-      "ink-muted", "line-strong", "focus", "ok", "ok-tint", "warn", "warn-tint", "danger", "danger-tint",
-      "info", "info-tint", "accent-tint", "neutral-tint", "plate", "on-plate", "accent-fill", "on-accent", "on-accent-2"];
+  it("тёмная тема задаёт свои значения нейтральным, текстовому акценту и состояниям, а не наследует светлые", () => {
+    const palette = ["bg", "paper", "line", "ink", "muted", "accent", "muted-strong", "accent-strong",
+      "line-strong", "focus", "ok", "ok-tint", "warn", "warn-tint", "danger", "danger-tint",
+      "info", "info-tint", "accent-tint", "neutral-tint", "dot-lecture", "dot-practice", "dot-lab"];
     for (const name of palette) expect(dark[name], `--${name} не переопределён в тёмной теме`).not.toBe(t[name]);
   });
 

@@ -30,7 +30,7 @@
   min-height: 48px;
   padding: 0 18px;
   border: 1px solid transparent;
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-md);
   background: var(--paper);
   color: var(--ink);
   font-size: 1rem;

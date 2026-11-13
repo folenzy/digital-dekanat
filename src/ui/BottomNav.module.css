@@ -4,10 +4,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  /* Полупрозрачная панель: под ней угадывается лист, который прокручивается */
-  background: color-mix(in srgb, var(--surface) 93%, transparent);
-  -webkit-backdrop-filter: saturate(1.6) blur(20px);
-  backdrop-filter: saturate(1.6) blur(20px);
+  background: var(--paper);
   border-top: 1px solid var(--line);
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }

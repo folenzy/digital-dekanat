@@ -28,9 +28,7 @@
   justify-content: space-between;
   height: var(--header-h);
   padding: 0 var(--gutter);
-  background: color-mix(in srgb, var(--bg) 90%, transparent);
-  -webkit-backdrop-filter: saturate(1.6) blur(20px);
-  backdrop-filter: saturate(1.6) blur(20px);
+  background: var(--bg);
   border-bottom: 1px solid var(--line);
 }
 
@@ -50,9 +48,14 @@
   outline: none;
 }
 
+/* Студент: узкая колонка для чтения. Сотрудник: широкая рабочая область под таблицу очереди. */
 .content {
   max-width: var(--content-max);
   margin-inline: auto;
+}
+
+.content[data-wide] {
+  max-width: var(--content-wide);
 }
 
 @media (min-width: 1024px) {
@@ -72,6 +75,6 @@
   }
 
   .main {
-    padding: var(--space-12) var(--space-10) var(--space-16);
+    padding: var(--space-10) var(--gutter) var(--space-16);
   }
 }

@@ -1,8 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { connection } from "next/server";
-// Шрифты self-host (@fontsource-variable, OFL-1.1), в каждом есть кириллица; браузер качает только нужные
-// подмножества по unicode-range. Literata — с осью оптического размера (opsz) для крупных заголовков.
-import "@fontsource-variable/literata/opsz.css";
+// Шрифт один — Golos Text (self-host через @fontsource-variable, OFL-1.1, с кириллицей); браузер качает
+// только нужные подмножества по unicode-range. Почему один и почему этот — DESIGN.md, «Шрифт».
 import "@fontsource-variable/golos-text/wght.css";
 import "@/ui/tokens.css";
 import "./globals.css";

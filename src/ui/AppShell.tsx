@@ -46,7 +46,7 @@ export function AppShell({ role, userName, unread, children, live = true }: AppS
           <main id="main" className={styles.main} tabIndex={-1}>
             {/* Между разделами — только нажатием на панель навигации (листание пальцем убрано по просьбе
                 человека: оно мешало). Пальцем листаются дни на странице «Пары» — см. SwipePane. */}
-            <div className={styles.content}>{children}</div>
+            <div className={styles.content} data-wide={role === "staff" || undefined}>{children}</div>
           </main>
         </div>
       </div>

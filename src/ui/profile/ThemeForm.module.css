@@ -51,12 +51,11 @@
 
 /* Светлый образец на тёмной странице: возвращаем светлую палитру явно */
 .sample[data-theme="light"] {
-  --bg: #F4EFE6;
-  --paper: #FFFDF8;
-  --line: #E4DCCD;
-  --ink: #1D1B17;
-  --plate: #1D1B17;
-  --accent: #B4552D;
+  --bg: #FFFFFF;
+  --paper: #FFFFFF;
+  --line: #E1E4E8;
+  --ink: #14161A;
+  --accent: #1A63C8;
 }
 
 .sampleBar {

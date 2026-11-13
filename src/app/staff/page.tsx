@@ -4,11 +4,9 @@ import { Archive, Clock3, Inbox, MessageCircleQuestionMark, type LucideIcon } fr
 import { getStaffSummary, listQueue, listStaffDepartments } from "@/server/appeals/staff";
 import type { QueueItem, StaffTab } from "@/server/appeals/types";
 import { requireStaff } from "@/server/auth/viewer";
-import { ruDayTitle } from "@/server/format";
-import { mskDateKey } from "@/server/time";
 import { EmptyState } from "@/ui/EmptyState";
 import { PageHeader } from "@/ui/PageHeader";
-import { QueueCard } from "@/ui/staff/QueueCard";
+import { QueueHead, QueueRow } from "@/ui/staff/QueueRow";
 import { avgResponseText, DEPT_SHORT, QUEUE_TABS } from "@/ui/staff/labels";
 import { Tabs } from "@/ui/Tabs";
 import { parseQueueParams, queueHref } from "./params";
@@ -44,9 +42,9 @@ export default async function QueuePage({ searchParams }: PageProps<"/staff">) {
 
   return (
     <>
-      <PageHeader kicker={ruDayTitle(mskDateKey(now))} title="Очередь" />
+      <PageHeader title="Очередь" />
 
-      <section className={styles.summary} data-surface="paper" aria-labelledby="summary-title">
+      <section className={styles.summary} aria-labelledby="summary-title">
         <h2 id="summary-title" className="sr-only">Сводка по моим отделам</h2>
         <dl className={styles.ledger}>
           <div className={styles.cell}>
@@ -67,6 +65,19 @@ export default async function QueuePage({ searchParams }: PageProps<"/staff">) {
           </div>
         </dl>
       </section>
+
+      <div className={styles.controls}>
+      <div className={styles.tabs}>
+        <Tabs
+          label="Вкладки очереди"
+          items={QUEUE_TABS.map((t) => ({
+            href: queueHref({ tab: t.tab, dept }),
+            label: t.label,
+            current: t.tab === tab,
+            count: byTab.get(t.tab)?.length,
+          }))}
+        />
+      </div>
 
       {departments.length > 1 && (
         <nav aria-label="Отдел" className={styles.depts}>
@@ -91,17 +102,6 @@ export default async function QueuePage({ searchParams }: PageProps<"/staff">) {
           </ul>
         </nav>
       )}
-
-      <div className={styles.tabs}>
-        <Tabs
-          label="Вкладки очереди"
-          items={QUEUE_TABS.map((t) => ({
-            href: queueHref({ tab: t.tab, dept }),
-            label: t.label,
-            current: t.tab === tab,
-            count: byTab.get(t.tab)?.length,
-          }))}
-        />
       </div>
 
       {items.length === 0 ? (
@@ -111,13 +111,16 @@ export default async function QueuePage({ searchParams }: PageProps<"/staff">) {
           text={deptName ? <>{meta.emptyText} Сейчас показан только отдел «{deptName}».</> : meta.emptyText}
         />
       ) : (
-        <ul className={styles.list} aria-label="Обращения">
-          {items.map((a) => (
-            <li key={a.id}>
-              <QueueCard appeal={a} now={now} />
-            </li>
-          ))}
-        </ul>
+        <div className={styles.table}>
+          <QueueHead closed={tab === "closed"} />
+          <ul className={styles.list} aria-label="Обращения">
+            {items.map((a) => (
+              <li key={a.id}>
+                <QueueRow appeal={a} now={now} />
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
     </>
   );

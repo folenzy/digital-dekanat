@@ -1,5 +1,5 @@
 .section {
-  margin-top: var(--space-10);
+  margin-top: var(--space-8);
 }
 
 .head {
@@ -13,7 +13,7 @@
 .title {
   margin: 0;
   font-size: var(--text-xl);
-  font-weight: 600;
+  font-weight: 700;
   line-height: var(--leading-snug);
 }
 
@@ -37,8 +37,4 @@
   }
 }
 
-@media (min-width: 600px) {
-  .title {
-    font-size: var(--text-2xl);
-  }
-}
+

@@ -39,8 +39,8 @@ test.beforeAll(() => resetDemoWorld());
 test("по умолчанию тема светлая — та, что была до появления выбора", async ({ page }) => {
   await page.goto("/login");
   expect(await themeOf(page)).toBe("light");
-  expect(await bgOf(page)).toBe("rgb(244, 239, 230)");
-  await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute("content", "#F4EFE6");
+  expect(await bgOf(page)).toBe("rgb(255, 255, 255)");
+  await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute("content", "#FFFFFF");
 });
 
 test("студент включает тёмную тему: она держится между страницами и после перезагрузки", async ({ page }) => {
