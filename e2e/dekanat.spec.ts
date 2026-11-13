@@ -70,7 +70,7 @@ test("Спроси деканат: ответ из базы → «Оформит
   await first.getByRole("link", { name: "Оформить: Справка для военкомата" }).click();
   await page.waitForURL(/\/dekanat\/new\?type=cert_military$/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Справка для военкомата");
-  await expect(page.getByText(/^Уйдёт в: Справки и документы · ответ до \d{1,2} [а-я]+$/)).toBeVisible();
+  await expect(page.getByText(/^Уйдёт в: Справки и документы, ответ до \d{1,2} [а-я]+$/)).toBeVisible();
 
   // пустая форма: ошибки по-русски у полей, ничего не создано
   await page.getByRole("button", { name: "Отправить" }).click();
@@ -138,7 +138,7 @@ test("мастер: тема → подтип → форма, кнопка «н�
   const discipline = page.getByLabel("Дисциплина");
   await expect(discipline.locator("option", { hasText: "Математический анализ" })).toHaveCount(1);
   await expect(discipline.locator("option", { hasText: "Статистика" })).toHaveCount(0);
-  await expect(page.getByText(/^Уйдёт в: Учебный отдел · ответ до /)).toBeVisible();
+  await expect(page.getByText(/^Уйдёт в: Учебный отдел, ответ до /)).toBeVisible();
   await expectFits(page);
   await snap(page, "wizard-3");
 
@@ -166,7 +166,7 @@ test("повышенная стипендия: «Подать в 1 тап» → 
   await page.waitForURL("**/dekanat/new?type=stip_increased&prefill=1");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Повышенная академическая стипендия");
   await expect(page.getByLabel("Текст заявления")).toHaveValue(/^Прошу рассмотреть возможность назначения/);
-  await expect(page.getByText(/^Уйдёт в: Стипендиальный отдел · ответ до /)).toBeVisible();
+  await expect(page.getByText(/^Уйдёт в: Стипендиальный отдел, ответ до /)).toBeVisible();
   await page.getByRole("button", { name: "Отправить" }).click();
 
   await page.waitForURL(/\/dekanat\/[0-9a-f-]{36}\?created=1$/);

@@ -247,7 +247,7 @@
 
 .free {
   padding: var(--space-3) var(--space-4);
-  border: 1.5px dashed color-mix(in srgb, var(--line-strong) 55%, transparent);
+  border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   color: var(--fg-muted);
   font-size: var(--text-sm);

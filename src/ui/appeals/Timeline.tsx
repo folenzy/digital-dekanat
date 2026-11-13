@@ -27,7 +27,7 @@ export function Timeline({ events, now, next }: TimelineProps) {
             <p className={styles.title}>{EVENT_LABEL[e.kind]}</p>
             <p className={styles.meta}>
               <time dateTime={e.at.toISOString()}>{ruWhen(e.at, now)}</time>
-              {e.actorName && <> · {personShortName(e.actorName, e.actor === "staff" ? "staff" : "student")}</>}
+              {e.actorName && <>, {personShortName(e.actorName, e.actor === "staff" ? "staff" : "student")}</>}
             </p>
             {e.text && SHOWN_TEXT.has(e.kind) && <p className={styles.text}>{e.text}</p>}
           </div>

@@ -49,7 +49,7 @@
 
 .kicker {
   font-size: var(--text-sm);
-  font-weight: 600;
+  font-weight: 500;
   color: var(--fg-muted);
   font-variant-numeric: lining-nums tabular-nums;
 }
@@ -69,41 +69,46 @@
   color: var(--fg-muted);
 }
 
-/* Обещанный срок: дата набрана Literata крупно — главное число экрана */
+/* Обещанный срок — главное на экране: подпись, дата, сколько осталось. Между двумя линиями, без рамки. */
 .promise {
-  padding: var(--space-5) var(--space-4) var(--space-4);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  background: var(--surface);
-  color: var(--fg);
+  padding: var(--space-4) 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
 }
 
+/* Просрочено: красная метка у края — состояние, а не украшение */
 .promise[data-overdue] {
-  border-color: var(--danger);
-  box-shadow: inset 0 0 0 0.5px var(--danger);
+  position: relative;
+}
+
+.promise[data-overdue]::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(-1 * var(--space-3));
+  width: 3px;
+  background: var(--danger);
 }
 
 .promiseLabel {
   font-size: var(--text-sm);
-  font-weight: 600;
-  color: var(--fg-accent);
+  color: var(--fg-muted);
 }
 
 .promiseDate {
   margin-top: 2px;
-  font-family: var(--font-display);
-  font-size: var(--text-3xl);
-  font-weight: 600;
-  line-height: var(--leading-tight);
-  letter-spacing: -0.02em;
+  font-size: var(--text-xl);
+  font-weight: 700;
+  line-height: var(--leading-snug);
   font-variant-numeric: lining-nums tabular-nums;
 }
 
 .countdown {
   display: block;
-  margin-top: var(--space-2);
-  font-size: var(--text-lg);
-  font-weight: 600;
+  margin-top: 2px;
+  font-size: var(--text-md);
+  font-weight: 500;
   color: var(--fg);
 }
 
@@ -118,9 +123,7 @@
 }
 
 .promiseWho {
-  margin-top: var(--space-4);
-  padding-top: var(--space-3);
-  border-top: 1px dashed var(--line-strong);
+  margin-top: var(--space-2);
   font-size: var(--text-sm);
   color: var(--fg-muted);
 }

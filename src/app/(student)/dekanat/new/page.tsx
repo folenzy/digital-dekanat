@@ -143,7 +143,7 @@ export default async function NewAppealPage({ searchParams }: PageProps<"/dekana
   const slip = (
     <div className={styles.slip}>
       <p className={styles.slipLine}>
-        Уйдёт в: <strong>{route?.department.name ?? "нужный отдел"}</strong> · ответ до <strong>{ruDate(due)}</strong>
+        Уйдёт в: <strong>{route?.department.name ?? "нужный отдел"}</strong>, ответ до <strong>{ruDate(due)}</strong>
       </p>
       <p className={styles.slipNote}>
         Срок считаем в рабочих днях, до {mskTime(due)} по Москве. Статус и ответ появятся в карточке обращения.
