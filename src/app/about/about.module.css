@@ -44,7 +44,7 @@
   text-wrap: pretty;
 }
 
-/* Главная фраза про ночной сброс — набрана Literata, как цитата */
+/* Главная фраза про ночной сброс — крупнее остального текста */
 .reset {
   font-family: var(--font-display);
   font-size: var(--text-xl);

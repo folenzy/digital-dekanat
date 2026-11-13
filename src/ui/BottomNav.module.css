@@ -97,8 +97,7 @@
 .marker {
   display: block;
   height: 12px;
-  /* движется по экрану → ease-in-out; коротко, чтобы не мешать частым переключениям */
-  transition: transform 240ms var(--ease-in-out), opacity var(--dur-fast) var(--ease-out);
+  /* Закладка встаёт на место сразу: разделы переключают десятки раз в день, и переезд читался как задержка */
 }
 
 .marker::before {
