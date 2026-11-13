@@ -19,8 +19,7 @@
 .page > :nth-child(4) { animation-delay: 135ms; }
 .page > :nth-child(n + 5) { animation-delay: 180ms; }
 
-:global(html[data-entered]) .page > *,
-:global([data-swipe-enter]) .page > * {
+:global(html[data-entered]) .page > * {
   animation: none;
 }
 

@@ -1,32 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { dragOffset, isSwipeBlockedTarget, shouldCommit, swipeNeighbors } from "@/ui/swipe";
+import { dragOffset, isSwipeBlockedTarget, shouldCommit } from "@/ui/swipe";
 
-const HREFS = ["/", "/schedule", "/study", "/dekanat", "/profile"];
-
-describe("swipeNeighbors — куда ведёт свайп", () => {
-  it("в середине есть оба соседа", () => {
-    expect(swipeNeighbors("/study", HREFS)).toEqual({ prev: "/schedule", next: "/dekanat" });
-  });
-
-  it("на первом разделе нет соседа слева, на последнем — справа", () => {
-    expect(swipeNeighbors("/", HREFS)).toEqual({ prev: null, next: "/schedule" });
-    expect(swipeNeighbors("/profile", HREFS)).toEqual({ prev: "/dekanat", next: null });
-  });
-
-  it("на вложенных страницах свайп выключен: там формы и карточки, уводить с них нельзя", () => {
-    expect(swipeNeighbors("/dekanat/new", HREFS)).toBeNull();
-    expect(swipeNeighbors("/dekanat/0b7c1c1e-0000-4000-8000-000000000000", HREFS)).toBeNull();
-    expect(swipeNeighbors("/notifications", HREFS)).toBeNull();
-    expect(swipeNeighbors(null, HREFS)).toBeNull();
-  });
-
-  it("у сотрудника «/staff» и «/staff/announcements» — разные разделы, а карточка обращения — вложенная", () => {
-    const staff = ["/staff", "/staff/announcements", "/staff/profile"];
-    expect(swipeNeighbors("/staff", staff)).toEqual({ prev: null, next: "/staff/announcements" });
-    expect(swipeNeighbors("/staff/announcements", staff)).toEqual({ prev: "/staff", next: "/staff/profile" });
-    expect(swipeNeighbors("/staff/appeals/abc", staff)).toBeNull();
-  });
-});
+// Что именно листается (дни и недели на «Парах») — tests/ui/schedule-swipe.test.ts.
 
 describe("dragOffset — лист идёт за пальцем", () => {
   it("есть сосед — один к одному", () => {

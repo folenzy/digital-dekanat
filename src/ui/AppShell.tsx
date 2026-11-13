@@ -3,11 +3,11 @@ import type { ReactNode } from "react";
 import { Bell } from "./Bell";
 import { BottomNav } from "./BottomNav";
 import { ConceptBanner } from "./ConceptBanner";
+import { EnteredFlag } from "./EnteredFlag";
 import { LiveEvents } from "./live/LiveEvents";
 import { Logo } from "./Logo";
 import { bellHref, navItems, type ShellRole } from "./nav";
 import { SideNav } from "./SideNav";
-import { SwipeNav } from "./SwipeNav";
 import styles from "./AppShell.module.css";
 
 // Оболочка кабинета. Рендерится на сервере из layout: роль, имя и число непрочитанных берутся из сессии там же.
@@ -44,14 +44,14 @@ export function AppShell({ role, userName, unread, children, live = true }: AppS
             <Bell key={unread} initial={unread} href={bellHref(role)} />
           </header>
           <main id="main" className={styles.main} tabIndex={-1}>
-            {/* На телефоне между разделами можно листать пальцем; нижняя панель остаётся */}
-            <SwipeNav items={items.map(({ href, label }) => ({ href, label }))} className={styles.content}>
-              {children}
-            </SwipeNav>
+            {/* Между разделами — только нажатием на панель навигации (листание пальцем убрано по просьбе
+                человека: оно мешало). Пальцем листаются дни на странице «Пары» — см. SwipePane. */}
+            <div className={styles.content}>{children}</div>
           </main>
         </div>
       </div>
       <BottomNav role={role} />
+      <EnteredFlag />
       {live && <LiveEvents />}
     </div>
   );

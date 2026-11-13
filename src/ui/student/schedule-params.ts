@@ -1,4 +1,4 @@
-import { dayDiff, ruDateKey } from "@/server/format";
+import { dayDiff, ruDateKey, ruWeekdayShort } from "@/server/format";
 import { mskDateKey, shiftDateKey } from "@/server/time";
 
 // Параметры страницы «Пары» из адреса: ?view=day|week&date=YYYY-MM-DD. Всё неверное → значения по умолчанию.
@@ -46,4 +46,27 @@ export function weekLabel(mondayKey: string): string {
 /** Адрес страницы «Пары» с параметрами. */
 export function scheduleHref(view: ScheduleView, dateKey: string): string {
   return `/schedule?view=${view}&date=${dateKey}`;
+}
+
+export type ScheduleNeighbor = { href: string; label: string };
+
+/**
+ * Куда ведёт листание пальцем на странице «Пары»: в виде «День» — соседний учебный день (воскресенье
+ * пропускаем: после субботы идёт понедельник), в виде «Неделя» — соседняя неделя. Подпись — для подсказки
+ * у края экрана. Дальше года от сегодня листать некуда: страница такую дату не покажет.
+ */
+export function scheduleNeighbors(
+  view: ScheduleView, dateKey: string, today: string,
+): { prev: ScheduleNeighbor | null; next: ScheduleNeighbor | null } {
+  const inRange = (key: string) => Math.abs(dayDiff(today, key)) <= MAX_DAYS;
+  const step = (dir: 1 | -1): ScheduleNeighbor | null => {
+    if (view === "week") {
+      const key = shiftDateKey(dateKey, 7 * dir);
+      return inRange(key) ? { href: scheduleHref("week", key), label: weekLabel(mondayOf(key)) } : null;
+    }
+    let key = shiftDateKey(dateKey, dir);
+    if (isSunday(key)) key = shiftDateKey(key, dir);
+    return inRange(key) ? { href: scheduleHref("day", key), label: `${ruWeekdayShort(key)}, ${ruDateKey(key)}` } : null;
+  };
+  return { prev: step(-1), next: step(1) };
 }

@@ -1,9 +1,4 @@
-/* Свайп между разделами (телефон). Логика — SwipeNav.tsx. */
-
-.root {
-  /* пустое место под коротким экраном тоже ловит жест */
-  min-height: 60dvh;
-}
+/* Листание пальцем (телефон). Логика — SwipePane.tsx. */
 
 /* Вертикальную прокрутку и масштаб оставляем браузеру, горизонтальное движение пальца получает наш жест */
 .root[data-swipe] {
@@ -17,9 +12,17 @@
   cursor: grabbing;
 }
 
-.root[data-dragging] .pane {
+.root[data-dragging] > * {
   pointer-events: none;
+}
+
+.root[data-dragging] .pane {
   will-change: transform, opacity;
+}
+
+/* лист ловит жест и там, где под коротким списком пусто */
+.pane {
+  min-height: 30dvh;
 }
 
 /* Подсказка «куда попаду»: проявляется у края экрана по мере движения пальца */
@@ -76,7 +79,7 @@
 
 /* На десктопе жеста нет */
 @media (min-width: 1024px) {
-  .root {
+  .pane {
     min-height: 0;
   }
 
