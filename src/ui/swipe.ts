@@ -1,5 +1,5 @@
-// Свайп между разделами нижней навигации — чистая логика жеста (без React и DOM-событий), её проверяют тесты.
-// Сам компонент — SwipeNav.tsx.
+// Листание пальцем — чистая логика жеста (без React и DOM-событий), её проверяют тесты.
+// Сам компонент — SwipePane.tsx; что именно листается, решает страница (на «Парах» — дни и недели).
 
 /** Порог по расстоянию: 28% ширины экрана, но не больше 110 px (на планшете не нужно тянуть через пол-экрана). */
 const DISTANCE_RATIO = 0.28;
@@ -9,19 +9,6 @@ const FLICK_VELOCITY = 0.45; // px/мс
 const FLICK_MIN_DISTANCE = 36;
 /** Сопротивление, когда соседа нет: лист тянется, но всё неохотнее. */
 const RUBBER_LIMIT = 56;
-
-export type SwipeNeighbors = { prev: string | null; next: string | null };
-
-/**
- * Соседние разделы для текущего пути. Свайп работает только на самих разделах («/», «/schedule», …):
- * на вложенных страницах (карточка обращения, мастер, уведомления) — null, чтобы жест не увёл с формы.
- */
-export function swipeNeighbors(pathname: string | null, hrefs: readonly string[]): SwipeNeighbors | null {
-  if (!pathname) return null;
-  const i = hrefs.indexOf(pathname);
-  if (i === -1) return null;
-  return { prev: hrefs[i - 1] ?? null, next: hrefs[i + 1] ?? null };
-}
 
 /** Сдвиг листа под пальцем: с соседом — один к одному, без соседа — с нарастающим сопротивлением. */
 export function dragOffset(dx: number, hasNeighbor: boolean): number {

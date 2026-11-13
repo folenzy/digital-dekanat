@@ -1,22 +1,23 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect, useLayoutEffect, useRef, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { commitDistance, dragOffset, isSwipeBlockedTarget, shouldCommit, swipeNeighbors } from "./swipe";
-import styles from "./SwipeNav.module.css";
+import { commitDistance, dragOffset, isSwipeBlockedTarget, shouldCommit } from "./swipe";
+import styles from "./SwipePane.module.css";
 
-// Свайп между разделами на телефоне: лист идёт за пальцем, у края экрана появляется подсказка «куда попаду»,
-// после порога (или быстрого смахивания) — переход на соседний раздел. Нижняя панель остаётся: жест — дополнение
-// к нажатию, а не замена.
+// Листание пальцем: лист идёт за пальцем, у края экрана появляется подсказка «куда попаду»,
+// после порога (или быстрого смахивания) — переход на соседний экран. Что именно «соседнее», решает
+// страница: она передаёт адреса и подписи (на «Парах» — соседний день или неделя). Стрелки и ссылки
+// рядом остаются: жест — дополнение к нажатию, а не замена.
 //
 // Правила движения (скилл emil-design-eng):
 // · сдвиг ставится прямо в style.transform элемента — без состояния React и CSS-переменных, без лишних пересчётов;
 // · возврат и вход — CSS-переходы/WAAPI, их можно прервать новым жестом;
-// · анимируется только переход, начатый жестом: нажатие на вкладку остаётся мгновенным;
+// · анимируется только переход, начатый жестом: нажатие на ссылку остаётся мгновенным;
 // · при «уменьшить движение» лист не ездит, остаётся короткое проявление.
 
-type Item = { href: string; label: string };
+export type SwipeTarget = { href: string; label: string };
 
 type Drag = {
   id: number;
@@ -35,8 +36,19 @@ const SLOP = 12; // сколько палец должен пройти, пре�
 const prefersReducedMotion = () =>
   typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-export function SwipeNav({ items, className, children }: { items: Item[]; className?: string; children: ReactNode }) {
-  const pathname = usePathname();
+type SwipePaneProps = {
+  /** Куда ведёт движение пальца вправо (предыдущее) и влево (следующее); null — листать некуда. */
+  prev: SwipeTarget | null;
+  next: SwipeTarget | null;
+  /** Меняется вместе с содержимым (дата, вид): по нему лист понимает, что пришёл новый экран. */
+  pageKey: string;
+  /** Неподвижная часть над листом (полоса дней): жест на ней начинается, но сама она не едет. */
+  lead?: ReactNode;
+  className?: string;
+  children: ReactNode;
+};
+
+export function SwipePane({ prev, next, pageKey, lead, className, children }: SwipePaneProps) {
   const router = useRouter();
   const root = useRef<HTMLDivElement>(null);
   const pane = useRef<HTMLDivElement>(null);
@@ -45,14 +57,10 @@ export function SwipeNav({ items, className, children }: { items: Item[]; classN
   const drag = useRef<Drag | null>(null);
   const suppressClick = useRef(false);
   const exitTimer = useRef<number | undefined>(undefined);
-  /** С какой стороны войдёт следующий экран: ставит жест, читает эффект смены пути. */
+  /** С какой стороны войдёт следующий экран: ставит жест, читает эффект смены содержимого. */
   const pendingEnter = useRef<1 | -1 | null>(null);
 
-  const hrefs = items.map((i) => i.href);
-  const neighbors = swipeNeighbors(pathname, hrefs);
-  const label = (href: string | null) => items.find((i) => i.href === href)?.label ?? "";
-
-  // Новый раздел после свайпа входит с той стороны, откуда его «вытянули».
+  // Новое содержимое после свайпа входит с той стороны, откуда его «вытянули».
   useLayoutEffect(() => {
     const el = pane.current;
     window.clearTimeout(exitTimer.current);
@@ -66,31 +74,20 @@ export function SwipeNav({ items, className, children }: { items: Item[]; classN
     pendingEnter.current = null;
     if (dir === null || typeof el.animate !== "function") return;
     const reduced = prefersReducedMotion();
-    // лист уже въезжает целиком — каскад блоков внутри него не нужен
-    el.setAttribute("data-swipe-enter", "");
-    const enter = el.animate(
+    el.animate(
       reduced
         ? [{ opacity: 0 }, { opacity: 1 }]
         : [{ transform: `translateX(${dir * 22}%)`, opacity: 0 }, { transform: "translateX(0)", opacity: 1 }],
       { duration: reduced ? 140 : 280, easing: "cubic-bezier(0.23, 1, 0.32, 1)" },
     );
-    const clear = () => el.removeAttribute("data-swipe-enter");
-    enter.addEventListener("finish", clear);
-    enter.addEventListener("cancel", clear);
-  }, [pathname]);
+  }, [pageKey]);
 
-  useEffect(() => {
-    // Каскад появления блоков — только при первом открытии кабинета (см. today.module.css)
-    const entered = window.setTimeout(() => document.documentElement.setAttribute("data-entered", ""), 900);
-    return () => {
-      window.clearTimeout(entered);
-      window.clearTimeout(exitTimer.current);
-    };
+  useEffect(() => () => {
+    window.clearTimeout(exitTimer.current);
+    document.documentElement.removeAttribute("data-swiping");
   }, []);
 
   function setHint(dx: number, armed: boolean) {
-    const prev = hintPrev.current;
-    const next = hintNext.current;
     const show = (el: HTMLDivElement | null, on: boolean) => {
       if (!el) return;
       const p = on ? Math.min(Math.abs(dx) / commitDistance(window.innerWidth), 1) : 0;
@@ -99,8 +96,8 @@ export function SwipeNav({ items, className, children }: { items: Item[]; classN
       if (on && armed) el.setAttribute("data-armed", "");
       else el.removeAttribute("data-armed");
     };
-    show(prev, dx > 0 && !!neighbors?.prev);
-    show(next, dx < 0 && !!neighbors?.next);
+    show(hintPrev.current, dx > 0 && !!prev);
+    show(hintNext.current, dx < 0 && !!next);
   }
 
   function settle(el: HTMLDivElement) {
@@ -120,7 +117,7 @@ export function SwipeNav({ items, className, children }: { items: Item[]; classN
   }
 
   function onPointerDown(e: ReactPointerEvent<HTMLDivElement>) {
-    if (!neighbors || e.pointerType !== "touch" || !e.isPrimary || drag.current) return;
+    if (e.pointerType !== "touch" || !e.isPrimary || drag.current) return;
     if (e.clientX < EDGE_GUARD || e.clientX > window.innerWidth - EDGE_GUARD) return;
     if (!root.current || isSwipeBlockedTarget(e.target as HTMLElement, root.current)) return;
     if (window.getSelection()?.toString()) return; // человек выделяет текст
@@ -130,7 +127,7 @@ export function SwipeNav({ items, className, children }: { items: Item[]; classN
   function onPointerMove(e: ReactPointerEvent<HTMLDivElement>) {
     const d = drag.current;
     const el = pane.current;
-    if (!d || !el || !neighbors || e.pointerId !== d.id) return;
+    if (!d || !el || e.pointerId !== d.id) return;
     const dx = e.clientX - d.x0;
     const dy = e.clientY - d.y0;
 
@@ -153,7 +150,7 @@ export function SwipeNav({ items, className, children }: { items: Item[]; classN
     }
 
     d.dx = dx;
-    const hasNeighbor = dx > 0 ? !!neighbors.prev : !!neighbors.next;
+    const hasNeighbor = dx > 0 ? !!prev : !!next;
     const offset = prefersReducedMotion() ? 0 : dragOffset(dx, hasNeighbor);
     el.style.transform = `translateX(${offset}px)`;
     if (hasNeighbor) el.style.opacity = String(1 - Math.min(Math.abs(dx) / window.innerWidth, 1) * 0.45);
@@ -171,28 +168,29 @@ export function SwipeNav({ items, className, children }: { items: Item[]; classN
     drag.current = null;
     root.current?.removeAttribute("data-dragging");
     setHint(0, false);
-    if (!d.dragging || !el || !neighbors) return;
+    if (!d.dragging || !el) return;
 
     // после перетаскивания браузер может прислать click по тому, что было под пальцем, — гасим его
     suppressClick.current = true;
     window.setTimeout(() => (suppressClick.current = false), 80);
 
     const dx = cancelled ? d.dx : e.clientX - d.x0;
-    const target = dx > 0 ? neighbors.prev : neighbors.next;
+    const target = dx > 0 ? prev : next;
     const go = !cancelled && target !== null && shouldCommit({ dx, dt: e.timeStamp - d.t0, width: window.innerWidth });
     if (!go || target === null) {
       settle(el);
       return;
     }
 
-    const dir = dx < 0 ? 1 : -1; // влево → следующий раздел входит справа
+    const dir = dx < 0 ? 1 : -1; // влево → следующее входит справа
     pendingEnter.current = dir;
     if (!prefersReducedMotion()) {
       el.style.transition = "transform 180ms cubic-bezier(0.23, 1, 0.32, 1), opacity 160ms ease";
       el.style.transform = `translateX(${-dir * 32}%)`;
     }
     el.style.opacity = "0";
-    router.push(target);
+    // как и ссылки рядом: страница не прыгает наверх, меняется только лист
+    router.push(target.href, { scroll: false });
     // Страховка: если переход не состоялся (сеть), возвращаем лист на место
     exitTimer.current = window.setTimeout(() => {
       pendingEnter.current = null;
@@ -204,7 +202,7 @@ export function SwipeNav({ items, className, children }: { items: Item[]; classN
     <div
       ref={root}
       className={styles.root}
-      data-swipe={neighbors ? "" : undefined}
+      data-swipe=""
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={(e) => finish(e, false)}
@@ -215,18 +213,19 @@ export function SwipeNav({ items, className, children }: { items: Item[]; classN
         e.stopPropagation();
       }}
     >
-      <div ref={pane} className={[styles.pane, className].filter(Boolean).join(" ")}>
+      {lead}
+      <div ref={pane} data-swipe-sheet="" className={[styles.pane, className].filter(Boolean).join(" ")}>
         {children}
       </div>
-      {neighbors?.prev && (
+      {prev && (
         <div ref={hintPrev} className={styles.hint} data-side="prev" aria-hidden="true">
           <ChevronLeft className={styles.hintIcon} />
-          {label(neighbors.prev)}
+          {prev.label}
         </div>
       )}
-      {neighbors?.next && (
+      {next && (
         <div ref={hintNext} className={styles.hint} data-side="next" aria-hidden="true">
-          {label(neighbors.next)}
+          {next.label}
           <ChevronRight className={styles.hintIcon} />
         </div>
       )}

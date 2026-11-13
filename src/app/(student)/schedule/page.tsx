@@ -9,12 +9,13 @@ import { Badge } from "@/ui/Badge";
 import { Button } from "@/ui/Button";
 import { EmptyState } from "@/ui/EmptyState";
 import { PageHeader } from "@/ui/PageHeader";
+import { SwipePane } from "@/ui/SwipePane";
 import { Tabs } from "@/ui/Tabs";
 import type { LessonState } from "@/ui/student/LessonCard";
 import { LessonList } from "@/ui/student/LessonList";
 import { LESSON_TYPE_LABEL } from "@/ui/student/labels";
 import { typeDots } from "@/ui/student/schedule-view";
-import { mondayOf, parseScheduleParams, scheduleHref, weekLabel } from "@/ui/student/schedule-params";
+import { mondayOf, parseScheduleParams, scheduleHref, scheduleNeighbors, weekLabel } from "@/ui/student/schedule-params";
 import styles from "./schedule.module.css";
 
 export const metadata: Metadata = { title: "Пары" };
@@ -54,42 +55,12 @@ export default async function SchedulePage({ searchParams }: PageProps<"/schedul
   const atToday = view === "week" ? mondayOf(home) === monday : dateKey === home;
   const day = week.days.find((d) => d.dateKey === dateKey);
   const sundayNote = !sp.date && dateKey !== today;
+  // Пальцем: в виде «День» — соседний учебный день, в виде «Неделя» — соседняя неделя
+  const swipe = scheduleNeighbors(view, dateKey, today);
 
-  return (
+  // Полоса дней, легенда и ссылка «к сегодня» стоят на месте, но жест на них тоже начинается
+  const lead = (
     <>
-      <PageHeader title="Пары" />
-
-      <Tabs
-        label="Вид расписания"
-        items={[
-          { href: scheduleHref("day", dateKey), label: "День", current: view === "day" },
-          { href: scheduleHref("week", dateKey), label: "Неделя", current: view === "week" },
-        ]}
-      />
-
-      <div className={styles.weekNav}>
-        <Link
-          href={scheduleHref(view, shiftDateKey(dateKey, -7))}
-          className={styles.arrow}
-          aria-label="Предыдущая неделя"
-          scroll={false}
-        >
-          <ChevronLeft aria-hidden="true" />
-        </Link>
-        <div className={styles.weekLabel}>
-          <span className={styles.weekRange}>{weekLabel(monday)}</span>
-          <span className={styles.parity}>{week.parity === "odd" ? "нечётная неделя" : "чётная неделя"}</span>
-        </div>
-        <Link
-          href={scheduleHref(view, shiftDateKey(dateKey, 7))}
-          className={styles.arrow}
-          aria-label="Следующая неделя"
-          scroll={false}
-        >
-          <ChevronRight aria-hidden="true" />
-        </Link>
-      </div>
-
       {view === "day" && (
         <nav aria-label="Дни недели" className={styles.strip}>
           <ul className={styles.stripList}>
@@ -149,7 +120,45 @@ export default async function SchedulePage({ searchParams }: PageProps<"/schedul
           </Link>
         </p>
       )}
+    </>
+  );
 
+  return (
+    <>
+      <PageHeader title="Пары" />
+
+      <Tabs
+        label="Вид расписания"
+        items={[
+          { href: scheduleHref("day", dateKey), label: "День", current: view === "day" },
+          { href: scheduleHref("week", dateKey), label: "Неделя", current: view === "week" },
+        ]}
+      />
+
+      <div className={styles.weekNav}>
+        <Link
+          href={scheduleHref(view, shiftDateKey(dateKey, -7))}
+          className={styles.arrow}
+          aria-label="Предыдущая неделя"
+          scroll={false}
+        >
+          <ChevronLeft aria-hidden="true" />
+        </Link>
+        <div className={styles.weekLabel}>
+          <span className={styles.weekRange}>{weekLabel(monday)}</span>
+          <span className={styles.parity}>{week.parity === "odd" ? "нечётная неделя" : "чётная неделя"}</span>
+        </div>
+        <Link
+          href={scheduleHref(view, shiftDateKey(dateKey, 7))}
+          className={styles.arrow}
+          aria-label="Следующая неделя"
+          scroll={false}
+        >
+          <ChevronRight aria-hidden="true" />
+        </Link>
+      </div>
+
+      <SwipePane prev={swipe.prev} next={swipe.next} pageKey={`${view}:${dateKey}`} lead={lead}>
       {view === "day" && day && (
         <section className={styles.day}>
           <h2 className={styles.dayTitle}>
@@ -187,6 +196,7 @@ export default async function SchedulePage({ searchParams }: PageProps<"/schedul
           ))}
         </div>
       )}
+      </SwipePane>
     </>
   );
 }
