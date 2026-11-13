@@ -15,7 +15,15 @@
   }
 }
 
-/* .paper — вид по умолчанию, отдельных правил нет (класс нужен для :hover ниже) */
+/* .paper — рамка по умолчанию, отдельных правил нет (класс нужен для :hover ниже) */
+
+/* Раздел без рамки: заголовок и содержимое стоят прямо на поле страницы */
+.plain {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+}
 
 .ink {
   border-color: var(--plate);
@@ -47,12 +55,13 @@
   outline-offset: 3px;
 }
 
+/* Строка над заголовком — только когда она сообщает то, чего нет в заголовке (номер обращения) */
 .kicker {
   margin: 0 0 var(--space-1);
   font-size: var(--text-sm);
-  font-weight: 600;
+  font-weight: 500;
   line-height: var(--leading-snug);
-  color: var(--fg-accent);
+  color: var(--fg-muted);
 }
 
 .title {

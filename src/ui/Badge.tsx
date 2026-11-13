@@ -5,9 +5,17 @@ import styles from "./Badge.module.css";
 
 export type BadgeTone = "ok" | "warn" | "danger" | "info" | "accent" | "neutral";
 
-export function Badge({ tone = "neutral", icon, children }: { tone?: BadgeTone; icon?: ReactNode; children: ReactNode }) {
+type BadgeProps = {
+  tone?: BadgeTone;
+  icon?: ReactNode;
+  /** Обычное состояние: текст без подложки. Подложку получает только то, что требует действия. */
+  quiet?: boolean;
+  children: ReactNode;
+};
+
+export function Badge({ tone = "neutral", icon, quiet = false, children }: BadgeProps) {
   return (
-    <span className={styles.badge} data-tone={tone}>
+    <span className={styles.badge} data-tone={tone} data-quiet={quiet || undefined}>
       {icon && <span className={styles.icon} aria-hidden="true">{icon}</span>}
       {children}
     </span>

@@ -17,7 +17,7 @@
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: var(--accent-tint);
+  background: var(--neutral-tint);
   color: var(--accent-strong);
   font-family: var(--font-display);
   font-size: var(--text-xl);
@@ -25,10 +25,7 @@
 }
 
 .sheet {
-  padding: var(--space-4);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  background: var(--surface);
+  margin-top: var(--space-8);
   color: var(--fg);
 }
 
@@ -41,16 +38,13 @@
   margin: 0;
   padding: 0;
   list-style: none;
+  border-top: 1px solid var(--line);
 }
 
 .list li {
   padding: var(--space-3) 0;
-  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
   font-weight: 500;
-}
-
-.list li:first-child {
-  border-top: 0;
 }
 
 .hint {
@@ -72,10 +66,9 @@
   align-items: flex-start;
   gap: var(--space-3);
   min-height: var(--tap);
-  padding: var(--space-4);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  background: var(--paper);
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
   color: var(--ink);
   text-decoration: none;
 }
@@ -116,10 +109,6 @@
     width: 72px;
     height: 72px;
     font-size: var(--text-2xl);
-  }
-
-  .sheet {
-    padding: var(--space-5) var(--space-6);
   }
 
   .actions {

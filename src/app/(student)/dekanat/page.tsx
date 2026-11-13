@@ -6,7 +6,7 @@ import { listMyAppeals } from "@/server/appeals/service";
 import { APPEAL_TYPES, isAppealTypeCode } from "@/server/appeals/types";
 import { requireStudent } from "@/server/auth/viewer";
 import { searchKb, type KbHit } from "@/server/kb";
-import { AppealListCard } from "@/ui/appeals/AppealListCard";
+import { AppealList } from "@/ui/appeals/AppealListCard";
 import { Button } from "@/ui/Button";
 import { EmptyState } from "@/ui/EmptyState";
 import { PageHeader } from "@/ui/PageHeader";
@@ -25,7 +25,7 @@ const EXAMPLES = ["справка в военкомат", "пересдача", 
 function Answer({ hit, q, open }: { hit: KbHit; q: string; open: boolean }) {
   const type = isAppealTypeCode(hit.appealTypeCode) ? hit.appealTypeCode : null;
   return (
-    <article className={styles.answer} data-surface="paper">
+    <article className={styles.answer}>
       <details className={styles.details} open={open || undefined}>
         <summary className={styles.summary}>
           <h3 className={styles.question}>{hit.question}</h3>
@@ -62,7 +62,7 @@ export default async function DekanatPage({ searchParams }: PageProps<"/dekanat"
         subtitle="Спроси — частые вопросы уже разобраны. Нет готового ответа — обращение само уйдёт в нужный отдел."
       />
 
-      <section className={styles.ask} data-surface="ink">
+      <section className={styles.ask}>
         <Form action="/dekanat" role="search" className={styles.askForm}>
           <h2 id="ask-title" className={styles.askTitle}>
             <label htmlFor="ask-q">Спроси деканат</label>
@@ -122,7 +122,7 @@ export default async function DekanatPage({ searchParams }: PageProps<"/dekanat"
         )
       )}
 
-      <div className={styles.newRow} data-surface="paper">
+      <div className={styles.newRow}>
         <div className={styles.newText}>
           <p className={styles.newTitle}>Знаешь, что нужно?</p>
           <p className={styles.newLead}>Справку, заявление или вопрос сотруднику оформишь в три шага.</p>
@@ -149,9 +149,7 @@ export default async function DekanatPage({ searchParams }: PageProps<"/dekanat"
               : "Сюда попадут обращения, которые закрыты или отклонены."}
           />
         ) : (
-          <ul className={styles.list}>
-            {appeals.map((a) => <li key={a.id}><AppealListCard appeal={a} now={now} /></li>)}
-          </ul>
+          <AppealList appeals={appeals} now={now} />
         )}
       </Section>
     </>

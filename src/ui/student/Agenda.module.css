@@ -1,0 +1,129 @@
+/* Лента дня: колонка времени слева, пара справа, строки через линию. */
+
+.agenda {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--line);
+}
+
+.item {
+  display: grid;
+  grid-template-columns: 3.25rem minmax(0, 1fr);
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--line);
+}
+
+/* Время: начало — как текст, конец — тише. Колонка одной ширины, чтобы названия стояли в линию. */
+.time {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  line-height: var(--leading-snug);
+}
+
+.start {
+  font-weight: 600;
+}
+
+.end {
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.oldStart {
+  color: var(--muted);
+  font-size: var(--text-xs);
+}
+
+.body {
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  font-size: var(--text-md);
+  font-weight: 600;
+  line-height: var(--leading-snug);
+  overflow-wrap: anywhere;
+}
+
+.meta {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+  overflow-wrap: anywhere;
+}
+
+/* Тип занятия — та же «таблетка», что в «Парах», только меньше */
+.type {
+  flex: none;
+  padding: 1px 7px;
+  border-radius: var(--radius-pill);
+  color: var(--on-type);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1.45;
+  letter-spacing: 0.02em;
+}
+
+.type[data-type="lecture"] {
+  background: var(--lesson-lecture);
+}
+
+.type[data-type="practice"] {
+  background: var(--lesson-practice);
+}
+
+.type[data-type="lab"] {
+  background: var(--lesson-lab);
+}
+
+.marks {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-2);
+  margin: var(--space-2) 0 0;
+  font-size: var(--text-sm);
+}
+
+.next {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.note {
+  flex-basis: 100%;
+  color: var(--muted);
+  text-wrap: pretty;
+}
+
+/* Идёт сейчас: синяя метка у края строки — состояние, а не украшение */
+.item[data-state="current"] {
+  position: relative;
+}
+
+.item[data-state="current"]::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(-1 * var(--space-3));
+  width: 3px;
+  background: var(--accent-fill);
+}
+
+/* Прошла или отменена — тише */
+.item[data-state="past"] .start,
+.item[data-state="past"] .title,
+.item[data-cancelled] .start,
+.item[data-cancelled] .title {
+  color: var(--muted);
+  font-weight: 500;
+}

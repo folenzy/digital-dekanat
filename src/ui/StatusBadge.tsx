@@ -13,10 +13,14 @@ export const STATUS_META: Record<AppealStatus, { label: string; tone: BadgeTone;
   closed: { label: "Закрыто", tone: "neutral", Icon: Archive },
 };
 
+/** Состояния, в которых от читающего ничего не нужно: пишутся текстом, без подложки и значка. */
+const QUIET: ReadonlySet<AppealStatus> = new Set(["submitted", "in_progress", "closed"]);
+
 export function StatusBadge({ status }: { status: AppealStatus }) {
   const { label, tone, Icon } = STATUS_META[status];
+  const quiet = QUIET.has(status);
   return (
-    <Badge tone={tone} icon={<Icon aria-hidden="true" />}>
+    <Badge tone={tone} quiet={quiet} icon={quiet ? undefined : <Icon aria-hidden="true" />}>
       {label}
     </Badge>
   );

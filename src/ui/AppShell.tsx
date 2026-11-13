@@ -3,7 +3,6 @@ import type { ReactNode } from "react";
 import { Bell } from "./Bell";
 import { BottomNav } from "./BottomNav";
 import { ConceptBanner } from "./ConceptBanner";
-import { EnteredFlag } from "./EnteredFlag";
 import { LiveEvents } from "./live/LiveEvents";
 import { Logo } from "./Logo";
 import { bellHref, navItems, type ShellRole } from "./nav";
@@ -51,7 +50,6 @@ export function AppShell({ role, userName, unread, children, live = true }: AppS
         </div>
       </div>
       <BottomNav role={role} />
-      <EnteredFlag />
       {live && <LiveEvents />}
     </div>
   );
