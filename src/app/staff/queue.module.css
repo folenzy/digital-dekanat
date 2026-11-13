@@ -30,6 +30,8 @@
 
 .cell dd {
   margin: 0;
+  flex: none;
+  white-space: nowrap;
   font-size: var(--text-md);
   font-weight: 700;
   font-variant-numeric: lining-nums tabular-nums;
@@ -65,7 +67,7 @@
 .depts a {
   display: inline-flex;
   align-items: center;
-  min-height: 36px;
+  min-height: var(--tap);
   padding: 0 var(--space-3);
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
@@ -129,6 +131,10 @@
   .tabs a {
     min-height: 36px;
     padding: 0 var(--space-4);
+  }
+
+  .depts a {
+    min-height: 36px;
   }
 
   .table {

@@ -64,7 +64,7 @@ export function QueueRow({ appeal: a, now }: { appeal: QueueItem; now: Date }) {
         <span className={styles.student}>{a.student.fullName}, {a.student.group}</span>
       </div>
       <span className={styles.meta}>
-        <span className={styles.dept}>{a.department.name}</span>
+        <span className={styles.dept} title={a.department.name}>{a.department.name}</span>
         <span className={styles.note}>
           {running && <span className="sr-only">{status}, </span>}
           {note(a, now)}

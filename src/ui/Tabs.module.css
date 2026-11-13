@@ -78,9 +78,15 @@
 }
 
 .tabs[data-size="small"] .link {
-  min-height: 36px;
   padding: 0 var(--space-4);
   font-size: var(--text-sm);
+}
+
+/* 36 px — только там, где нажимают мышью; на телефоне остаётся общая зона 44 px */
+@media (min-width: 900px) {
+  .tabs[data-size="small"] .link {
+    min-height: 36px;
+  }
 }
 
 

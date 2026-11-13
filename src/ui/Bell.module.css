@@ -11,8 +11,8 @@
   place-items: center;
   width: var(--tap);
   height: var(--tap);
-  margin-right: -10px;
-  border-radius: var(--radius-pill);
+  /* Без отрицательного отступа: справа от значка должно хватать места счётчику «99+» */
+  border-radius: var(--radius-md);
 }
 
 .row {
@@ -56,17 +56,17 @@
 }
 
 .badge {
-  min-width: 19px;
-  height: 19px;
+  min-width: 20px;
+  height: 20px;
   padding: 0 5px;
   border-radius: var(--radius-pill);
   background: var(--accent-fill);
   color: var(--on-accent);
   box-shadow: 0 0 0 2px var(--surface);
   font-family: var(--font-ui);
-  font-size: 11px;
+  font-size: var(--text-xs);
   font-weight: 700;
-  line-height: 19px;
+  line-height: 20px;
   font-variant-numeric: tabular-nums;
   text-align: center;
   white-space: nowrap;
@@ -81,9 +81,12 @@
   }
 }
 
+/* Счётчик стоит у правого верхнего угла значка и растёт вправо, не закрывая колокольчик.
+   При 128 непрочитанных «99+» вылезал за край экрана и давал странице горизонтальную прокрутку:
+   кнопка стояла вплотную к краю. Теперь справа от значка остаётся место (см. .bell). */
 .glyph .badge {
   position: absolute;
-  top: -7px;
+  top: -8px;
   left: 12px;
 }
 

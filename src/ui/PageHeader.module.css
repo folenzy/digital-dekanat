@@ -17,6 +17,8 @@
   letter-spacing: -0.015em;
   color: var(--fg);
   text-wrap: balance;
+  /* длинное слово (двойная фамилия) переносится, а не раздвигает страницу */
+  overflow-wrap: anywhere;
 }
 
 .subtitle {
