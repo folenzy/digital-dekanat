@@ -24,6 +24,8 @@ export function staffFailure(f: Failure): { error: string; fieldErrors: Record<s
       return { error: "Слишком много сообщений — попробуй через несколько минут", fieldErrors: {} };
     case "not_found":
       return { error: "Обращение не найдено — вернись в очередь и открой его заново", fieldErrors: {} };
+    case "empty":
+      return { error: "Новых обращений нет — всё разобрано", fieldErrors: {} };
     case "validation":
       if (f.fieldErrors && Object.keys(f.fieldErrors).length > 0) {
         return { error: f.fieldErrors._form ?? "", fieldErrors: f.fieldErrors };

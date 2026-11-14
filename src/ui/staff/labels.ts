@@ -1,4 +1,4 @@
-import type { AppealStatus, DepartmentCode, StaffTab } from "@/server/appeals/types";
+import type { AppealStatus, DepartmentCode, QueueGroupKey, StaffTab } from "@/server/appeals/types";
 import { plural } from "@/server/format";
 import { mskDateKey, shiftDateKey } from "@/server/time";
 
@@ -7,6 +7,15 @@ import { mskDateKey, shiftDateKey } from "@/server/time";
 export type QueueTabMeta = { tab: StaffTab; label: string; emptyTitle: string; emptyText: string };
 
 /** Вкладки очереди (спека §7.9) и что показать, когда во вкладке пусто. */
+/** Подписи групп очереди (группы — по сроку ответа, границы дней по Москве). */
+export const QUEUE_GROUP_LABEL: Record<QueueGroupKey, string> = {
+  overdue: "Просрочено",
+  today: "Сегодня",
+  tomorrow: "Завтра",
+  later: "Позже",
+  all: "Все обращения",
+};
+
 export const QUEUE_TABS: readonly QueueTabMeta[] = [
   {
     tab: "new", label: "Новые",
