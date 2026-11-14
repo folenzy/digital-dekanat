@@ -112,6 +112,8 @@ export default async function QueuePage({ searchParams }: PageProps<"/staff">) {
         />
       ) : (
         <div className={styles.table}>
+          {/* строки — заголовки третьего уровня: им нужен родительский заголовок раздела */}
+          <h2 className="sr-only">Обращения: {meta.label.toLowerCase()}</h2>
           <QueueHead closed={tab === "closed"} />
           <ul className={styles.list} aria-label="Обращения">
             {items.map((a) => (

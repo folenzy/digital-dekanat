@@ -224,15 +224,6 @@
     padding: var(--space-6);
   }
 
-  .choice {
-    padding: var(--space-4) var(--space-5);
-  }
-
-  .choiceIcon {
-    align-self: center;
-    width: 44px;
-    height: 44px;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

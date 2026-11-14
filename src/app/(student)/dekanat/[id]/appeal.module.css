@@ -253,7 +253,6 @@
 }
 
 @media (min-width: 600px) {
-  .promise,
   .panel {
     padding: var(--space-6);
   }

@@ -294,29 +294,28 @@
   margin-top: 0;
 }
 
+/* Экзамены и пересдачи — одна группа строк через линию. Пересдачу отмечает метка «Пересдача», а не контур:
+   синий в системе только у действия, выбранного и ссылки. */
 .exams {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
   margin: 0;
   padding: 0;
   list-style: none;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--paper);
+  overflow: hidden;
 }
 
 .exam {
   display: grid;
   grid-template-columns: 4rem minmax(0, 1fr);
   gap: var(--space-3);
-  padding: var(--space-4);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  background: var(--surface);
+  padding: var(--space-3) var(--space-4);
   color: var(--fg);
 }
 
-.exam[data-retake] {
-  border-color: var(--accent);
-  box-shadow: inset 0 0 0 0.5px var(--accent);
+.exam + .exam {
+  border-top: 1px solid var(--line);
 }
 
 .examDate {
@@ -325,9 +324,9 @@
 }
 
 .examDay {
-  font-size: var(--text-3xl);
-  font-weight: 600;
-  line-height: 1;
+  font-size: var(--text-xl);
+  font-weight: 700;
+  line-height: 1.1;
 }
 
 .examMonth {
@@ -410,25 +409,12 @@
 }
 
 @media (min-width: 600px) {
-  .verdict h2 {
-    font-size: var(--text-3xl);
-  }
-
-  .subject,
-  .exam {
-    padding: var(--space-5);
+  .subject {
+    padding: var(--space-3) var(--space-5);
   }
 
   .exam {
-    grid-template-columns: 5rem minmax(0, 1fr);
-  }
-
-  .stat dt {
-    font-size: var(--text-sm);
-  }
-
-  .statValue {
-    font-size: var(--text-3xl);
+    padding: var(--space-3) var(--space-5);
   }
 
   .grade {
