@@ -41,7 +41,7 @@ export default async function StaffAnnouncementsPage() {
                 <article className={styles.item} data-surface="paper" data-important={a.important || undefined}>
                   <div className={styles.itemMeta}>
                     <span className={styles.audience}>Кому: {a.audience === "Всем" ? "всем студентам" : a.audience}</span>
-                    {a.important && <Badge tone="accent" icon={<Pin aria-hidden="true" />}>Важное</Badge>}
+                    {a.important && <Badge tone="warn" icon={<Pin aria-hidden="true" />}>Важное</Badge>}
                   </div>
                   <h3 className={styles.itemTitle}>{a.title}</h3>
                   <p className={styles.itemBody}>{a.body}</p>

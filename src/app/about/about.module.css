@@ -21,8 +21,8 @@
   margin-top: var(--space-4);
   padding: 4px 10px;
   border-radius: var(--radius-sm);
-  background: var(--ink);
-  color: var(--bg);
+  background: var(--neutral-tint);
+  color: var(--muted-strong);
   font-size: var(--text-sm);
   font-weight: 500;
 }
