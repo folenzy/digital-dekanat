@@ -107,9 +107,16 @@ test("ударения можно снять: «не указывать»", asyn
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Миронова Алина Сергеевна");
 });
 
+/** Открыть «Уведомления» и дождаться списка: count() не ждёт, а сначала на экране — заглушка загрузки. */
+async function openNotifications(page: Page) {
+  await page.goto("/notifications");
+  await expect(page.getByRole("heading", { level: 1, name: "Уведомления" })).toBeVisible();
+  await expect(page.getByRole("main").getByRole("listitem").first()).toBeVisible();
+}
+
 test("уведомления: выключенная категория пропадает из колокольчика и возвращается обратно", async ({ page }) => {
   await signIn(page, "alina");
-  await page.goto("/notifications");
+  await openNotifications(page);
   const list = page.getByRole("main");
   const before = await list.getByRole("listitem").count();
   expect(before).toBeGreaterThan(0);
@@ -123,7 +130,7 @@ test("уведомления: выключенная категория проп
   await page.waitForURL("**/profile?saved=notifications");
   await expect(settings(page).getByRole("link", { name: /Уведомления/ })).toContainText("выключено: 2 из 3");
 
-  await page.goto("/notifications");
+  await openNotifications(page);
   const after = await list.getByRole("listitem").count();
   expect(after).toBeLessThan(before);
 
