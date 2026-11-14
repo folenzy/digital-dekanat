@@ -5,7 +5,6 @@ import { listAnnouncementsFor } from "@/server/announcements";
 import { ruWhen } from "@/server/format";
 import { listNotifications } from "@/server/notifications";
 import { Badge } from "@/ui/Badge";
-import { Card } from "@/ui/Card";
 import { EmptyState } from "@/ui/EmptyState";
 import { PageHeader } from "@/ui/PageHeader";
 import { SubmitButton } from "@/ui/SubmitButton";
@@ -92,18 +91,15 @@ export default async function NotificationsPage({ searchParams }: PageProps<"/no
         ) : (
           <ul className={styles.list}>
             {announcements.map((a) => (
-              <Card
-                key={a.id}
-                as="li"
-                variant={a.important ? "accent" : "paper"}
-                kicker={ruWhen(a.publishedAt, now)}
-                title={a.title}
-                titleAs="h2"
-              >
-                {a.important && <p className={styles.important}><Badge tone="accent">Важное</Badge></p>}
+              <li key={a.id} className={styles.annItem}>
+                <h2 className={styles.annTitle}>{a.title}</h2>
+                <p className={styles.annMeta}>
+                  <span>{ruWhen(a.publishedAt, now)}</span>
+                  <span>{a.audience === "Всем" ? "всем студентам" : a.audience}</span>
+                  {a.important && <Badge tone="warn">Важное</Badge>}
+                </p>
                 <p className={styles.announcement}>{a.body}</p>
-                <p className={styles.audience}>Кому: {a.audience === "Всем" ? "всем студентам" : a.audience}</p>
-              </Card>
+              </li>
             ))}
           </ul>
         )

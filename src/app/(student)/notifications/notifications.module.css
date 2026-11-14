@@ -92,18 +92,33 @@
   font-weight: 700;
 }
 
-.important {
-  margin-bottom: var(--space-2);
+/* Объявление — строка ленты: заголовок, когда и кому, текст (как на «Сегодня») */
+.annItem {
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--line);
+  overflow-wrap: anywhere;
+}
+
+.annTitle {
+  margin: 0;
+  font-size: var(--text-lg);
+  font-weight: 600;
+  line-height: var(--leading-snug);
+}
+
+.annMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--space-2);
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: var(--text-sm);
 }
 
 .announcement {
+  margin-top: var(--space-2);
   white-space: pre-line;
-}
-
-.audience {
-  margin-top: var(--space-3);
-  font-size: var(--text-sm);
-  color: var(--fg-muted);
 }
 
 
