@@ -1,11 +1,11 @@
-import { CardsSkeleton, HeaderSkeleton } from "@/ui/PageSkeleton";
+import { HeaderSkeleton, RowsSkeleton } from "@/ui/PageSkeleton";
 
-// Мастер обращения грузится: шаги и варианты.
+// Мастер обращения грузится: варианты — строки через линию.
 export default function NewAppealLoading() {
   return (
     <>
       <HeaderSkeleton kicker />
-      <CardsSkeleton count={3} lines={1} />
+      <RowsSkeleton count={3} lines={2} />
     </>
   );
 }

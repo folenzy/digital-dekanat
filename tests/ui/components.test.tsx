@@ -11,6 +11,7 @@ import { EmptyState } from "@/ui/EmptyState";
 import { ErrorState } from "@/ui/ErrorState";
 import { Logo } from "@/ui/Logo";
 import { PageHeader } from "@/ui/PageHeader";
+import { CardsSkeleton, HeaderSkeleton, RowsSkeleton, StripSkeleton, TabsSkeleton } from "@/ui/PageSkeleton";
 import { Skeleton, SkeletonCard } from "@/ui/Skeleton";
 import { STATUS_META, StatusBadge } from "@/ui/StatusBadge";
 import { Toast } from "@/ui/Toast";
@@ -115,6 +116,29 @@ describe("состояния экранов", () => {
     const card = html(<SkeletonCard />);
     expect(card).toContain('role="status"');
     expect(card).toContain("Загружаем");
+  });
+
+  it("заглушка страницы объявляет загрузку один раз — заголовком, а строки и блоки молчат", () => {
+    const page = html(
+      <>
+        <HeaderSkeleton />
+        <TabsSkeleton />
+        <StripSkeleton />
+        <RowsSkeleton count={3} time />
+        <RowsSkeleton count={2} framed />
+        <CardsSkeleton count={2} lines={3} />
+      </>,
+    );
+    expect(page.match(/role="status"/g)).toHaveLength(1);
+    expect(page).toContain("Загружаем");
+  });
+
+  it("строки-заглушки: столько строк, сколько просили; колонка времени — только у ленты дня", () => {
+    const rows = html(<RowsSkeleton count={4} />);
+    expect(rows.match(/data-skeleton-row/g)).toHaveLength(4);
+    expect(rows).not.toContain("data-skeleton-time");
+    expect(html(<RowsSkeleton count={2} time />).match(/data-skeleton-time/g)).toHaveLength(2);
+    expect(html(<RowsSkeleton count={1} framed />)).toContain("data-framed");
   });
 });
 

@@ -1,13 +1,13 @@
-import { CardsSkeleton, HeaderSkeleton, TabsSkeleton } from "@/ui/PageSkeleton";
+import { HeaderSkeleton, LineSkeleton, RowsSkeleton, TabsSkeleton } from "@/ui/PageSkeleton";
 
-// Очередь грузится: заголовок, сводка, вкладки, талоны.
+// Очередь грузится: строка сводки, вкладки, таблица обращений в рамке.
 export default function QueueLoading() {
   return (
     <>
-      <HeaderSkeleton kicker subtitle={false} />
-      <CardsSkeleton count={1} lines={2} spaced />
+      <HeaderSkeleton subtitle={false} />
+      <LineSkeleton width="70%" />
       <TabsSkeleton />
-      <CardsSkeleton count={3} lines={3} />
+      <RowsSkeleton count={6} lines={2} framed />
     </>
   );
 }
