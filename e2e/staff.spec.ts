@@ -59,9 +59,9 @@ function queueTab(page: Page, name: string) {
   return page.getByRole("navigation", { name: "Вкладки очереди" }).getByRole("link", { name });
 }
 
-/** Карточки обращений текущей вкладки. */
+/** Строки обращений текущей вкладки — во всех группах по сроку, по порядку. */
 function cards(page: Page) {
-  return page.getByRole("list", { name: "Обращения" }).getByRole("link");
+  return page.getByRole("main").locator('a[href^="/staff/appeals/"]');
 }
 
 function bell(page: Page) {

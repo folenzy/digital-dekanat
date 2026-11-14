@@ -36,7 +36,7 @@
 |---|---|
 | Скиллы `superpowers:brainstorming` → `writing-plans` → `subagent-driven-development` | Вопросы по одному → спека → план из 17 задач → выполнение субагентами |
 | `test-driven-development`, `systematic-debugging` | Тест вперёд с доказательством падения; разбор нестабильного теста до причины |
-| `frontend-design`, `webapp-testing` | Дизайн-система «Бумага» и экраны; сквозные проверки Playwright, IDOR, axe |
+| `frontend-design`, `webapp-testing` | Дизайн-система и экраны (сначала «Бумага», с 13.11 — «Ведомость», см. `DESIGN.md`); сквозные проверки Playwright, IDOR, axe |
 | `security-review`, `verification-before-completion` | Итоговое ревью безопасности; «не говорить "готово" без прогона» |
 | Субагенты | Builder check спеки; 19 запусков исполнителей (9 Sonnet, 10 Opus); 18 первичных и 6 повторных ревью, итоговое ревью всей ветки и волна итоговых исправлений |
 | Визуальный компаньон | Три стиля экрана «Сегодня» на макете телефона для выбора |

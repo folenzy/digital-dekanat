@@ -14,7 +14,7 @@
   width: var(--tap);
   height: var(--tap);
   border: 1px solid var(--line);
-  border-radius: 50%;
+  border-radius: var(--radius-md);
   background: var(--paper);
   color: var(--ink);
 }
@@ -125,7 +125,7 @@
   background: var(--dot-lab);
 }
 
-/* В этот день есть изменения — терракотовая метка в углу листка */
+/* В этот день есть изменения — синяя метка в углу листка */
 .changedMark {
   position: absolute;
   top: 6px;
@@ -160,7 +160,7 @@
   gap: 6px;
 }
 
-/* Сегодня — терракотовая черта снизу; выбранный день — тёмный листок */
+/* Сегодня — синяя черта снизу; выбранный день — залитый листок */
 .dayLink[data-today]::after {
   content: "";
   position: absolute;
@@ -247,7 +247,7 @@
 
 .free {
   padding: var(--space-3) var(--space-4);
-  border: 1.5px dashed color-mix(in srgb, var(--line-strong) 55%, transparent);
+  border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   color: var(--fg-muted);
   font-size: var(--text-sm);

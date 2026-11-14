@@ -38,6 +38,16 @@ export function resetDemoWorld(): void {
   }
 }
 
+/** Демо-мир с худшими данными (scripts/demo-worst.ts): длинные имена, 200 новых обращений и т. п. Только локальная БД. */
+export function worstDemoWorld(): void {
+  const url = localDatabaseUrl();
+  execFileSync(process.execPath, [tsx, "--conditions=react-server", "scripts/demo-worst.ts"], {
+    cwd: root,
+    env: { ...process.env, DATABASE_URL: url },
+    stdio: ["ignore", "inherit", "inherit"],
+  });
+}
+
 export const ACCOUNTS = {
   alina: { login: "alina.mironova", passwordEnv: "DEMO_PASSWORD_ALINA" },
   denis: { login: "denis.kravtsov", passwordEnv: "DEMO_PASSWORD_DENIS" },

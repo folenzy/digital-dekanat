@@ -22,9 +22,9 @@ describe("Timeline", () => {
   it("остановки с временем и коротким именем; последняя отмечена; следующая — пунктиром", () => {
     const out = html(<Timeline events={events.slice(0, 2)} now={NOW} next="Ответ до завтра, 18:00" />);
     expect(out).toContain("Отправлено");
-    expect(out).toContain("сегодня, 10:00</time> · Алина Миронова");
+    expect(out).toContain("сегодня, 10:00</time>, Алина Миронова");
     expect(out).toContain("Принято в работу");
-    expect(out).toContain("сегодня, 11:00</time> · Ирина Белова");
+    expect(out).toContain("сегодня, 11:00</time>, Ирина Белова");
     expect(out).toMatch(/data-kind="taken" data-current="true"/);
     expect(out).toContain('<span class="sr-only">Дальше: </span>Ответ до завтра, 18:00');
   });

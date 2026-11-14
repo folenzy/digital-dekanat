@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ChevronRight, Clock3, FileText, GraduationCap, Wallet, type LucideIcon } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { getAppealRoute } from "@/server/appeals/catalog";
 import { slaDueForType } from "@/server/appeals/sla";
 import { APPEAL_TYPES, type AppealTopic, type AppealTypeCode } from "@/server/appeals/types";
@@ -14,12 +14,6 @@ import { AppealForm } from "./AppealForm";
 import styles from "./new.module.css";
 
 export const metadata: Metadata = { title: "Новое обращение" };
-
-const TOPIC_ICON: Record<AppealTopic, LucideIcon> = {
-  certificates: FileText,
-  study: GraduationCap,
-  stipend: Wallet,
-};
 
 const STEPS = ["Тема", "Что нужно", "Детали"] as const;
 
@@ -78,11 +72,9 @@ function TopicStep({ text }: { text: string }) {
       <CarriedText text={text} />
       <ul className={styles.choices}>
         {TOPICS.map((t) => {
-          const Icon = TOPIC_ICON[t];
           return (
             <li key={t}>
-              <Link href={wizardHref({ topic: t, text })} className={styles.choice} data-surface="paper">
-                <span className={styles.choiceIcon} aria-hidden="true"><Icon /></span>
+              <Link href={wizardHref({ topic: t, text })} className={styles.choice}>
                 <span className={styles.choiceBody}>
                   <span className={styles.choiceTitle}>{TOPIC_META[t].title}</span>
                   <span className={styles.choiceText}>{TOPIC_META[t].text}</span>
@@ -107,14 +99,11 @@ function TypeStep({ topic, text }: { topic: AppealTopic; text: string }) {
           const t = APPEAL_TYPES[code];
           return (
             <li key={code}>
-              <Link href={wizardHref({ type: code, text })} className={styles.choice} data-surface="paper">
+              <Link href={wizardHref({ type: code, text })} className={styles.choice}>
                 <span className={styles.choiceBody}>
                   <span className={styles.choiceTitle}>{t.title}</span>
                   <span className={styles.choiceText}>{t.hint}</span>
-                  <span className={styles.choiceSla}>
-                    <Clock3 aria-hidden="true" />
-                    {slaPhrase(t.slaDays)}
-                  </span>
+                  <span className={styles.choiceSla}>{slaPhrase(t.slaDays)}</span>
                 </span>
                 <ChevronRight className={styles.chevron} aria-hidden="true" />
               </Link>
@@ -143,7 +132,7 @@ export default async function NewAppealPage({ searchParams }: PageProps<"/dekana
   const slip = (
     <div className={styles.slip}>
       <p className={styles.slipLine}>
-        Уйдёт в: <strong>{route?.department.name ?? "нужный отдел"}</strong> · ответ до <strong>{ruDate(due)}</strong>
+        Уйдёт в: <strong>{route?.department.name ?? "нужный отдел"}</strong>, ответ до <strong>{ruDate(due)}</strong>
       </p>
       <p className={styles.slipNote}>
         Срок считаем в рабочих днях, до {mskTime(due)} по Москве. Статус и ответ появятся в карточке обращения.

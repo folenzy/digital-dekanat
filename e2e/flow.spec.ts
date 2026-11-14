@@ -50,7 +50,7 @@ test("Алина → Ирина → Алина: обращение, взять, 
   // 2. Ирина видит обращение в «Новых» и берёт его в работу
   await signIn(irina, "irina");
   await irina.getByRole("navigation", { name: "Вкладки очереди" }).getByRole("link", { name: "Новые" }).click();
-  const card = irina.getByRole("list", { name: "Обращения" }).locator(`a[href="/staff/appeals/${appealId}"]`);
+  const card = irina.getByRole("main").locator(`a[href="/staff/appeals/${appealId}"]`);
   await expect(card).toBeVisible();
   await expect(card).toContainText("Справка для военкомата");
   await shoot(irina, "queue-irina", 1280, "05");

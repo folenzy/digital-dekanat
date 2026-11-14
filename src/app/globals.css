@@ -1,4 +1,4 @@
-/* База «Бумаги»: сброс, типографика по умолчанию, фокус, движение. Токены — src/ui/tokens.css. */
+/* База «Ведомости»: сброс, типографика по умолчанию, фокус, движение. Токены — src/ui/tokens.css. */
 
 *,
 *::before,
@@ -37,13 +37,12 @@ dd {
   margin: 0;
 }
 
-/* Крупные заголовки и цифры — Literata (оптический размер подстраивается под кегль), остальное — Golos Text */
+/* Иерархию дают размер и вес одного шрифта */
 h1,
 h2 {
-  font-family: var(--font-display);
-  font-weight: 600;
+  font-weight: 700;
   line-height: var(--leading-tight);
-  letter-spacing: -0.015em;
+  letter-spacing: -0.012em;
   text-wrap: balance;
 }
 
@@ -119,9 +118,9 @@ html[data-swiping] {
   border: 0;
 }
 
-/* Цифры (время, баллы, счётчики): Literata, моноширинные цифры */
+/* Цифры (время, баллы, счётчики) — одной ширины, чтобы колонки не «плясали».
+   В Golos Text это выравнивает 0, 1, 4 и 7; остальные чуть у́же (DESIGN.md, «Шрифт»). */
 .num {
-  font-family: var(--font-display);
   font-variant-numeric: lining-nums tabular-nums;
 }
 

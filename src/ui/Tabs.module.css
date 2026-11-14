@@ -1,4 +1,4 @@
-/* Вкладки — «корешки» на подложке: текущая выглядит листом бумаги поверх неё. */
+/* Вкладки: утопленная серая дорожка, текущая — белая плитка на ней. */
 
 .tabs {
   margin: 0 0 var(--space-5);
@@ -10,7 +10,7 @@
   margin: 0;
   padding: 3px;
   list-style: none;
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-md);
   background: var(--neutral-tint);
 }
 
@@ -27,7 +27,7 @@
   min-height: var(--tap);
   padding: 0 var(--space-3);
   border: 1px solid transparent;
-  border-radius: var(--radius-pill);
+  border-radius: 6px;
   color: var(--muted-strong);
   font-size: var(--text-sm);
   font-weight: 600;
@@ -56,17 +56,16 @@
   outline-offset: 1px;
 }
 
+/* Число во вкладке — текстом: это справка, а не действие. Синяя заливка остаётся у колокольчика. */
 .count {
-  display: inline-grid;
-  place-items: center;
-  min-width: 20px;
-  height: 20px;
-  padding: 0 6px;
-  border-radius: var(--radius-pill);
-  background: var(--accent-fill);
-  color: var(--on-accent);
-  font-size: var(--text-xs);
-  font-weight: 700;
+  color: var(--muted-strong);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.link[aria-current="page"] .count {
+  color: var(--ink);
 }
 
 /* Вторичный переключатель (фильтр): компактнее и не на всю ширину */
@@ -79,13 +78,15 @@
 }
 
 .tabs[data-size="small"] .link {
-  min-height: 36px;
   padding: 0 var(--space-4);
   font-size: var(--text-sm);
 }
 
-@media (min-width: 600px) {
-  .link {
-    font-size: var(--text-md);
+/* 36 px — только там, где нажимают мышью; на телефоне остаётся общая зона 44 px */
+@media (min-width: 900px) {
+  .tabs[data-size="small"] .link {
+    min-height: 36px;
   }
 }
+
+

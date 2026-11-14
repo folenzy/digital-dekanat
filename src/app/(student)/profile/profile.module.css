@@ -1,4 +1,4 @@
-/* Профиль: инициалы-аватар, два листа с данными, «О проекте» и «Выйти». */
+/* Профиль: кто я, настройки строками, данные списком «подпись — значение», «О проекте» и «Выйти». */
 
 .identity {
   display: flex;
@@ -58,10 +58,9 @@
   display: flex;
   align-items: flex-start;
   gap: var(--space-3);
-  margin: var(--space-3) 0 var(--space-6);
-  padding: var(--space-4);
-  border: 1px solid color-mix(in srgb, var(--warn) 35%, transparent);
-  border-radius: var(--radius-lg);
+  margin: var(--space-3) 0 0;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
   background: var(--warn-tint);
   color: var(--ink);
 }
@@ -101,42 +100,33 @@
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: var(--accent-tint);
-  color: var(--accent-strong);
-  font-family: var(--font-display);
+  background: var(--neutral-tint);
+  color: var(--ink);
   font-size: var(--text-xl);
   font-weight: 600;
 }
 
+/* Раздел данных: заголовок и строки через линию, без рамки (GOV.UK Summary list) */
 .sheet {
-  margin-top: var(--space-4);
-  margin-bottom: var(--space-4);
-  padding: var(--space-4);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  background: var(--surface);
-  color: var(--fg);
+  margin-top: var(--space-8);
 }
 
 .sheetTitle {
-  margin-bottom: var(--space-2);
+  margin-bottom: var(--space-3);
   font-size: var(--text-xl);
 }
 
 .list {
   margin: 0;
+  border-top: 1px solid var(--line);
 }
 
 .row {
   display: grid;
   gap: 2px;
   padding: var(--space-3) 0;
-  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
   overflow-wrap: anywhere;
-}
-
-.row:first-child {
-  border-top: 0;
 }
 
 .row dt {
@@ -167,10 +157,9 @@
   align-items: flex-start;
   gap: var(--space-3);
   min-height: var(--tap);
-  padding: var(--space-4);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  background: var(--paper);
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
   color: var(--ink);
   text-decoration: none;
 }
@@ -206,10 +195,6 @@
     width: 72px;
     height: 72px;
     font-size: var(--text-2xl);
-  }
-
-  .sheet {
-    padding: var(--space-5) var(--space-6);
   }
 
   .row {

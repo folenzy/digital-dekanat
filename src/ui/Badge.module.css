@@ -52,3 +52,12 @@
   color: var(--muted-strong);
   background: var(--neutral-tint);
 }
+
+/* Обычное состояние («В работе», «Отправлено», «Допуск есть») — текстом, без подложки:
+   подложку получает только то, что требует действия (DESIGN.md, «Правило статусов»). */
+.badge[data-quiet] {
+  padding: 0;
+  background: none;
+  color: var(--fg-muted);
+  font-weight: 500;
+}

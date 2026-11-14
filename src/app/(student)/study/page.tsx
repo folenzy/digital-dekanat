@@ -25,8 +25,7 @@ function Verdict({ s, now }: { s: StudySummary; now: Date }) {
   const total = s.admission.admitted + s.admission.denied + s.admission.pending;
   return (
     <Card
-      variant={s.verdict === "debts" ? "ink" : s.verdict === "risks" ? "accent" : "paper"}
-      kicker="Как у меня дела"
+      variant={s.verdict === "debts" ? "ink" : "plain"}
       title={copy.title}
       titleAs="h2"
       className={styles.verdict}
@@ -58,12 +57,12 @@ function Verdict({ s, now }: { s: StudySummary; now: Date }) {
           <dd className={`${styles.statValue} num`}>{s.avgLastSession === null ? "—" : formatAverage(s.avgLastSession)}</dd>
           <dd className={styles.statNote}>{s.avgLastSession === null ? "оценок ещё нет" : "за прошлую сессию"}</dd>
         </div>
-        <div className={styles.stat}>
+        <div className={styles.stat} data-alert={s.debts.length > 0 || undefined}>
           <dt>Долги</dt>
           <dd className={`${styles.statValue} num`}>{s.debts.length}</dd>
           <dd className={styles.statNote}>{s.debts.length ? "нужно пересдать" : "всё сдано"}</dd>
         </div>
-        <div className={styles.stat}>
+        <div className={styles.stat} data-alert={s.admission.denied > 0 || undefined}>
           <dt>Допуск к сессии</dt>
           <dd className={`${styles.statValue} num`}>{s.admission.admitted} из {total}</dd>
           <dd className={styles.statNote}>
@@ -81,8 +80,9 @@ function Verdict({ s, now }: { s: StudySummary; now: Date }) {
   );
 }
 
-function admissionBadge(admitted: boolean | null) {
-  if (admitted === true) return <Badge tone="ok">Допуск есть</Badge>;
+/** Допуск в строке предмета: «есть» — обычным текстом, метка — только когда допуска нет или он не решён. */
+function Admission({ admitted }: { admitted: boolean | null }) {
+  if (admitted === true) return <span>допуск есть</span>;
   if (admitted === false) return <Badge tone="danger">Нет допуска</Badge>;
   return <Badge tone="warn">Допуск не решён</Badge>;
 }
@@ -94,47 +94,43 @@ function Subject({ e, today, riskIds }: { e: EnrollmentView; today: string; risk
   const ahead = Math.min(100 - points, remaining);
   const rest = e.controlForm === "exam" ? "на экзамене" : "на зачёте";
   return (
-    <article className={styles.subject} data-surface="paper">
+    <li className={styles.subject}>
       <div className={styles.subjectHead}>
         <h3 className={styles.subjectTitle}>{e.discipline}</h3>
-        <p className={styles.subjectMeta}>
-          {CONTROL_FORM_LABEL[e.controlForm]} {admissionBadge(e.admitted)}
+        <p className={styles.pointsLine}>
+          <span className={`${styles.pointsNum} num`}>{points}</span>
+          <span className={styles.pointsMax}> из 100</span>
         </p>
       </div>
 
-      <div className={styles.points}>
-        <p className={styles.pointsLine}>
-          <span className={`${styles.pointsNum} num`}>{points}</span>
-          <span className={styles.pointsMax}>из 100 баллов</span>
+      <div className={styles.subjectMeta}>
+        <p className={styles.form}>
+          {CONTROL_FORM_LABEL[e.controlForm]}, <Admission admitted={e.admitted} />
         </p>
-        <div
-          className={styles.bar}
-          role="meter"
-          aria-label={`Баллы по дисциплине «${e.discipline}»`}
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={points}
-          aria-valuetext={`${points} из 100${remaining ? `, в контрольных точках можно набрать ещё ${remaining}` : ""}`}
-        >
-          <span className={styles.barFill} style={{ width: `${points}%` }} />
-          {ahead > 0 && <span className={styles.barAhead} style={{ left: `${points}%`, width: `${ahead}%` }} />}
-        </div>
         <p className={styles.prelim}>
           {e.finalGrade ? (
-            <>Итог: <strong>{gradeLabel(e.finalGrade)}</strong></>
+            <>итог: <strong>{gradeLabel(e.finalGrade)}</strong></>
           ) : e.pace ? (
-            <>
-              Предварительно — <strong>{e.pace.grade}</strong>: {e.pace.score} из {e.pace.max} за сданные точки.{" "}
-              {remaining > 0
-                ? `Впереди точки ещё на ${remaining} ${plural(remaining, POINTS)}, остальное — ${rest}.`
-                : `Остальные баллы — ${rest}.`}
-            </>
+            <>предварительно <strong>{e.pace.grade}</strong>, {e.pace.score} из {e.pace.max}</>
           ) : done > 0 ? (
-            "Пока мало оценок для предварительной оценки."
+            "пока мало оценок"
           ) : (
-            "Пока мало оценок: контрольные точки ещё впереди."
+            "точки ещё впереди"
           )}
         </p>
+      </div>
+
+      <div
+        className={styles.bar}
+        role="meter"
+        aria-label={`Баллы по дисциплине «${e.discipline}»`}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={points}
+        aria-valuetext={`${points} из 100${remaining ? `, в контрольных точках можно набрать ещё ${remaining}, остальное — ${rest}` : `, остальные баллы — ${rest}`}`}
+      >
+        <span className={styles.barFill} style={{ width: `${points}%` }} />
+        {ahead > 0 && <span className={styles.barAhead} style={{ left: `${points}%`, width: `${ahead}%` }} />}
       </div>
 
       {e.checkpoints.length > 0 && (
@@ -171,7 +167,7 @@ function Subject({ e, today, riskIds }: { e: EnrollmentView; today: string; risk
           </ul>
         </details>
       )}
-    </article>
+    </li>
   );
 }
 
@@ -228,9 +224,16 @@ export default async function StudyPage({ searchParams }: PageProps<"/study">) {
 
       {tab === "semester" && (
         s.current.length ? (
-          <div className={styles.list}>
-            {s.current.map((e) => <Subject key={e.id} e={e} today={today} riskIds={riskIds} />)}
-          </div>
+          <>
+            {/* Общее для всех предметов сказано один раз, в строке — только отличие */}
+            <p className={styles.legend}>
+              Предварительная оценка считается по сданным контрольным точкам. Остальные баллы набираются
+              в оставшихся точках и на зачёте или экзамене.
+            </p>
+            <ul className={styles.list}>
+              {s.current.map((e) => <Subject key={e.id} e={e} today={today} riskIds={riskIds} />)}
+            </ul>
+          </>
         ) : (
           <EmptyState icon={<NotebookPen />} title="Дисциплин в этом семестре пока нет" text="Они появятся, когда учебный отдел утвердит план." />
         )

@@ -191,6 +191,18 @@ export type QueueAppealDetail = AppealDetail & { student: AppealStudentInfo };
 
 export type StaffTab = "new" | "in_progress" | "waiting" | "closed";
 
+/**
+ * Группа очереди. Пока срок идёт («Новые», «В работе») — по сроку ответа, границы дней по Москве:
+ * просрочено, сегодня, завтра, позже. «Ждут студента» и «Закрытые» — одна группа `all`.
+ */
+export type QueueGroupKey = "overdue" | "today" | "tomorrow" | "later" | "all";
+export const QUEUE_GROUP_KEYS: readonly QueueGroupKey[] = ["overdue", "today", "tomorrow", "later", "all"];
+
+/** total — сколько обращений в группе всего; items — показанные (с пределом, если группа не развёрнута). */
+export type QueueGroup = { key: QueueGroupKey; total: number; items: QueueItem[] };
+
+export type QueueTabCounts = Record<StaffTab, number>;
+
 export type StaffSummary = {
   new: number;
   inProgress: number;

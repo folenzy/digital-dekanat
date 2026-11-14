@@ -5,8 +5,9 @@ import {
 } from "@/app/staff/form-state";
 import { shortCountdown } from "@/ui/appeals/time-left";
 import {
-  avgResponseText, PICKUP_MAX_DAYS, pickupDefaultKey, publishedText, QUEUE_TABS, tabOfStatus,
+  avgResponseText, PICKUP_MAX_DAYS, pickupDefaultKey, publishedText, QUEUE_GROUP_LABEL, QUEUE_TABS, tabOfStatus,
 } from "@/ui/staff/labels";
+import { QUEUE_GROUP_KEYS } from "@/server/appeals/types";
 
 // Кабинет сотрудника: адрес очереди, таймер срока, тексты ошибок и сводки — чистые функции, без БД.
 
@@ -61,6 +62,27 @@ describe("адрес очереди", () => {
     expect(parseQueueParams({ dept: "1e0" }, deps).dept).toBeUndefined();
     expect(parseQueueParams({ dept: ["1"] }, deps).dept).toBeUndefined();
     expect(parseQueueParams({ dept: "2" }, []).dept).toBeUndefined();
+  });
+
+  it("развернуть группу: только известные группы; мусор и массивы → ничего не развёрнуто", () => {
+    expect(parseQueueParams({ show: "overdue" }, deps).show).toBe("overdue");
+    expect(parseQueueParams({ show: "later" }, deps).show).toBe("later");
+    expect(parseQueueParams({ show: "all" }, deps).show).toBe("all");
+    expect(parseQueueParams({}, deps).show).toBeUndefined();
+    expect(parseQueueParams({ show: "everything" }, deps).show).toBeUndefined();
+    expect(parseQueueParams({ show: "__proto__" }, deps).show).toBeUndefined();
+    expect(parseQueueParams({ show: ["later"] }, deps).show).toBeUndefined();
+  });
+
+  it("ссылка с развёрнутой группой; смена вкладки её сбрасывает", () => {
+    expect(queueHref({ tab: "new", show: "later" })).toBe("/staff?show=later");
+    expect(queueHref({ tab: "new", dept: 2, show: "overdue" })).toBe("/staff?dept=2&show=overdue");
+    expect(queueHref({ tab: "closed", show: "all" })).toBe("/staff?tab=closed&show=all");
+  });
+
+  it("у каждой группы очереди есть подпись", () => {
+    for (const key of QUEUE_GROUP_KEYS) expect(QUEUE_GROUP_LABEL[key]).toMatch(/^[А-ЯЁ]/);
+    expect(QUEUE_GROUP_LABEL.overdue).toBe("Просрочено");
   });
 
   it("ссылка: вкладка «Новые» и «все отделы» не пишутся в адрес", () => {
@@ -140,6 +162,8 @@ describe("ошибки действий сотрудника", () => {
       .toBe("Слишком много сообщений — попробуй через несколько минут");
     expect(staffFailure({ ok: false, error: "not_found" }).error)
       .toBe("Обращение не найдено — вернись в очередь и открой его заново");
+    expect(staffFailure({ ok: false, error: "empty" }).error)
+      .toBe("Новых обращений нет — всё разобрано");
   });
 
   it("validation: ошибки у полей, общий текст — только для ошибки не про поле", () => {

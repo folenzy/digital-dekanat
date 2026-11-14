@@ -12,7 +12,7 @@
 
 /* Пунктир — «здесь пока пусто, место свободно» */
 .empty {
-  border: 1.5px dashed color-mix(in srgb, var(--line-strong) 55%, transparent);
+  border: 1px solid var(--line);
 }
 
 .error {

@@ -13,61 +13,47 @@
   margin: 0;
 }
 
+/* Уведомления — строки через линию; вся строка нажимается. Непрочитанное: жирный заголовок и точка. */
 .list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
   margin: 0;
   padding: 0;
   list-style: none;
+  border-top: 1px solid var(--line);
 }
 
 .item {
   display: grid;
-  grid-template-columns: 36px minmax(0, 1fr) 10px;
+  grid-template-columns: minmax(0, 1fr) 10px;
   gap: var(--space-3);
   width: 100%;
-  padding: var(--space-4);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  background: var(--paper);
+  padding: var(--space-3) 0;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: none;
   color: var(--ink);
   text-align: left;
   cursor: pointer;
   overflow-wrap: break-word;
-  transition: border-color var(--dur-fast) var(--ease-out), transform var(--dur-press) var(--ease-out);
   -webkit-tap-highlight-color: transparent;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .item:hover {
-    border-color: var(--line-strong);
+    background: var(--neutral-tint);
   }
+}
+
+.item:active {
+  background: var(--neutral-tint);
 }
 
 .item:focus-visible {
   outline: 2px solid var(--focus);
-  outline-offset: 3px;
+  outline-offset: -2px;
 }
 
 .item[aria-busy] {
   cursor: progress;
-  border-color: var(--line-strong);
-}
-
-.icon {
-  display: grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: var(--neutral-tint);
-  color: var(--muted-strong);
-}
-
-.icon svg {
-  width: 18px;
-  height: 18px;
 }
 
 .text {
@@ -102,14 +88,8 @@
   background: var(--accent-fill);
 }
 
-/* Непрочитанное: жирный заголовок, иконка в терракотовом круге, точка справа */
 .item:has(.dot) .title {
   font-weight: 700;
-}
-
-.item:has(.dot) .icon {
-  background: var(--accent-tint);
-  color: var(--accent-strong);
 }
 
 .important {
@@ -126,12 +106,4 @@
   color: var(--fg-muted);
 }
 
-@media (min-width: 600px) {
-  .item {
-    padding: var(--space-4) var(--space-5);
-  }
-}
 
-.item:active {
-  transform: scale(0.985);
-}

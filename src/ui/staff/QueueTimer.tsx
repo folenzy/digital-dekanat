@@ -2,9 +2,9 @@
 
 import { shortCountdown } from "../appeals/time-left";
 import { useNow } from "../appeals/use-now";
-import styles from "./QueueCard.module.css";
+import styles from "./QueueRow.module.css";
 
-// Таймер на корешке талона: «осталось / 21 ч», «просрочено на / 2 ч». Тикает раз в минуту;
+// Таймер в графе «Срок»: «осталось 21 ч», «просрочено на 2 ч». Тикает раз в минуту;
 // когда срок проходит при открытой странице, сам краснеет (data-overdue).
 
 export function QueueTimer({ due, serverNow }: { due: string; serverNow: string }) {

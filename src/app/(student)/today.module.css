@@ -1,241 +1,150 @@
-/* «Сегодня»: блоки по важности, одна колонка. */
+/* «Сегодня»: что сейчас и что дальше. Один список дня, ниже строками — что требует внимания,
+   обращения, сроки. Рамка на экране одна: синяя плашка «важное», и только когда она есть. */
 
-/* Первое открытие кабинета: блоки проявляются каскадом (30–50 мс между ними).
-   Только при первом входе: при переключении вкладок и после свайпа каскада нет —
-   то, что видят десятки раз в день, не должно заставлять ждать. */
-@keyframes rise {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-}
-
-.page > * {
-  animation: rise 320ms var(--ease-out) backwards;
-}
-
-.page > :nth-child(2) { animation-delay: 45ms; }
-.page > :nth-child(3) { animation-delay: 90ms; }
-.page > :nth-child(4) { animation-delay: 135ms; }
-.page > :nth-child(n + 5) { animation-delay: 180ms; }
-
-:global(html[data-entered]) .page > * {
-  animation: none;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .page > * {
-    animation: none;
-  }
-}
-
-.stack {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.stack + .stack {
-  margin-top: var(--space-3);
+/* Плашка «важное»: одно сообщение деканата с главным действием */
+.lead {
+  margin-bottom: var(--space-6);
 }
 
 .nudgeText {
   color: var(--fg-muted);
-  font-size: var(--text-sm);
-  line-height: var(--leading-body);
+  text-wrap: pretty;
 }
 
 .nudgeAction {
   margin-top: var(--space-4);
 }
 
-.quiet {
-  margin: 0 0 var(--space-3);
-  color: var(--fg-muted);
-  text-wrap: pretty;
-}
-
-.quiet:last-child {
-  margin-bottom: 0;
-}
-
-.stack + .quiet {
-  margin-top: var(--space-3);
-}
-
-.dept {
-  margin-top: var(--space-2);
-  font-size: var(--text-sm);
-  color: var(--fg-muted);
-}
-
-/* Дедлайны — строки одного листа, разделённые линовкой */
-.deadlines {
-  margin: 0;
+/* Остальные сообщения — строки: что случилось и ссылка «куда посмотреть» */
+.attention {
+  margin: 0 0 var(--space-6);
   padding: 0;
   list-style: none;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  background: var(--surface);
-  overflow: hidden;
-}
-
-.deadlines li + li {
   border-top: 1px solid var(--line);
 }
 
-.deadline {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-height: var(--tap);
-  padding: var(--space-3) var(--space-4);
-  color: var(--fg);
-  text-decoration: none;
+.attention li {
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--line);
 }
 
-@media (hover: hover) and (pointer: fine) {
-  a.deadline:hover {
-    background: color-mix(in srgb, var(--accent) 5%, transparent);
-  }
-}
-
-a.deadline:focus-visible {
-  outline-offset: -3px;
-}
-
-.deadlineTitle {
-  font-weight: 600;
-  line-height: var(--leading-snug);
-  overflow-wrap: break-word;
-}
-
-a.deadline .deadlineTitle {
-  color: var(--fg-accent);
-}
-
-.deadlineDue {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-1) var(--space-2);
-  font-size: var(--text-sm);
-  color: var(--fg-muted);
-}
-
-.important {
-  margin-bottom: var(--space-2);
-}
-
-/* Последнее объявление: первые строки, полный текст — во вкладке «Объявления» */
-.announcement {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 4;
-  line-clamp: 4;
-  overflow: hidden;
-  color: var(--fg);
-}
-
-@media (min-width: 600px) {
-  .deadline {
-    padding: var(--space-3) var(--space-5);
-  }
-}
-
-/* «На сегодня всё» — тихая черта под сегодняшними парами */
-.done {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  margin: var(--space-4) 0 0;
-  color: var(--fg-muted);
-  font-size: var(--text-sm);
-}
-
-.done::before,
-.done::after {
-  content: "";
-  flex: 1;
-  height: 1px;
-  background: var(--line);
-}
-
-/* Следующий учебный день: другая подложка, пунктирный контур и плашка дня — это ещё не сегодня */
-.nextDay {
-  margin-top: var(--space-6);
-  padding: var(--space-4);
-  border: 1px dashed var(--line-strong);
-  border-radius: calc(var(--radius-lg) + 4px);
-  background: color-mix(in srgb, var(--neutral-tint) 60%, transparent);
-}
-
-.nextDayHead {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  margin-bottom: var(--space-3);
-}
-
-.nextDayTitle {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2) var(--space-3);
+.attentionTitle {
   margin: 0;
-  font-family: var(--font-ui);
   font-size: var(--text-md);
   font-weight: 600;
   line-height: var(--leading-snug);
-  letter-spacing: 0;
 }
 
-.dayChip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 12px 5px 10px;
-  border-radius: var(--radius-pill);
-  background: var(--plate);
-  color: var(--on-plate);
+.attentionText {
+  margin: 2px 0 0;
+  color: var(--muted);
   font-size: var(--text-sm);
-  font-weight: 700;
-  letter-spacing: 0.01em;
+  text-wrap: pretty;
 }
 
-.dayChipIcon {
-  width: 16px;
-  height: 16px;
-  color: var(--accent-2);
-}
-
-.nextDayDate {
-  color: var(--ink);
-}
-
-.nextDayLink {
+.attentionLink {
   display: inline-flex;
   align-items: center;
-  flex: none;
   min-height: var(--tap);
-  color: var(--accent-strong);
   font-size: var(--text-sm);
   font-weight: 600;
   text-decoration: none;
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .nextDayLink:hover {
+  .attentionLink:hover {
     text-decoration: underline;
   }
 }
 
-@media (min-width: 600px) {
-  .nextDay {
-    padding: var(--space-5);
+.quiet {
+  color: var(--fg-muted);
+}
+
+/* «На сегодня всё» — строка под лентой дня */
+.done {
+  margin: var(--space-3) 0 0;
+  color: var(--fg-muted);
+  font-size: var(--text-sm);
+}
+
+/* Сроки: название слева, дата и «через сколько» справа */
+.deadlines {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--line);
+}
+
+.deadline {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px var(--space-4);
+  align-items: baseline;
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+  text-decoration: none;
+}
+
+a.deadline:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  a.deadline:hover {
+    background: var(--neutral-tint);
   }
+}
+
+.deadlineTitle {
+  grid-row: span 2;
+  font-weight: 500;
+  line-height: var(--leading-snug);
+  overflow-wrap: anywhere;
+}
+
+a.deadline .deadlineTitle {
+  color: var(--accent);
+}
+
+.deadlineWhen {
+  text-align: right;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Три дня и меньше — янтарным: пора действовать */
+.deadlineWhen[data-soon] {
+  color: var(--warn);
+}
+
+.deadlineDue {
+  text-align: right;
+  color: var(--muted);
+  font-size: var(--text-xs);
+  white-space: nowrap;
+}
+
+/* Объявление: заголовок, дата, текст — без рамки */
+.announcementMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--space-2);
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.announcement {
+  display: -webkit-box;
+  margin-top: var(--space-2);
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+  text-wrap: pretty;
 }

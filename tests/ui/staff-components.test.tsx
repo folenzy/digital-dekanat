@@ -1,9 +1,9 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import type { QueueItem } from "@/server/appeals/types";
-import { QueueCard } from "@/ui/staff/QueueCard";
+import { QueueRow } from "@/ui/staff/QueueRow";
 
-// Талон очереди сотрудника: корешок с таймером только у идущего срока, просрочка помечена, текст экранирован.
+// Строка очереди сотрудника: таймер только у идущего срока, просрочка помечена, текст экранирован.
 
 const NOW = new Date("2026-11-10T09:00:00Z"); // вторник, 12:00 МСК
 const base: QueueItem = {
@@ -19,9 +19,9 @@ const base: QueueItem = {
   assignee: null,
   student: { fullName: "Соколова Милана Андреевна", group: "ЭК-24-1" },
 };
-const html = (a: Partial<QueueItem>) => renderToStaticMarkup(<QueueCard appeal={{ ...base, ...a }} now={NOW} />);
+const html = (a: Partial<QueueItem>) => renderToStaticMarkup(<QueueRow appeal={{ ...base, ...a }} now={NOW} />);
 
-describe("QueueCard", () => {
+describe("QueueRow", () => {
   it("новое: ссылка на карточку, номер, отдел, студент с группой, статус, таймер и срок", () => {
     const out = html({});
     expect(out).toContain('href="/staff/appeals/11111111-1111-4111-8111-111111111111"');
@@ -35,7 +35,7 @@ describe("QueueCard", () => {
     expect(out).not.toContain("data-overdue");
   });
 
-  it("просрочено: метка на талоне и на таймере, «просрочено на»", () => {
+  it("просрочено: метка на строке и на таймере, «просрочено на»", () => {
     const out = html({ status: "in_progress", overdue: true, slaDueAt: new Date("2026-11-10T06:50:00Z"), assignee: "Ирина Николаевна Белова" });
     expect(out).toMatch(/<a[^>]*data-overdue="true"/);
     expect(out).toMatch(/<time[^>]*data-overdue="true"/);
@@ -43,9 +43,10 @@ describe("QueueCard", () => {
     expect(out).toContain("ведёт Ирина Белова");
   });
 
-  it("ждёт студента и закрытые — без корешка-таймера: срок не идёт", () => {
+  it("ждёт студента и закрытые — без таймера: срок не идёт, в графе срока — итог словом", () => {
     const waiting = html({ status: "needs_info", updatedAt: new Date("2026-11-09T16:50:00Z") });
     expect(waiting).not.toContain("<time");
+    expect(waiting).toContain("ждём студента");
     expect(waiting).toContain("вопрос задан вчера, 19:50");
     const closed = html({ status: "rejected", updatedAt: new Date("2026-11-10T08:00:00Z") });
     expect(closed).not.toContain("<time");

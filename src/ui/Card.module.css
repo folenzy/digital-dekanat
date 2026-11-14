@@ -7,7 +7,6 @@
   border-radius: var(--radius-lg);
   padding: var(--space-4);
   overflow-wrap: anywhere;
-  box-shadow: var(--shadow-sheet);
 }
 
 @media (min-width: 600px) {
@@ -16,7 +15,15 @@
   }
 }
 
-/* .paper — вид по умолчанию, отдельных правил нет (класс нужен для :hover ниже) */
+/* .paper — рамка по умолчанию, отдельных правил нет (класс нужен для :hover ниже) */
+
+/* Раздел без рамки: заголовок и содержимое стоят прямо на поле страницы */
+.plain {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+}
 
 .ink {
   border-color: var(--plate);
@@ -24,7 +31,7 @@
 
 .accent {
   border-color: var(--accent);
-  box-shadow: inset 0 0 0 0.5px var(--accent), var(--shadow-sheet);
+  box-shadow: inset 0 0 0 0.5px var(--accent);
 }
 
 .link {
@@ -48,12 +55,13 @@
   outline-offset: 3px;
 }
 
+/* Строка над заголовком — только когда она сообщает то, чего нет в заголовке (номер обращения) */
 .kicker {
   margin: 0 0 var(--space-1);
   font-size: var(--text-sm);
-  font-weight: 600;
+  font-weight: 500;
   line-height: var(--leading-snug);
-  color: var(--fg-accent);
+  color: var(--fg-muted);
 }
 
 .title {

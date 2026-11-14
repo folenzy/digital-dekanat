@@ -4,8 +4,8 @@ import { usePathname } from "next/navigation";
 import { activeHref } from "./nav";
 import styles from "./BottomNav.module.css";
 
-// Закладка-ляссе над активным разделом нижней панели. Одна на всю панель: при смене раздела она
-// переезжает к нему (transform), а не исчезает в одном месте и появляется в другом.
+// Закладка над активным разделом нижней панели. Одна на всю панель; при смене раздела встаёт на новое
+// место сразу, без переезда.
 
 export function NavMarker({ hrefs }: { hrefs: readonly string[] }) {
   const index = hrefs.indexOf(activeHref(usePathname(), hrefs) ?? "");

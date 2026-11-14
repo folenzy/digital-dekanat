@@ -4,7 +4,7 @@ import { hasNoHorizontalScroll, passwordOf, resetDemoWorld, shoot, signIn } from
 // Экраны студента на 360 и 1280 px (проекты playwright.config.ts): вход, Сегодня, Пары, Учёба,
 // Уведомления, Профиль, О проекте, 404. Скриншоты → docs/screenshots/02-<экран>-<ширина>.png.
 
-const CONCEPT = "Концепт для конкурса · не официальный сервис";
+const CONCEPT = "Концепт для конкурса, не официальный сервис";
 const EXPIRED = "Сессия завершилась — возможно, ночью обновились демо-данные. Войди снова";
 /** Колокольчик (в шапке на телефоне, в боковой панели на десктопе): подпись со счётчиком. */
 const BELL = /^Уведомления(: \d+ непрочитанн|, новых нет)/;
@@ -75,10 +75,10 @@ test.describe("вход", () => {
 });
 
 test.describe("Алина", () => {
-  test("Сегодня: приветствие, повышенная стипендия, обращения, дедлайны", async ({ page }) => {
+  test("Сегодня: день в заголовке, повышенная стипендия, обращения, дедлайны", async ({ page }) => {
     await signIn(page, "alina");
-    await expect(page.getByRole("heading", { level: 1 }))
-      .toHaveText(/^(Доброе утро|Добрый день|Добрый вечер|Доброй ночи), Алина$/);
+    // заголовок — сам день («Пятница, 13 ноября»): приветствий нет
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(/^[А-Я][а-я]+, \d{1,2} [а-я]+$/);
     await expect(page.getByText("Ты проходишь на повышенную стипендию")).toBeVisible();
     await expect(page.getByRole("link", { name: "Подать в 1 тап" }))
       .toHaveAttribute("href", "/dekanat/new?type=stip_increased&prefill=1");
@@ -129,7 +129,9 @@ test.describe("Алина", () => {
     await expect(page.getByText("Всё идёт хорошо", { exact: true })).toBeVisible();
     await expect(page.getByText("4,8", { exact: true })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Математический анализ" })).toBeVisible();
-    await expect(page.getByText(/^Предварительно — отлично/).first()).toBeVisible();
+    await expect(page.getByText(/^предварительно отлично/).first()).toBeVisible();
+    // общее правило сказано один раз над списком, а не в каждой строке
+    await expect(page.getByText(/^Предварительная оценка считается по сданным контрольным точкам/)).toHaveCount(1);
     await expectFits(page);
     await shoot(page, "study", widthOf(page));
 
@@ -226,7 +228,8 @@ test.describe("Алина", () => {
 
 test("Денис: на «Сегодня» деканат ждёт ответа, в «Учёбе» — «Есть долги»", async ({ page }) => {
   await signIn(page, "denis");
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText(/, Денис$/);
+  // заголовок — день, а не приветствие; чей это кабинет, видно по содержимому: вопрос деканата — только у Дениса
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(/^[А-Я][а-я]+, \d{1,2} [а-я]+$/);
   await expect(page.getByText(/Ответь на вопрос по обращению/)).toBeVisible();
   await expectFits(page);
   await shoot(page, "today-denis", widthOf(page));

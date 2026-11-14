@@ -1,9 +1,11 @@
 "use server";
 
 import { refresh } from "next/cache";
+import { redirect } from "next/navigation";
+import { staffHref } from "@/lib/hrefs";
 import { createAnnouncement } from "@/server/announcements";
 import type { Result } from "@/server/appeals/result";
-import { markReady, rejectAppeal, replyAppeal, requestInfo, takeAppeal } from "@/server/appeals/staff";
+import { markReady, rejectAppeal, replyAppeal, requestInfo, takeAppeal, takeNextAppeal } from "@/server/appeals/staff";
 import type { Pickup } from "@/server/appeals/types";
 import { requireStaff } from "@/server/auth/viewer";
 import {
@@ -32,6 +34,19 @@ function settle(res: Result<unknown>, prev: StaffActionState): StaffActionState 
 export async function takeAction(prev: StaffActionState, form: FormData): Promise<StaffActionState> {
   const v = await requireStaff();
   return settle(await takeAppeal(v, text(form, "appealId")), prev);
+}
+
+/**
+ * «Взять следующее»: самое срочное новое обращение в своих отделах — в работу, и сразу открыть его.
+ * Отдел из формы — только фильтр: искать будут в пределах отделов этого сотрудника.
+ */
+export async function takeNextAction(prev: StaffActionState, form: FormData): Promise<StaffActionState> {
+  const v = await requireStaff();
+  const raw = text(form, "dept");
+  const dept = /^\d{1,9}$/.test(raw) ? Number(raw) : undefined;
+  const res = await takeNextAppeal(v, dept);
+  if (!res.ok) return { ok: false, ...staffFailure(res), seq: (prev?.seq ?? 0) + 1 };
+  redirect(staffHref(res.value.id));
 }
 
 /** Ответ студенту в переписку (на «Отправлено» сначала берёт в работу). */

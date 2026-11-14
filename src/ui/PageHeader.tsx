@@ -1,8 +1,9 @@
 import type { ReactNode } from "react";
 import styles from "./PageHeader.module.css";
 
-// Заголовок страницы — единственный h1 экрана, набран Literata.
-// kicker — строка над заголовком (дата на «Сегодня»), subtitle — пояснение под ним.
+// Заголовок страницы — единственный h1 экрана.
+// kicker — строка над заголовком, только когда она сообщает то, чего нет в заголовке (шаг мастера);
+// subtitle — пояснение под ним.
 
 type PageHeaderProps = { title: ReactNode; kicker?: ReactNode; subtitle?: ReactNode };
 

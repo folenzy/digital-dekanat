@@ -381,8 +381,8 @@ export async function buildDemoWorld(db: Db, now: Date, passwords: DemoPasswords
       "Проверь, какие контрольные точки ещё не сданы.", hAgo(24), "/");
     await notify(alina.userId, "deadline", "Идёт приём заявлений на повышенную стипендию",
       `Заявления принимаем до ${ddmm(day(14))}.`, hAgo(30), "/dekanat/new?type=stip_increased");
-    await notify(alina.userId, "announcement", "Добро пожаловать в «На связи»",
-      "Здесь расписание, учёба и деканат в одном месте.", hAgo(72), "/", true);
+    await notify(alina.userId, "announcement", "Кабинет подключён",
+      "Расписание, учёба и обращения в деканат теперь в одном месте.", hAgo(72), "/", true);
 
     await notify(denis.userId, "appeal_message", `Нужно уточнение по обращению ${dRetake.number}`,
       "Сотрудник деканата задал вопрос по пересдаче. Ответь, чтобы мы продолжили.", dAsked, studentHref(dRetake.id));

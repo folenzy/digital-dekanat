@@ -15,21 +15,19 @@
 | `zod` | 4.6.7 | MIT | Валидация входных данных на сервере |
 | `lucide-react` | 1.70.0 | ISC | Иконки Lucide |
 | `server-only` | 0.0.1 | MIT | Защита: серверные модули нельзя импортировать в клиентский код |
-| `@fontsource-variable/literata` | 5.3.0 | OFL-1.1 | Шрифт заголовков (self-host) |
 | `@fontsource-variable/golos-text` | 5.3.0 | OFL-1.1 | Шрифт интерфейса (self-host) |
 
 Зависимости второго уровня, которые Next.js собирает в standalone-сборку, распространяются вместе с ним; их лицензии — в `node_modules/*/package.json` и `LICENSE` соответствующих пакетов.
 
 ## Шрифты
 
-Оба шрифта подключены локально через `@fontsource-variable` (никаких внешних CDN), в обоих есть кириллица.
+Шрифт один, подключён локально через `@fontsource-variable` (никаких внешних CDN), с кириллицей. До 13.11.2026 для заголовков использовалась Literata (OFL-1.1); пакет удалён вместе с переходом на систему «Ведомость».
 
 | Шрифт | Авторы | Лицензия |
 |---|---|---|
-| **Literata** (variable, ось `opsz`) | Copyright 2017 The Literata Project Authors (github.com/googlefonts/literata) | SIL Open Font License 1.1 |
 | **Golos Text** (variable, ось `wght`) | Copyright 2019 The Golos Text Project Authors (github.com/googlefonts/golos-text) | SIL Open Font License 1.1 |
 
-Полные тексты лицензий: `node_modules/@fontsource-variable/literata/LICENSE`, `node_modules/@fontsource-variable/golos-text/LICENSE`, https://openfontlicense.org.
+Полный текст лицензии: `node_modules/@fontsource-variable/golos-text/LICENSE`, https://openfontlicense.org.
 
 ## Иконки
 

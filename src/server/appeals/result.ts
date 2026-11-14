@@ -2,7 +2,8 @@ import type { z } from "zod";
 import type { AppealStatus } from "./types";
 
 // Ожидаемые отказы возвращаются значением, а не исключением; экран переводит код в текст.
-export type AppealError = "not_found" | "bad_transition" | "rate_limited" | "validation" | "closed";
+/** empty — «взять следующее»: в своих отделах нет новых обращений (или все заняты прямо сейчас). */
+export type AppealError = "not_found" | "bad_transition" | "rate_limited" | "validation" | "closed" | "empty";
 export type Failure = { ok: false; error: AppealError; fieldErrors?: Record<string, string> };
 export type Result<T> = { ok: true; value: T } | Failure;
 

@@ -1,10 +1,10 @@
-// Тема оформления: светлая «Бумага» или тёмная «Ночная смена». Чистые данные и функции — для сервера и клиента.
+// Тема оформления: светлая или тёмная («Ночная смена»). Чистые данные и функции — для сервера и клиента.
 // Выбор хранится в cookie, а не в профиле: тема — настройка устройства (телефон ночью тёмный, ноутбук днём
 // светлый), и тестовые аккаунты общие — один эксперт не должен менять оформление другому.
 
 export const THEMES = [
-  { code: "light", label: "Светлая", hint: "«Бумага»: кремовый лист, терракотовый акцент" },
-  { code: "dark", label: "Тёмная", hint: "«Ночная смена»: чёрный фон, серые карточки, синий акцент" },
+  { code: "light", label: "Светлая", hint: "Белое поле, чёрный текст, синий акцент" },
+  { code: "dark", label: "Тёмная", hint: "Чёрное поле, серые панели, синий акцент" },
 ] as const;
 export type Theme = (typeof THEMES)[number]["code"];
 
@@ -12,7 +12,7 @@ export const THEME_COOKIE = "ns_theme";
 export const DEFAULT_THEME: Theme = "light";
 
 /** Цвет системной панели браузера под тему (совпадает с --bg в src/ui/tokens.css). */
-export const THEME_COLOR: Record<Theme, string> = { light: "#F4EFE6", dark: "#000000" };
+export const THEME_COLOR: Record<Theme, string> = { light: "#FFFFFF", dark: "#000000" };
 
 /** Тема из значения cookie или формы: всё незнакомое — светлая. */
 export function parseTheme(value: unknown): Theme {
