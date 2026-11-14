@@ -1,13 +1,15 @@
-import { CardsSkeleton, HeaderSkeleton, SectionTitleSkeleton } from "@/ui/PageSkeleton";
+import { CardsSkeleton, HeaderSkeleton, RowsSkeleton, SectionTitleSkeleton } from "@/ui/PageSkeleton";
 
-// Карточка обращения грузится: заголовок, срок, путь обращения, переписка.
+// Обращение грузится: срок между линиями, данные списком, форма сообщения (у формы рамка и на экране).
 export default function AppealLoading() {
   return (
     <>
       <HeaderSkeleton kicker />
-      <CardsSkeleton count={1} lines={3} />
+      <RowsSkeleton count={1} lines={3} />
       <SectionTitleSkeleton />
-      <CardsSkeleton count={1} lines={4} />
+      <RowsSkeleton count={3} lines={1} />
+      <SectionTitleSkeleton />
+      <CardsSkeleton count={1} lines={3} />
     </>
   );
 }

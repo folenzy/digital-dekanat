@@ -1,13 +1,13 @@
-import { CardsSkeleton, HeaderSkeleton, SectionTitleSkeleton } from "@/ui/PageSkeleton";
+import { CardsSkeleton, HeaderSkeleton, RowsSkeleton, SectionTitleSkeleton } from "@/ui/PageSkeleton";
 
-// Объявления грузятся: заголовок, форма, лента.
+// Объявления грузятся: форма (у формы рамка и на экране), опубликованные — строками.
 export default function StaffAnnouncementsLoading() {
   return (
     <>
       <HeaderSkeleton />
       <CardsSkeleton count={1} lines={5} />
       <SectionTitleSkeleton />
-      <CardsSkeleton count={2} lines={3} />
+      <RowsSkeleton count={2} lines={3} />
     </>
   );
 }

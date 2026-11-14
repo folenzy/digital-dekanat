@@ -1,12 +1,13 @@
-import { CardsSkeleton, HeaderSkeleton, TabsSkeleton } from "@/ui/PageSkeleton";
+import { HeaderSkeleton, RowsSkeleton, TabsSkeleton } from "@/ui/PageSkeleton";
 
-// Уведомления грузятся: вкладки и список.
+// Уведомления грузятся: вкладки, фильтр, список строками.
 export default function NotificationsLoading() {
   return (
     <>
       <HeaderSkeleton subtitle={false} />
       <TabsSkeleton />
-      <CardsSkeleton count={4} lines={1} />
+      <TabsSkeleton small />
+      <RowsSkeleton count={5} lines={2} />
     </>
   );
 }

@@ -1,4 +1,4 @@
-import { CardsSkeleton, HeaderSkeleton } from "@/ui/PageSkeleton";
+import { HeaderSkeleton, RowsSkeleton } from "@/ui/PageSkeleton";
 import { PublicPage } from "@/ui/PublicPage";
 
 // Страница статическая и обычно открывается мгновенно; заготовка — на случай медленной сети.
@@ -6,7 +6,7 @@ export default function AboutLoading() {
   return (
     <PublicPage>
       <HeaderSkeleton />
-      <CardsSkeleton count={2} lines={3} />
+      <RowsSkeleton count={4} lines={2} />
     </PublicPage>
   );
 }

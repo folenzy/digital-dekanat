@@ -1,15 +1,16 @@
-import { CardsSkeleton, HeaderSkeleton, SectionTitleSkeleton } from "@/ui/PageSkeleton";
+import { HeaderSkeleton, RowsSkeleton, SectionTitleSkeleton } from "@/ui/PageSkeleton";
 
-// «Сегодня» грузится: приветствие, карточка деканата, пары, обращения.
+// «Сегодня» грузится: день и что сейчас, лента пар с колонкой времени, обращения, сроки.
 export default function TodayLoading() {
   return (
     <>
-      <HeaderSkeleton kicker />
-      <CardsSkeleton count={1} lines={3} />
+      <HeaderSkeleton subtitleLines={2} />
       <SectionTitleSkeleton />
-      <CardsSkeleton count={2} />
+      <RowsSkeleton count={3} lines={2} time />
       <SectionTitleSkeleton />
-      <CardsSkeleton count={1} />
+      <RowsSkeleton count={1} lines={2} />
+      <SectionTitleSkeleton />
+      <RowsSkeleton count={2} lines={2} />
     </>
   );
 }

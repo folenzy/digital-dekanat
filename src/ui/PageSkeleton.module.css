@@ -1,28 +1,100 @@
+/* Заглушки загрузки в форме экранов «Ведомости»: строки через линию, рамка — только где она есть на экране. */
+
 .header {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--space-2);
   margin-bottom: var(--space-6);
 }
 
+/* Вкладки и листки дней на экране светлые (утопленная дорожка, белые листки) — заглушка тоже светлая,
+   иначе сплошной серый блок тяжелее настоящего элемента */
 .tabs {
-  margin-bottom: var(--space-5);
+  margin-bottom: var(--space-4);
+  background: var(--neutral-tint);
 }
 
 .sectionTitle {
-  margin: var(--space-10) 0 var(--space-3);
+  margin: var(--space-8) 0 var(--space-3);
 }
 
-.stack {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
+.line {
+  margin-bottom: var(--space-5);
 }
 
-.spaced {
-  margin-bottom: var(--space-6);
+/* несколько строк подряд — один абзац, а не отдельные блоки */
+.line:has(+ .line) {
+  margin-bottom: var(--space-2);
 }
 
 .strip {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: var(--space-1);
   margin-bottom: var(--space-5);
+}
+
+.strip > * {
+  background: var(--neutral-tint);
+}
+
+/* Строки через линию */
+.rows {
+  border-top: 1px solid var(--line);
+}
+
+.row {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.time {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: var(--space-1);
+  width: 3.25rem;
+}
+
+.rowBody {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+/* Группа строк в рамке */
+.rows[data-framed] {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--paper);
+}
+
+.rows[data-framed] .row {
+  padding: var(--space-3) var(--space-4);
+}
+
+.rows[data-framed] .row:last-child {
+  border-bottom: 0;
+}
+
+/* Блоки в рамке: пары, формы */
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--paper);
 }

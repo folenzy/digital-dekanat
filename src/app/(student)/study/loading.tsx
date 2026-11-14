@@ -1,13 +1,14 @@
-import { CardsSkeleton, HeaderSkeleton, TabsSkeleton } from "@/ui/PageSkeleton";
+import { HeaderSkeleton, LineSkeleton, RowsSkeleton, TabsSkeleton } from "@/ui/PageSkeleton";
 
-// «Учёба» грузится: сводка «Как у меня дела», вкладки, дисциплины.
+// «Учёба» грузится: сводка без рамки, вкладки, предметы — одна группа строк.
 export default function StudyLoading() {
   return (
     <>
       <HeaderSkeleton />
-      <CardsSkeleton count={1} lines={3} spaced />
+      <LineSkeleton width="48%" />
+      <LineSkeleton width="80%" />
       <TabsSkeleton />
-      <CardsSkeleton count={3} lines={3} />
+      <RowsSkeleton count={4} lines={3} framed />
     </>
   );
 }
