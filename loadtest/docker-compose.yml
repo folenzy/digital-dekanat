@@ -1,0 +1,57 @@
+# Стенд для замера масштабирования: N копий приложения за Caddy, одна PostgreSQL.
+# Запускается только через loadtest/run.mjs (там же — как читать результат, см. loadtest/README.md).
+#
+# Только для локального компьютера: порты привязаны к 127.0.0.1, база в tmpfs (исчезает при остановке),
+# пароль базы, демо-пароли и токен сброса run.mjs генерирует случайно при каждом запуске — в файлах их нет.
+#
+# Ресурсы урезаны нарочно: каждой копии — доля ядра (APP_CPUS), базе и Caddy — свои доли.
+# Так узкое место — приложение, и видно, что даёт каждая добавленная копия.
+
+name: nasvyazi-load
+
+services:
+  app:
+    image: nasvyazi-app:latest # тот же образ, что на сервере (deploy/Dockerfile)
+    environment:
+      DATABASE_URL: postgres://nasvyazi:${LOAD_DB_PASSWORD:?запускать через loadtest/run.mjs}@db:5432/nasvyazi
+      DEMO_PASSWORD_ALINA: ${LOAD_DEMO_PASSWORD:?запускать через loadtest/run.mjs}
+      DEMO_PASSWORD_DENIS: ${LOAD_DEMO_PASSWORD:?запускать через loadtest/run.mjs}
+      DEMO_PASSWORD_IRINA: ${LOAD_DEMO_PASSWORD:?запускать через loadtest/run.mjs}
+      DEMO_RESET_TOKEN: ${LOAD_RESET_TOKEN:?запускать через loadtest/run.mjs}
+      COOKIE_SECURE: "false" # стенд без HTTPS
+    cpus: ${APP_CPUS:-0.35}
+    # Каждой копии свой порт: проверка живых обновлений ходит в конкретную копию мимо Caddy.
+    ports:
+      - "127.0.0.1:3101-3103:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:17-alpine
+    # Память как на сервере; подключений больше: у каждой копии пул до 10 и отдельное для LISTEN.
+    command: ["postgres", "-c", "shared_buffers=64MB", "-c", "max_connections=100"]
+    environment:
+      POSTGRES_USER: nasvyazi
+      POSTGRES_DB: nasvyazi
+      POSTGRES_PASSWORD: ${LOAD_DB_PASSWORD:?запускать через loadtest/run.mjs}
+    tmpfs:
+      - /var/lib/postgresql/data
+    cpus: ${DB_CPUS:-0.5}
+    ports:
+      - "127.0.0.1:5434:5432" # run.mjs создаёт сессии для замера и читает итог проверки
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nasvyazi -d nasvyazi"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  caddy:
+    image: caddy:2
+    cpus: ${CADDY_CPUS:-0.3}
+    ports:
+      - "127.0.0.1:8088:80"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+    depends_on:
+      - app
