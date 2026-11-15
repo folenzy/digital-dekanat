@@ -4,6 +4,9 @@
 #
 # Локально (из корня репозитория):  docker compose -f deploy/docker-compose.yml up -d --build
 # На сервере (из папки с этим файлом): docker compose up -d   — образ nasvyazi-app загружен через docker load.
+#
+# Несколько копий приложения: APP_REPLICAS и PG_MAX_CONNECTIONS в deploy/.env, затем docker compose up -d
+# (docs/DEPLOY.md, раздел «Несколько копий»). Caddy находит копии сам, код менять не нужно.
 
 name: nasvyazi
 
@@ -22,6 +25,10 @@ services:
       dockerfile: deploy/Dockerfile
     platform: linux/amd64
     restart: unless-stopped
+    # Сколько копий приложения запустить. Состояния в памяти копии нет (сессии, лимиты и события — в PostgreSQL),
+    # миграции при одновременном старте идут по очереди (src/server/boot.ts). Нет container_name и ports — иначе
+    # вторая копия не создастся.
+    scale: ${APP_REPLICAS:-1}
     environment:
       DATABASE_URL: ${DATABASE_URL:?задай DATABASE_URL в deploy/.env}
       DEMO_PASSWORD_ALINA: ${DEMO_PASSWORD_ALINA:?задай DEMO_PASSWORD_ALINA в deploy/.env}
@@ -40,8 +47,9 @@ services:
   db:
     image: postgres:17-alpine
     restart: unless-stopped
-    # урезанная память под 1 ГБ RAM
-    command: ["postgres", "-c", "shared_buffers=64MB", "-c", "max_connections=30"]
+    # урезанная память под 1 ГБ RAM. Подключений нужно не меньше 13 на копию приложения
+    # (пул 10 + LISTEN + 2 на миграции при старте) и запас 5 на бэкап и ручной psql: PG_MAX_CONNECTIONS в .env
+    command: ["postgres", "-c", "shared_buffers=64MB", "-c", "max_connections=${PG_MAX_CONNECTIONS:-30}"]
     environment:
       POSTGRES_USER: nasvyazi
       POSTGRES_DB: nasvyazi

@@ -35,6 +35,50 @@ describe("deploy/demo-reset.sh", () => {
   });
 });
 
+// Несколько копий приложения (loadtest/README.md): число копий и подключения базы задаются в deploy/.env,
+// Caddy сам находит все копии. Без этих свойств `--scale` молча работал бы на одной копии.
+describe("deploy: несколько копий приложения", () => {
+  const block = (text: string, head: RegExp) => {
+    const start = text.search(head);
+    if (start < 0) return "";
+    let depth = 0;
+    for (let i = text.indexOf("{", start); i < text.length; i++) {
+      if (text[i] === "{") depth++;
+      if (text[i] === "}" && --depth === 0) return text.slice(start, i + 1);
+    }
+    return "";
+  };
+  const service = (compose: string, name: string) => {
+    const m = compose.match(new RegExp(`^  ${name}:\\n((?:    .*\\n|\\s*\\n)+)`, "m"));
+    return m ? m[1] : "";
+  };
+
+  it("Caddy раздаёт запросы всем копиям app, а не одному адресу", () => {
+    const proxy = block(code(read("Caddyfile")), /^\s*reverse_proxy\b/m);
+    expect(proxy).toMatch(/^\s*dynamic a app 3000\s*\{/m);
+    expect(proxy).toMatch(/^\s*lb_try_duration \d+s\s*$/m);
+    expect(proxy).toMatch(/^\s*flush_interval -1\s*$/m); // SSE без буферизации — как раньше
+    expect(code(read("Caddyfile"))).not.toMatch(/reverse_proxy\s+app:3000/);
+  });
+
+  it("число копий app задаётся APP_REPLICAS, по умолчанию одна", () => {
+    const app = service(code(read("docker-compose.yml")), "app");
+    expect(app).toMatch(/^    scale: \$\{APP_REPLICAS:-1\}\s*$/m);
+    expect(app).not.toMatch(/container_name|^    ports:/m); // иначе вторая копия не создастся
+  });
+
+  it("max_connections PostgreSQL задаётся PG_MAX_CONNECTIONS, по умолчанию прежние 30", () => {
+    const db = service(code(read("docker-compose.yml")), "db");
+    expect(db).toMatch(/"max_connections=\$\{PG_MAX_CONNECTIONS:-30\}"/);
+  });
+
+  it("образец .env объясняет обе настройки", () => {
+    const env = read(".env.example");
+    expect(env).toMatch(/^# ?APP_REPLICAS=1\s*$/m);
+    expect(env).toMatch(/^# ?PG_MAX_CONNECTIONS=30\s*$/m);
+  });
+});
+
 describe("deploy/Caddyfile: сжатие и SSE", () => {
   it("поток /api/events исключён из encode (иначе gzip может буферизовать события)", () => {
     const c = code(read("Caddyfile"));
