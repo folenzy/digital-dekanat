@@ -1,0 +1,413 @@
+{
+  "info": {
+    "date": "2026-11-15T10:13:59.586Z",
+    "host": "13th Gen Intel(R) Core(TM) i7-13620H, 16 потоков",
+    "docker": "2 ядра, 4.8 ГБ (ограничение .wslconfig)",
+    "image": "nasvyazi-app:latest, собран 2026-11-14T11:51",
+    "limits": {
+      "appCopy": "0.35",
+      "db": "0.5",
+      "caddy": "0.3"
+    },
+    "generator": "node v24.16.0 на хосте (вне Docker)",
+    "load": {
+      "perCopyUsers": 8,
+      "perCopySse": 60,
+      "durationS": 30,
+      "warmupS": 10,
+      "burnInS": 60
+    },
+    "pages": {
+      "student": [
+        "/",
+        "/schedule",
+        "/study",
+        "/dekanat",
+        "/notifications",
+        "/profile"
+      ],
+      "staff": [
+        "/staff",
+        "/staff?tab=in_progress",
+        "/staff/announcements"
+      ],
+      "staffShare": 0.1
+    }
+  },
+  "results": [
+    {
+      "copies": 3,
+      "users": 24,
+      "durationS": 30,
+      "sseOpen": 180,
+      "sseAsked": 180,
+      "requests": 1511,
+      "ok": 1511,
+      "errors": 0,
+      "errorsByStatus": {},
+      "rps": 50.4,
+      "latencyMs": {
+        "p50": 417,
+        "p95": 1061,
+        "p99": 1281,
+        "max": 1685
+      },
+      "pages": {
+        "/dekanat": {
+          "n": 208,
+          "avgMs": 457,
+          "avgKChars": 57.6
+        },
+        "/profile": {
+          "n": 235,
+          "avgMs": 440,
+          "avgKChars": 70.1
+        },
+        "/": {
+          "n": 239,
+          "avgMs": 574,
+          "avgKChars": 56.8
+        },
+        "/schedule": {
+          "n": 194,
+          "avgMs": 430,
+          "avgKChars": 66.5
+        },
+        "/staff/announcements": {
+          "n": 46,
+          "avgMs": 434,
+          "avgKChars": 48
+        },
+        "/notifications": {
+          "n": 239,
+          "avgMs": 398,
+          "avgKChars": 54.8
+        },
+        "/study": {
+          "n": 245,
+          "avgMs": 451,
+          "avgKChars": 71.3
+        },
+        "/staff?tab=in_progress": {
+          "n": 57,
+          "avgMs": 590,
+          "avgKChars": 45.8
+        },
+        "/staff": {
+          "n": 48,
+          "avgMs": 536,
+          "avgKChars": 44.9
+        }
+      },
+      "containers": [
+        {
+          "name": "app-1",
+          "cpu": "36.65%",
+          "mem": "231.3MiB"
+        },
+        {
+          "name": "app-2",
+          "cpu": "37.66%",
+          "mem": "234.5MiB"
+        },
+        {
+          "name": "app-3",
+          "cpu": "36.73%",
+          "mem": "246.3MiB"
+        },
+        {
+          "name": "caddy-1",
+          "cpu": "4.77%",
+          "mem": "47.65MiB"
+        },
+        {
+          "name": "db-1",
+          "cpu": "28.42%",
+          "mem": "217.8MiB"
+        }
+      ]
+    },
+    {
+      "copies": 2,
+      "users": 16,
+      "durationS": 30,
+      "sseOpen": 120,
+      "sseAsked": 120,
+      "requests": 960,
+      "ok": 960,
+      "errors": 0,
+      "errorsByStatus": {},
+      "rps": 32,
+      "latencyMs": {
+        "p50": 442,
+        "p95": 1164,
+        "p99": 1373,
+        "max": 1596
+      },
+      "pages": {
+        "/profile": {
+          "n": 156,
+          "avgMs": 457,
+          "avgKChars": 70.1
+        },
+        "/study": {
+          "n": 127,
+          "avgMs": 546,
+          "avgKChars": 71.5
+        },
+        "/dekanat": {
+          "n": 157,
+          "avgMs": 426,
+          "avgKChars": 57.6
+        },
+        "/notifications": {
+          "n": 121,
+          "avgMs": 439,
+          "avgKChars": 54.5
+        },
+        "/schedule": {
+          "n": 140,
+          "avgMs": 428,
+          "avgKChars": 66.7
+        },
+        "/staff?tab=in_progress": {
+          "n": 33,
+          "avgMs": 589,
+          "avgKChars": 45.8
+        },
+        "/staff": {
+          "n": 36,
+          "avgMs": 640,
+          "avgKChars": 44.9
+        },
+        "/": {
+          "n": 156,
+          "avgMs": 553,
+          "avgKChars": 56
+        },
+        "/staff/announcements": {
+          "n": 34,
+          "avgMs": 468,
+          "avgKChars": 48
+        }
+      },
+      "containers": [
+        {
+          "name": "app-1",
+          "cpu": "34.99%",
+          "mem": "237.4MiB"
+        },
+        {
+          "name": "app-2",
+          "cpu": "35.53%",
+          "mem": "246.3MiB"
+        },
+        {
+          "name": "burner",
+          "cpu": "35.12%",
+          "mem": "520KiB"
+        },
+        {
+          "name": "caddy-1",
+          "cpu": "3.65%",
+          "mem": "47.16MiB"
+        },
+        {
+          "name": "db-1",
+          "cpu": "21.32%",
+          "mem": "169MiB"
+        }
+      ]
+    },
+    {
+      "copies": 1,
+      "users": 8,
+      "durationS": 30,
+      "sseOpen": 60,
+      "sseAsked": 60,
+      "requests": 568,
+      "ok": 568,
+      "errors": 0,
+      "errorsByStatus": {},
+      "rps": 18.9,
+      "latencyMs": {
+        "p50": 396,
+        "p95": 616,
+        "p99": 781,
+        "max": 802
+      },
+      "pages": {
+        "/schedule": {
+          "n": 80,
+          "avgMs": 387,
+          "avgKChars": 66.3
+        },
+        "/profile": {
+          "n": 76,
+          "avgMs": 393,
+          "avgKChars": 70
+        },
+        "/": {
+          "n": 83,
+          "avgMs": 490,
+          "avgKChars": 56.7
+        },
+        "/dekanat": {
+          "n": 92,
+          "avgMs": 384,
+          "avgKChars": 57.4
+        },
+        "/study": {
+          "n": 90,
+          "avgMs": 434,
+          "avgKChars": 71.3
+        },
+        "/staff": {
+          "n": 17,
+          "avgMs": 519,
+          "avgKChars": 44.9
+        },
+        "/notifications": {
+          "n": 93,
+          "avgMs": 382,
+          "avgKChars": 54.5
+        },
+        "/staff/announcements": {
+          "n": 25,
+          "avgMs": 380,
+          "avgKChars": 48
+        },
+        "/staff?tab=in_progress": {
+          "n": 12,
+          "avgMs": 459,
+          "avgKChars": 45.8
+        }
+      },
+      "containers": [
+        {
+          "name": "app-1",
+          "cpu": "34.65%",
+          "mem": "245.9MiB"
+        },
+        {
+          "name": "burner",
+          "cpu": "68.70%",
+          "mem": "688KiB"
+        },
+        {
+          "name": "caddy-1",
+          "cpu": "0.97%",
+          "mem": "35.14MiB"
+        },
+        {
+          "name": "db-1",
+          "cpu": "8.81%",
+          "mem": "122.8MiB"
+        }
+      ]
+    }
+  ],
+  "overload": {
+    "copies": 1,
+    "users": 24,
+    "durationS": 30,
+    "sseOpen": 180,
+    "sseAsked": 180,
+    "requests": 543,
+    "ok": 543,
+    "errors": 0,
+    "errorsByStatus": {},
+    "rps": 18.1,
+    "latencyMs": {
+      "p50": 1223,
+      "p95": 1712,
+      "p99": 2004,
+      "max": 2299
+    },
+    "pages": {
+      "/notifications": {
+        "n": 76,
+        "avgMs": 1185,
+        "avgKChars": 54.7
+      },
+      "/dekanat": {
+        "n": 75,
+        "avgMs": 1132,
+        "avgKChars": 57.3
+      },
+      "/profile": {
+        "n": 74,
+        "avgMs": 1199,
+        "avgKChars": 70.2
+      },
+      "/study": {
+        "n": 81,
+        "avgMs": 1303,
+        "avgKChars": 71.6
+      },
+      "/staff": {
+        "n": 11,
+        "avgMs": 1618,
+        "avgKChars": 44.9
+      },
+      "/schedule": {
+        "n": 106,
+        "avgMs": 1182,
+        "avgKChars": 67.7
+      },
+      "/": {
+        "n": 78,
+        "avgMs": 1417,
+        "avgKChars": 56.4
+      },
+      "/staff/announcements": {
+        "n": 14,
+        "avgMs": 1268,
+        "avgKChars": 48
+      },
+      "/staff?tab=in_progress": {
+        "n": 28,
+        "avgMs": 1622,
+        "avgKChars": 45.8
+      }
+    },
+    "containers": [
+      {
+        "name": "app-1",
+        "cpu": "34.27%",
+        "mem": "273.9MiB"
+      },
+      {
+        "name": "burner",
+        "cpu": "69.39%",
+        "mem": "688KiB"
+      },
+      {
+        "name": "caddy-1",
+        "cpu": "1.49%",
+        "mem": "46.93MiB"
+      },
+      {
+        "name": "db-1",
+        "cpu": "11.99%",
+        "mem": "123.2MiB"
+      }
+    ]
+  },
+  "realtime": {
+    "actionOn": "http://127.0.0.1:3102",
+    "appealId": "d3742ea8-9a48-4280-9090-348787a16c76",
+    "arrivedOn": [
+      {
+        "copy": "http://127.0.0.1:3101",
+        "ms": 791
+      },
+      {
+        "copy": "http://127.0.0.1:3103",
+        "ms": 793
+      }
+    ],
+    "leakedToOtherStudents": 0,
+    "ok": true
+  }
+}
