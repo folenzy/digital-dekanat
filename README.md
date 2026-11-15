@@ -46,6 +46,8 @@
 
 TypeScript, Next.js 16 (App Router), PostgreSQL 17 + Drizzle ORM, Docker Compose, Caddy (HTTPS). Тесты: Vitest на реальной PostgreSQL, Playwright (360 px и 1280 px) + axe. Почему так — `docs/adr/0001-stack.md`.
 
+**Масштабирование проверено замером** (`loadtest/README.md`): 1, 2 и 3 копии приложения за Caddy на одной PostgreSQL — три копии дают в 2,5–2,7 раза больше страниц в секунду без единой ошибки, живые события доходят между копиями и только адресату. Команда — `node loadtest/run.mjs`.
+
 ## Запуск локально
 
 Нужны Node 24, npm и Docker Desktop (запущенный).
@@ -87,7 +89,8 @@ npx tsc --noEmit && npm run lint
 | [`docs/process/LOG.md`](docs/process/LOG.md) | Журнал процесса по ходу работы: решения, скиллы, субагенты, ошибки ИИ и исправления |
 | [`docs/process/TOOLS.md`](docs/process/TOOLS.md) | Все инструменты, скиллы, субагенты и модели |
 | [`docs/process/SECURITY-REVIEW.md`](docs/process/SECURITY-REVIEW.md) | Итоговый security review: находки, исправления, известные ограничения |
-| [`prompts/`](prompts/) | Ключевые промпты по этапам: от мастер-промпта до редизайна и самопроверки по критериям (00–11) |
+| [`prompts/`](prompts/) | Ключевые промпты по этапам: от мастер-промпта до редизайна, самопроверки по критериям и замера масштабирования (00–12) |
+| [`loadtest/README.md`](loadtest/README.md) | Замер масштабирования: 1, 2, 3 копии, методика, ошибки первых прогонов, что нужно для прода |
 | [`docs/specs/2026-11-07-na-svyazi-design.md`](docs/specs/2026-11-07-na-svyazi-design.md) | Дизайн-документ (спека) |
 | [`docs/plans/2026-11-07-volna-1-plan.md`](docs/plans/2026-11-07-volna-1-plan.md) | План реализации: 17 задач |
 | [`docs/adr/0001-stack.md`](docs/adr/0001-stack.md) | Решение по стеку и хостингу |
