@@ -15,6 +15,7 @@ import { Card } from "@/ui/Card";
 import { PageHeader } from "@/ui/PageHeader";
 import { Section } from "@/ui/Section";
 import { Agenda } from "@/ui/student/Agenda";
+import { NextLesson } from "@/ui/student/NextLesson";
 import type { LessonState } from "@/ui/student/LessonCard";
 import { nextDayLabel, todaySummary } from "@/ui/student/today";
 import styles from "./today.module.css";
@@ -62,6 +63,8 @@ export default async function TodayPage() {
     <>
       {/* Заголовок — сам день: приветствий нет, первая же строка отвечает «что сейчас» */}
       <PageHeader title={ruDayTitle(today)} subtitle={todaySummary({ lessons, current, next, appeals }, now)} />
+
+      <NextLesson lessons={lessons} todayKey={today} upcoming={next} nowIso={now.toISOString()} />
 
       {nudges.length > 0 && (
         <section aria-label="Деканат пишет первым">
