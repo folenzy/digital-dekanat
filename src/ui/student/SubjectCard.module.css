@@ -1,0 +1,251 @@
+/* Карточка дисциплины: баллы, полоса с порогами оценок, контрольные точки. */
+
+.subject {
+  padding: var(--space-3) var(--space-4);
+  overflow-wrap: break-word;
+}
+
+.subject + .subject {
+  border-top: 1px solid var(--line);
+}
+
+/* Первая строка: название слева, баллы справа */
+.subjectHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.subjectTitle {
+  min-width: 0;
+  font-size: var(--text-lg);
+  hyphens: auto;
+}
+
+.pointsLine {
+  flex: none;
+  white-space: nowrap;
+}
+
+.pointsNum {
+  font-size: var(--text-lg);
+  font-weight: 700;
+}
+
+.pointsMax {
+  font-size: var(--text-sm);
+  color: var(--fg-muted);
+}
+
+/* Вторая строка: форма контроля и допуск слева, предварительная оценка справа */
+.subjectMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0 var(--space-4);
+  margin-top: 2px;
+  font-size: var(--text-sm);
+  color: var(--fg-muted);
+}
+
+.form {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 var(--space-1);
+}
+
+.prelim strong {
+  color: var(--fg);
+  font-weight: 600;
+}
+
+/* Обёртка шкалы: полоса режет края (overflow), подписи порогов лежат под ней и не обрезаются */
+.scale {
+  position: relative;
+  margin-top: var(--space-2);
+  padding-bottom: 1.1rem;
+}
+
+/* Шкала 0–100: набрано (синий), ещё можно набрать в точках (штриховка), отметки 55/70/85 — границы оценок */
+.bar {
+  position: relative;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--neutral-tint);
+  overflow: hidden;
+}
+
+.barFill,
+.barAhead {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+}
+
+.barFill {
+  left: 0;
+  background: var(--accent-fill);
+}
+
+.barAhead {
+  background: repeating-linear-gradient(135deg, var(--accent-tint) 0 4px, color-mix(in srgb, var(--accent) 35%, var(--paper)) 4px 6px);
+}
+
+.bar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to right, transparent calc(55% - 1px), var(--paper) calc(55% - 1px), var(--paper) calc(55% + 1px), transparent calc(55% + 1px)),
+    linear-gradient(to right, transparent calc(70% - 1px), var(--paper) calc(70% - 1px), var(--paper) calc(70% + 1px), transparent calc(70% + 1px)),
+    linear-gradient(to right, transparent calc(85% - 1px), var(--paper) calc(85% - 1px), var(--paper) calc(85% + 1px), transparent calc(85% + 1px));
+}
+
+/* Контрольные точки: раскрываются по тапу, открыты сами, если есть риск */
+.checkpoints {
+  margin-top: var(--space-1);
+}
+
+.checkpoints[open] {
+  padding-bottom: var(--space-2);
+}
+
+.summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--fg-accent);
+  cursor: pointer;
+  list-style: none;
+}
+
+.summary::-webkit-details-marker {
+  display: none;
+}
+
+.summary::after {
+  content: "";
+  width: 7px;
+  height: 7px;
+  margin-left: var(--space-2);
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: translateY(-2px) rotate(45deg);
+  transition: transform var(--dur) var(--ease-out);
+}
+
+.checkpoints[open] .summary::after {
+  transform: translateY(1px) rotate(-135deg);
+}
+
+.cpList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cp {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: var(--space-2);
+}
+
+.cpIcon svg {
+  width: 20px;
+  height: 20px;
+  color: var(--muted);
+}
+
+.cp[data-state="done"] .cpIcon svg {
+  color: var(--ok);
+}
+
+.cp[data-state="overdue"] .cpIcon svg {
+  color: var(--danger);
+}
+
+.cpBody {
+  display: flex;
+  flex-direction: column;
+}
+
+.cpTitle {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  line-height: var(--leading-snug);
+}
+
+.required {
+  margin-left: var(--space-2);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  color: var(--fg-muted);
+  white-space: nowrap;
+}
+
+.cpMeta {
+  font-size: var(--text-sm);
+  color: var(--fg-muted);
+}
+
+.cp[data-state="overdue"] .cpMeta {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+/* Подпись порога под чертой: «3», «4», «5» или «зачёт»; левый край задаёт style по data-at */
+.mark {
+  position: absolute;
+  top: 8px;
+  transform: translateX(-50%);
+  font-size: var(--text-xs);
+  line-height: 1;
+  color: var(--fg-muted);
+  white-space: nowrap;
+}
+
+/* Две подсказки под полосой: на 360 px друг под другом, на широких — слева «нужно ещё», справа ближайшая точка */
+.facts {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--fg-muted);
+}
+
+.facts strong {
+  color: var(--fg);
+  font-weight: 600;
+}
+
+.overdue {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+@media (min-width: 600px) {
+  .subject {
+    padding: var(--space-3) var(--space-5);
+  }
+
+  .facts {
+    flex-direction: row;
+    justify-content: space-between;
+    gap: var(--space-4);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .summary::after {
+    transition: none;
+  }
+}
