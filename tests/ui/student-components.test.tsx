@@ -10,7 +10,7 @@ const html = (el: ReactElement) => renderToStaticMarkup(el);
 
 const lesson = (over: Partial<Lesson>): Lesson => ({
   pair: 2, start: "10:40", end: "12:10", discipline: "Математический анализ", type: "lecture",
-  room: "А-310", building: "Корпус А", teacher: "Ковалёва Марина Анатольевна", cancelled: false, ...over,
+  room: "А-310", building: "Корпус А", teacher: "Ковалёва Марина Анатольевна", cancelled: false, note: null, ...over,
 });
 
 describe("LessonCard", () => {

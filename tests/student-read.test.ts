@@ -158,6 +158,78 @@ describe("расписание", () => {
   });
 });
 
+describe("заметки к парам", () => {
+  beforeAll(async () => { await buildDemoWorld(db, TUE, pw); await loadViewers(); });
+
+  async function groupIdOf(login: string): Promise<number> {
+    const [r] = await testSql<{ group_id: number }[]>`
+      select st.group_id from students st join users u on u.id = st.user_id where u.login = ${login}`;
+    return r.group_id;
+  }
+  // upsert: переживает демо-мир, который сам заполняет lesson_notes
+  async function putNote(groupId: number, date: string, pair: number, topic: string, task: string | null, materials: unknown[]) {
+    await testSql`
+      insert into lesson_notes (group_id, date, pair, topic, task, materials)
+      values (${groupId}, ${date}, ${pair}, ${topic}, ${task}, ${JSON.stringify(materials)}::jsonb)
+      on conflict (group_id, date, pair) do update
+        set topic = excluded.topic, task = excluded.task, materials = excluded.materials`;
+  }
+  async function dropNote(groupId: number, date: string, pair: number) {
+    await testSql`delete from lesson_notes where group_id = ${groupId} and date = ${date} and pair = ${pair}`;
+  }
+
+  it("заметка группы попадает в пару; чужая группа не видна", async () => {
+    const ga = await groupIdOf("alina.mironova");
+    const gd = await groupIdOf("denis.kravtsov");
+    const mine = { topic: "Графы и деревья", task: "Задачи 1–5 из листка 7", materials: [{ title: "Конспект", kind: "pdf" as const }] };
+    await putNote(ga, "2026-11-10", 1, mine.topic, mine.task, mine.materials);
+    await putNote(gd, "2026-11-10", 2, "Чужая тема", null, []);
+    expect((await getDay(alina, TUE))[0].note).toEqual(mine);
+    expect((await getDay(denis, TUE))[0].note).toEqual({ topic: "Чужая тема", task: null, materials: [] });
+  });
+
+  it("заметка группы Дениса не показывается Алине", async () => {
+    const ga = await groupIdOf("alina.mironova");
+    const gd = await groupIdOf("denis.kravtsov");
+    await dropNote(ga, "2026-11-10", 2);
+    await putNote(gd, "2026-11-10", 2, "Только Денис", null, []);
+    expect((await getDay(alina, TUE))[1].note).toBeNull();
+  });
+
+  it("перенесённая пара берёт заметку по исходному номеру", async () => {
+    const ga = await groupIdOf("alina.mironova");
+    // в среду пара «Базы данных» перенесена с 4-й на 1-ю
+    await putNote(ga, "2026-11-11", 4, "Нормализация", "Привести схему к 3НФ", [{ title: "Слайды", kind: "slides" }]);
+    await dropNote(ga, "2026-11-11", 1);
+    const day = await getDay(alina, new Date("2026-11-11T09:00:00Z"));
+    expect(day[0]).toMatchObject({ pair: 1, change: { kind: "moved" } });
+    expect(day[0].note).toEqual({ topic: "Нормализация", task: "Привести схему к 3НФ", materials: [{ title: "Слайды", kind: "slides" }] });
+  });
+
+  it("отменённая пара отдаёт свою заметку", async () => {
+    const ga = await groupIdOf("alina.mironova");
+    await putNote(ga, "2026-11-10", 3, "Отменённая тема", null, []);
+    const lesson = (await getDay(alina, TUE))[2];
+    expect(lesson.cancelled).toBe(true);
+    expect(lesson.note).toEqual({ topic: "Отменённая тема", task: null, materials: [] });
+  });
+
+  it("пара без заметки — note: null", async () => {
+    const ga = await groupIdOf("alina.mironova");
+    await dropNote(ga, "2026-11-10", 2);
+    expect((await getDay(alina, TUE))[1].note).toBeNull();
+  });
+
+  it("неделя отдаёт заметки по всем дням", async () => {
+    const ga = await groupIdOf("alina.mironova");
+    await putNote(ga, "2026-11-09", 2, "Понедельник", null, []);
+    await putNote(ga, "2026-11-10", 1, "Вторник", null, []);
+    const week = await getWeek(alina, TUE);
+    expect(week.days[0].lessons[0].note?.topic).toBe("Понедельник");
+    expect(week.days[1].lessons[0].note?.topic).toBe("Вторник");
+  });
+});
+
 describe("успеваемость", () => {
   beforeEach(async () => { await buildDemoWorld(db, TUE, pw); await loadViewers(); });
 

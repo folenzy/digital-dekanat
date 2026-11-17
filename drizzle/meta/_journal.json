@@ -15,6 +15,13 @@
       "when": 1794486542576,
       "tag": "0001_nervous_infant_terrible",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794911175951,
+      "tag": "0002_green_loa",
+      "breakpoints": true
     }
   ]
 }

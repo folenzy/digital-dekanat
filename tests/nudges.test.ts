@@ -23,7 +23,7 @@ const appeal = (over: Partial<NudgeContext["appeals"][number]>): NudgeContext["a
 });
 const lesson = (over: object) => ({
   pair: 2, start: "10:40", end: "12:10", discipline: "Базы данных", type: "lecture" as const,
-  room: "А-101", building: null, teacher: "Иванов", cancelled: false, ...over,
+  room: "А-101", building: null, teacher: "Иванов", cancelled: false, note: null, ...over,
 });
 
 describe("форматтер дат", () => {

@@ -16,7 +16,7 @@ const MON_EARLY = msk("2026-11-09T08:00:00"); // понедельник до п�
 
 const lesson = (over: Partial<Lesson>): Lesson => ({
   pair: 2, start: "10:40", end: "12:10", discipline: "Математический анализ", type: "lecture",
-  room: "А-301", building: "Корпус А", teacher: "Ковалёва Марина Анатольевна", cancelled: false, ...over,
+  room: "А-301", building: "Корпус А", teacher: "Ковалёва Марина Анатольевна", cancelled: false, note: null, ...over,
 });
 
 const appeal = (over: Partial<AppealListItem>): AppealListItem => ({

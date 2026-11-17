@@ -8,7 +8,7 @@ import { LessonList } from "@/ui/student/LessonList";
 const html = (el: ReactElement) => renderToStaticMarkup(el);
 const lesson = (over: Partial<Lesson>): Lesson => ({
   pair: 1, start: "09:00", end: "10:30", discipline: "Математический анализ", type: "lecture",
-  room: "А-310", building: "Корпус А", teacher: "Ковалёва Марина Анатольевна", cancelled: false, ...over,
+  room: "А-310", building: "Корпус А", teacher: "Ковалёва Марина Анатольевна", cancelled: false, note: null, ...over,
 });
 
 describe("gapBetween — что между парами", () => {

@@ -3,7 +3,9 @@ import { and, eq, inArray } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import type { StudentViewer } from "./auth/viewer";
 import { db } from "./db/client";
-import { disciplines, rooms, scheduleChanges, scheduleSlots, teachers } from "./db/schema";
+import {
+  disciplines, lessonNotes, rooms, scheduleChanges, scheduleSlots, teachers, type LessonNote,
+} from "./db/schema";
 import { mskAt, mskDateKey, mskMinutes, mskWeekday, shiftDateKey, toMin, weekParity } from "./time";
 
 export const PAIR_TIMES: Record<number, readonly [start: string, end: string]> = {
@@ -25,6 +27,7 @@ export type Lesson = {
   pair: number; start: string; end: string; discipline: string;
   type: "lecture" | "practice" | "lab"; room: string; building: string | null; teacher: string;
   change?: LessonChange; cancelled: boolean;
+  note: LessonNote | null;
 };
 
 const noonOf = (key: string) => mskAt(key, "12:00");
@@ -37,7 +40,7 @@ async function loadLessons(groupId: number, keys: string[]): Promise<Map<string,
   const changeRoom = alias(rooms, "change_room");
   const changeTeacher = alias(teachers, "change_teacher");
 
-  const [slots, changes] = await Promise.all([
+  const [slots, changes, notes] = await Promise.all([
     db.select({
       weekday: scheduleSlots.weekday, parity: scheduleSlots.parity, pair: scheduleSlots.pair,
       type: scheduleSlots.lessonType, discipline: disciplines.name, room: rooms.name,
@@ -60,7 +63,18 @@ async function loadLessons(groupId: number, keys: string[]): Promise<Map<string,
       .leftJoin(disciplines, eq(disciplines.id, scheduleChanges.disciplineId))
       .where(and(eq(scheduleChanges.groupId, groupId), inArray(scheduleChanges.date, keys)))
       .orderBy(scheduleChanges.id),
+    db.select({
+      date: lessonNotes.date, pair: lessonNotes.pair,
+      topic: lessonNotes.topic, task: lessonNotes.task, materials: lessonNotes.materials,
+    })
+      .from(lessonNotes)
+      .where(and(eq(lessonNotes.groupId, groupId), inArray(lessonNotes.date, keys))),
   ]);
+
+  // заметка привязана к исходному номеру пары (до переноса)
+  const noteByKey = new Map<string, LessonNote>(
+    notes.map((n) => [`${n.date}:${n.pair}`, { topic: n.topic, task: n.task, materials: n.materials }]),
+  );
 
   const result = new Map<string, Lesson[]>();
   for (const key of keys) {
@@ -72,7 +86,7 @@ async function loadLessons(groupId: number, keys: string[]): Promise<Map<string,
       .map((x) => ({
         pair: x.pair, origPair: x.pair, start: PAIR_TIMES[x.pair][0], end: PAIR_TIMES[x.pair][1],
         discipline: x.discipline, type: x.type, room: x.room, building: x.building, teacher: x.teacher,
-        cancelled: false,
+        cancelled: false, note: noteByKey.get(`${key}:${x.pair}`) ?? null,
       }));
 
     for (const c of changes.filter((x) => x.date === key)) {
@@ -82,7 +96,8 @@ async function loadLessons(groupId: number, keys: string[]): Promise<Map<string,
           pair, origPair: pair, start: PAIR_TIMES[pair][0], end: PAIR_TIMES[pair][1],
           discipline: c.extraDiscipline ?? UNKNOWN, type: c.lessonType ?? "lecture",
           room: c.newRoom ?? UNKNOWN, building: c.newBuilding ?? null, teacher: c.newTeacher ?? UNKNOWN,
-          cancelled: false, change: { kind: "extra", ...(c.note ? { note: c.note } : {}) },
+          cancelled: false, note: noteByKey.get(`${key}:${pair}`) ?? null,
+          change: { kind: "extra", ...(c.note ? { note: c.note } : {}) },
         });
         continue;
       }
