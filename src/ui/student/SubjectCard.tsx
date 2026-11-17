@@ -55,17 +55,17 @@ export function SubjectCard({ e, today, riskIds }: { e: EnrollmentView; today: s
         <p className={styles.form}>
           {CONTROL_FORM_LABEL[e.controlForm]}, <Admission admitted={e.admitted} />
         </p>
-        <p className={styles.prelim}>
-          {e.finalGrade ? (
-            <>итог: <strong>{gradeLabel(e.finalGrade)}</strong></>
-          ) : e.pace ? (
-            <>предварительно <strong>{e.pace.grade}</strong>, {e.pace.score} из {e.pace.max}</>
-          ) : done > 0 ? (
-            "пока мало оценок"
-          ) : (
-            "точки ещё впереди"
-          )}
-        </p>
+        {!e.finalGrade && (
+          <p className={styles.prelim}>
+            {e.pace ? (
+              <>предварительно <strong>{e.pace.grade}</strong>, {e.pace.score} из {e.pace.max}</>
+            ) : done > 0 ? (
+              "пока мало оценок"
+            ) : (
+              "точки ещё впереди"
+            )}
+          </p>
+        )}
       </div>
 
       <div className={styles.scale}>
@@ -80,6 +80,7 @@ export function SubjectCard({ e, today, riskIds }: { e: EnrollmentView; today: s
         >
           <span className={styles.barFill} style={{ width: `${points}%` }} />
           {ahead > 0 && <span className={styles.barAhead} style={{ left: `${points}%`, width: `${ahead}%` }} />}
+          {marks.map((m) => <span key={m.label} className={styles.tick} data-tick={m.at} style={{ left: `${m.at}%` }} />)}
         </div>
         {/* Подписи порогов: для скринридера всё уже сказано в aria-valuetext */}
         {marks.map((m) => (
@@ -87,23 +88,23 @@ export function SubjectCard({ e, today, riskIds }: { e: EnrollmentView; today: s
         ))}
       </div>
 
-      <p className={styles.facts}>
+      <ul className={styles.facts}>
         {e.finalGrade ? (
-          <span>Итог: <strong>{gradeWord(e.finalGrade)}</strong></span>
+          <li>Итог: <strong>{gradeWord(e.finalGrade)}</strong></li>
         ) : (
           <>
-            <span>{goalLine}</span>
+            <li>{goalLine}</li>
             {next ? (
-              <span>
+              <li>
                 Ближайшая точка: «{next.title}»,{" "}
                 {next.overdue ? <span className={styles.overdue}>просрочена с {ruDateKey(next.dueDate)}</span> : `до ${ruDateKey(next.dueDate)}`}, до +{next.maxPoints}
-              </span>
+              </li>
             ) : (
-              <span>Остальное — {rest}</span>
+              <li>Остальное — {rest}</li>
             )}
           </>
         )}
-      </p>
+      </ul>
 
       {e.checkpoints.length > 0 && (
         <details className={styles.checkpoints} open={e.checkpoints.some((c) => riskIds.has(c.id)) || undefined}>

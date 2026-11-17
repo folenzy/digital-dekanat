@@ -67,4 +67,21 @@ describe("SubjectCard", () => {
     expect(out).toMatch(/aria-valuetext="[^"]*до «4» нужно ещё 9/);
     expect(out).toContain("<details");
   });
+
+  it("штрихи на полосе повторяют отметки: у зачёта один, у экзамена три", () => {
+    expect(html(enrollment({ controlForm: "credit" })).match(/data-tick=/g)).toHaveLength(1);
+    expect(html(enrollment({})).match(/data-tick=/g)).toHaveLength(3);
+  });
+
+  it("при итоговой оценке «итог» один раз и без ближайшей точки", () => {
+    const out = text(enrollment({ finalGrade: "4" }));
+    expect(out.match(/итог/gi)).toHaveLength(1);
+    expect(out).not.toContain("Ближайшая точка");
+  });
+
+  it("два факта под полосой разделены, текст не слипается", () => {
+    const e = enrollment({});
+    expect(html(e)).not.toContain("9</span><span>Ближайшая");
+    expect(html(e)).toMatch(/<ul[^>]*>s*<li>До/);
+  });
 });
