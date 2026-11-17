@@ -100,11 +100,6 @@ video {
   color: var(--ink);
 }
 
-/* Пока лист едет под пальцем (SwipePane), страница не должна получать горизонтальную прокрутку */
-html[data-swiping] {
-  overflow-x: clip;
-}
-
 /* Утилиты */
 .sr-only {
   position: absolute;

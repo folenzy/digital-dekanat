@@ -24,9 +24,10 @@
   display: none;
 }
 
+/* Кольцо — внутрь карточки: лист (SwipePane) обрезает всё, что выходит за его края по горизонтали */
 .summary:focus-visible {
   outline: 2px solid var(--ring);
-  outline-offset: 2px;
+  outline-offset: -2px;
 }
 
 @media (min-width: 600px) {
