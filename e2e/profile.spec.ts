@@ -149,7 +149,7 @@ test("расписание: тип занятия плашкой, перерыв
   await page.goto("/schedule?view=week");
   const main = page.getByRole("main");
   // у каждой пары есть плашка типа с полным названием для скринридера
-  await expect(main.locator("article [data-type]").first()).toBeVisible();
+  await expect(main.locator("details[data-type]").first()).toBeVisible();
   await expect(main.getByText(/^(Перерыв|Окно)$/).first()).toBeVisible();
   await page.goto("/schedule");
   await expect(page.getByRole("list", { name: "Обозначения типов занятий" }).getByRole("listitem"))
