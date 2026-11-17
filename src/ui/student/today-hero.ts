@@ -28,11 +28,18 @@ const SOON_MINUTES = 180;
 // То же правило, что в LessonCard/Agenda: отменена флагом или заменой «отменена».
 const isCancelled = (l: Lesson): boolean => l.cancelled || l.change?.kind === "cancelled";
 
+/**
+ * `upcoming` — ближайшая пара из getTodayOverview: может быть и сегодняшней (её уже видно в todayLessons).
+ * `nextStudyDay` — первая пара следующего учебного дня после сегодняшнего; только она годится для «done»/«free».
+ * Без неё берём `upcoming`, лишь если он не сегодняшний.
+ */
 export function todayHero(
   todayLessons: readonly Lesson[], todayKey: string, upcoming: NextLesson | undefined, now: Date,
+  nextStudyDay?: NextLesson,
 ): TodayHero {
+  const later = nextStudyDay ?? (upcoming && upcoming.dateKey !== todayKey ? upcoming : undefined);
   const active = todayLessons.filter((l) => !isCancelled(l)).sort((a, b) => toMin(a.start) - toMin(b.start));
-  if (!active.length) return upcoming ? { kind: "free", next: upcoming } : null;
+  if (!active.length) return later ? { kind: "free", next: later } : null;
 
   // Минуты от полуночи с секундами: 10:14:30 → 614.5, чтобы «осталось» округлялось вверх.
   const t = mskMinutes(now) + (Math.floor(now.getTime() / 1000) % 60) / 60;
@@ -60,5 +67,5 @@ export function todayHero(
     const minutes = Math.ceil(toMin(next.start) - t);
     return { kind: "before", lesson: today(next), minutes: minutes >= SOON_MINUTES ? null : minutes, progress };
   }
-  return { kind: "done", next: upcoming ?? null };
+  return { kind: "done", next: later ?? null };
 }

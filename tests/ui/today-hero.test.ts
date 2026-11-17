@@ -72,6 +72,14 @@ describe("todayHero", () => {
     expect(todayHero(DAY, TODAY, undefined, msk("2026-11-17T15:00:00"))).toEqual({ kind: "done", next: null });
   });
 
+  it("upcoming — сегодняшняя пара, вкладка открыта до неё: после последней пары done про следующий день, не про сегодня", () => {
+    const later = at(lesson({ pair: 4, start: "14:20", end: "15:50" })); // сегодняшний ключ
+    const day = [P1, P2, later];
+    const wed = at(lesson({ pair: 1, start: "09:00", end: "10:30" }), "2026-11-18");
+    expect(todayHero(day, TODAY, later, msk("2026-11-17T16:00:00"), wed)).toEqual({ kind: "done", next: wed });
+    expect(todayHero(day, TODAY, later, msk("2026-11-17T16:00:00"), undefined)).toEqual({ kind: "done", next: null });
+  });
+
   it("сегодня пар нет: free с ближайшей или null", () => {
     expect(todayHero([], TODAY, MONDAY, msk("2026-11-17T12:00:00"))).toEqual({ kind: "free", next: MONDAY });
     expect(todayHero([], TODAY, undefined, msk("2026-11-17T12:00:00"))).toBeNull();

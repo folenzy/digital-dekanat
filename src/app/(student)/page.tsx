@@ -6,7 +6,7 @@ import { listAnnouncementsFor } from "@/server/announcements";
 import { listUpcomingDeadlines } from "@/server/deadlines";
 import { dayDiff, mskTime, plural, ruDate, ruDateKey, ruDayTitle, ruWhen } from "@/server/format";
 import { getNudges } from "@/server/nudges";
-import { getDay, getTodayOverview, type Lesson } from "@/server/schedule";
+import { getDay, getNextStudyDayFirst, getTodayOverview, type Lesson } from "@/server/schedule";
 import { mskAt, mskDateKey, mskMinutes, toMin } from "@/server/time";
 import { Badge } from "@/ui/Badge";
 import { AppealList } from "@/ui/appeals/AppealListCard";
@@ -44,6 +44,8 @@ export default async function TodayPage() {
   ]);
 
   const { lessons, current, next } = overview;
+  // «Следующая пара» может быть сегодняшней; для «На сегодня всё» клиенту нужна первая пара следующего учебного дня
+  const nextStudyDay = next && next.dateKey !== today ? next : await getNextStudyDayFirst(v, now);
   const active = lessons.filter((l) => !l.cancelled);
   const nextToday = next && next.dateKey === today ? next : undefined;
   const minutes = mskMinutes(now);
@@ -64,7 +66,7 @@ export default async function TodayPage() {
       {/* Заголовок — сам день: приветствий нет, первая же строка отвечает «что сейчас» */}
       <PageHeader title={ruDayTitle(today)} subtitle={todaySummary({ lessons, current, next, appeals }, now)} />
 
-      <NextLesson lessons={lessons} todayKey={today} upcoming={next} nowIso={now.toISOString()} />
+      <NextLesson lessons={lessons} todayKey={today} upcoming={next} nextStudyDay={nextStudyDay} nowIso={now.toISOString()} />
 
       {nudges.length > 0 && (
         <section aria-label="Деканат пишет первым">

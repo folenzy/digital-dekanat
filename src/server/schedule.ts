@@ -178,3 +178,21 @@ export async function getTodayOverview(
   }
   return { lessons, ...(current ? { current } : {}), ...(next ? { next } : {}) };
 }
+
+/**
+ * Первая неотменённая пара ближайшего учебного дня ПОСЛЕ сегодняшнего (поиск в тех же 14 днях).
+ * Нужна блоку «Следующая пара»: когда `next` из getTodayOverview — сегодняшняя пара, после её окончания
+ * клиент должен сказать про следующий день, а не про сегодняшнюю пару.
+ */
+export async function getNextStudyDayFirst(
+  v: StudentViewer, now: Date,
+): Promise<(Lesson & { dateKey: string }) | undefined> {
+  const today = mskDateKey(now);
+  const keys = Array.from({ length: SEARCH_DAYS }, (_, i) => shiftDateKey(today, i + 1));
+  const byDay = await loadLessons(v.groupId, keys);
+  for (const key of keys) {
+    const first = byDay.get(key)!.find((l) => !l.cancelled);
+    if (first) return { ...first, dateKey: key };
+  }
+  return undefined;
+}
