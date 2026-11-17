@@ -4,7 +4,9 @@ import { eq } from "drizzle-orm";
 import * as s from "@/server/db/schema";
 import { buildDemoWorld } from "@/server/demo/world";
 import { APPEAL_TYPES } from "@/server/appeals/types";
-import { addWorkingDays, mskDateKey, mskWeekday } from "@/server/time";
+import { addWorkingDays, mskDateKey, mskWeekday, weekParity } from "@/server/time";
+import { LESSON_NOTES } from "@/server/demo/lesson-notes";
+import { SCHEDULE } from "@/server/demo/people";
 import { closeTestDb, testSql, truncateAll } from "../helpers/db";
 
 const db = drizzle(testSql, { schema: s });
@@ -247,5 +249,51 @@ describe("buildDemoWorld", () => {
     expect(await testSql`select 1 from login_attempts`).toHaveLength(0);
     const [{ n }] = await testSql<{ n: string }[]>`select min(number) n from appeals`;
     expect(n).toBe("О-2026-000001");
+  });
+
+  describe("заметки к парам", () => {
+    const key = (n: number) => new Date(Date.parse("2026-11-10T00:00:00Z") + n * 86_400_000).toISOString().slice(0, 10);
+    const slotsOn = (group: string, k: string) => {
+      const d = new Date(`${k}T09:00:00Z`);
+      return SCHEDULE.filter((x) => x.group === group && x.weekday === mskWeekday(d)
+        && (x.parity === "both" || x.parity === weekParity(d)));
+    };
+
+    it("справочник: у каждой дисциплины расписания не меньше 5 тем, материалов до 3", () => {
+      for (const name of new Set(SCHEDULE.map((x) => x.discipline))) {
+        expect(LESSON_NOTES[name]?.length, name).toBeGreaterThanOrEqual(5);
+        for (const e of LESSON_NOTES[name]) expect(e.materials.length).toBeLessThanOrEqual(3);
+      }
+    });
+
+    it("заметка на каждую пару окна now-7 … now+14 и только на реальные пары", async () => {
+      const groups = await db.select().from(s.groups);
+      const notes = await db.select().from(s.lessonNotes);
+      for (const g of groups) {
+        const mine = notes.filter((n) => n.groupId === g.id);
+        const expected: string[] = [];
+        for (let i = -7; i <= 14; i++) for (const x of slotsOn(g.name, key(i))) expected.push(`${key(i)}#${x.pair}`);
+        expect(mine.map((n) => `${n.date}#${n.pair}`).sort()).toEqual(expected.sort());
+      }
+    });
+
+    it("у каждой пятой встречи дисциплины темы нет, материалов 0–3, тип из набора", async () => {
+      const groups = await db.select().from(s.groups);
+      const notes = await db.select().from(s.lessonNotes);
+      let nulls = 0;
+      for (const g of groups) {
+        const count = new Map<string, number>();
+        for (let i = -7; i <= 14; i++) for (const x of slotsOn(g.name, key(i))) {
+          const idx = count.get(x.discipline) ?? 0;
+          count.set(x.discipline, idx + 1);
+          const n = notes.find((r) => r.groupId === g.id && r.date === key(i) && r.pair === x.pair)!;
+          expect(n.topic === null, `${g.name} ${x.discipline} #${idx}`).toBe(idx % 5 === 4);
+          if (n.topic === null) nulls++;
+          expect(n.materials.length).toBeLessThanOrEqual(3);
+          for (const m of n.materials) expect(["pdf", "slides", "link", "book"]).toContain(m.kind);
+        }
+      }
+      expect(nulls).toBeGreaterThan(0);
+    });
   });
 });

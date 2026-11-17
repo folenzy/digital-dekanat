@@ -7,6 +7,7 @@ import { db as appDb } from "../db/client";
 import * as s from "../db/schema";
 import { addWorkingDays, mskDateKey, mskWeekday, weekParity } from "../time";
 import { KB_ARTICLES } from "./kb-articles";
+import { LESSON_NOTES } from "./lesson-notes";
 import {
   ALINA_ENROLLMENTS, CHANGE_ROOMS, DENIS_ENROLLMENTS, DEPARTMENTS, DISCIPLINES, FACULTIES, GROUPS,
   PROGRAMS, ROOMS, SCHEDULE, SESSION_EXAMS, STAFF_MEMBER, STUDENTS, SUBSTITUTE_TEACHER, TEACHERS,
@@ -192,6 +193,36 @@ export async function buildDemoWorld(db: Db, now: Date, passwords: DemoPasswords
       });
     }
     await tx.insert(s.scheduleChanges).values(changeRows);
+
+    // ---------- темы и материалы пар: с 7 дней назад по 14 вперёд ----------
+    // Ключ — дата и номер пары по расписанию (до переноса); у дополнительной пары — её номер.
+    const disciplineName = new Map(disciplines.map((d) => [d.id, d.name]));
+    const noteRows: (typeof s.lessonNotes.$inferInsert)[] = [];
+    for (const group of ["ПМИ-25-1", "ЭК-24-2"]) {
+      const gid = groupId.get(group)!;
+      const meetings = new Map<string, number>(); // встреч дисциплины в окне до текущей
+      for (let n = -7; n <= 14; n++) {
+        const key = day(n);
+        const lessons = lessonsOn(group, key).map((x) => ({ pair: x.pair, discipline: x.discipline }));
+        for (const c of changeRows) {
+          if (c.groupId === gid && c.date === key && c.kind === "extra" && c.disciplineId != null) {
+            lessons.push({ pair: c.pair, discipline: disciplineName.get(c.disciplineId)! });
+          }
+        }
+        lessons.sort((a, b) => a.pair - b.pair);
+        for (const l of lessons) {
+          const idx = meetings.get(l.discipline) ?? 0;
+          meetings.set(l.discipline, idx + 1);
+          const pool = LESSON_NOTES[l.discipline];
+          const entry = idx % 5 === 4 || !pool ? undefined : pool[(idx - Math.floor(idx / 5)) % pool.length];
+          noteRows.push({
+            groupId: gid, date: key, pair: l.pair,
+            topic: entry?.topic ?? null, task: entry?.task ?? null, materials: entry?.materials ?? [],
+          });
+        }
+      }
+    }
+    await tx.insert(s.lessonNotes).values(noteRows);
 
     // ---------- учёба ----------
     for (const [studentId, defs] of [[alina.id, ALINA_ENROLLMENTS], [denis.id, DENIS_ENROLLMENTS]] as const) {
