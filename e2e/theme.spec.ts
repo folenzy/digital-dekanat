@@ -150,6 +150,9 @@ test("тёмная тема: без серьёзных нарушений дос
   }
   await page.goto("/study");
   expect.soft(await seriousViolations(page), "«Семестр» (тёмная)").toEqual([]);
+  await page.goto("/");
+  await expect(page.locator("section[aria-labelledby='next-lesson-h']")).toBeVisible();
+  expect.soft(await seriousViolations(page), "«Сегодня» с блоком «Следующая пара» (тёмная)").toEqual([]);
 
   await page.goto("/profile");
   await page.getByRole("button", { name: "Выйти" }).click();
