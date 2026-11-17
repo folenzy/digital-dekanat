@@ -128,6 +128,76 @@ html[data-swiping] {
   color: var(--fg-muted);
 }
 
+/* Переходы между экранами (View Transitions). Целиком страницу не перелистываем: корневой снимок
+   не анимируется, двигается только содержимое под <PageTransition>; шапка и панели стоят. */
+::view-transition {
+  pointer-events: none;
+}
+::view-transition-group(root),
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+}
+
+/* Смена раздела — короткое растворение содержимого */
+::view-transition-old(.section) {
+  animation: 100ms var(--ease-out) both vt-fade reverse;
+}
+::view-transition-new(.section) {
+  animation: 150ms var(--ease-out) 60ms both vt-fade;
+}
+
+/* Лист дня/недели: старый уходит на 32 px в сторону листания, новый приходит с другой стороны */
+::view-transition-old(.nav-forward) {
+  --slide-offset: -32px;
+  animation:
+    120ms var(--ease-out) both vt-fade reverse,
+    220ms var(--ease-out) both vt-slide reverse;
+}
+::view-transition-new(.nav-forward) {
+  --slide-offset: 32px;
+  animation:
+    160ms var(--ease-out) 60ms both vt-fade,
+    240ms var(--ease-out) both vt-slide;
+}
+::view-transition-old(.nav-back) {
+  --slide-offset: 32px;
+  animation:
+    120ms var(--ease-out) both vt-fade reverse,
+    220ms var(--ease-out) both vt-slide reverse;
+}
+::view-transition-new(.nav-back) {
+  --slide-offset: -32px;
+  animation:
+    160ms var(--ease-out) 60ms both vt-fade,
+    240ms var(--ease-out) both vt-slide;
+}
+
+@keyframes vt-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes vt-slide {
+  from {
+    translate: var(--slide-offset);
+  }
+  to {
+    translate: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation: none !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

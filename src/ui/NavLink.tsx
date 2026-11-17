@@ -13,7 +13,7 @@ type NavLinkProps = { href: string; hrefs: readonly string[]; className?: string
 export function NavLink({ href, hrefs, className, children }: NavLinkProps) {
   const active = activeHref(usePathname(), hrefs) === href;
   return (
-    <Link href={href} className={className} aria-current={active ? "page" : undefined}>
+    <Link href={href} className={className} transitionTypes={["section"]} aria-current={active ? "page" : undefined}>
       {children}
     </Link>
   );

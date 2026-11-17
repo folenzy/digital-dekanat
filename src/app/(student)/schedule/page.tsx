@@ -9,13 +9,14 @@ import { Badge } from "@/ui/Badge";
 import { Button } from "@/ui/Button";
 import { EmptyState } from "@/ui/EmptyState";
 import { PageHeader } from "@/ui/PageHeader";
+import { PageTransition } from "@/ui/PageTransition";
 import { SwipePane } from "@/ui/SwipePane";
 import { Tabs } from "@/ui/Tabs";
 import type { LessonState } from "@/ui/student/LessonCard";
 import { LessonList } from "@/ui/student/LessonList";
 import { LESSON_TYPE_LABEL } from "@/ui/student/labels";
 import { typeDots } from "@/ui/student/schedule-view";
-import { mondayOf, parseScheduleParams, scheduleHref, scheduleNeighbors, weekLabel } from "@/ui/student/schedule-params";
+import { mondayOf, navDirection, parseScheduleParams, scheduleHref, scheduleNeighbors, weekLabel } from "@/ui/student/schedule-params";
 import styles from "./schedule.module.css";
 
 export const metadata: Metadata = { title: "Пары" };
@@ -38,6 +39,9 @@ function statesFor(lessons: Lesson[], isToday: boolean, minutes: number): (Lesso
     return undefined;
   });
 }
+
+/** Тип перехода для ссылки: без направления (та же дата) — без типа, то есть без анимации. */
+const types = (dir: "nav-forward" | "nav-back" | null) => (dir ? [dir] : undefined);
 
 const TYPES = ["lecture", "practice", "lab"] as const;
 
@@ -76,6 +80,7 @@ export default async function SchedulePage({ searchParams }: PageProps<"/schedul
                     aria-current={d.dateKey === dateKey ? "page" : undefined}
                     data-today={d.dateKey === today || undefined}
                     scroll={false}
+                    transitionTypes={types(navDirection(dateKey, d.dateKey))}
                   >
                     <span className={styles.dayShort}>{ruWeekdayShort(d.dateKey)}</span>
                     <span className={`${styles.dayNum} num`}>{Number(d.dateKey.slice(8, 10))}</span>
@@ -114,7 +119,7 @@ export default async function SchedulePage({ searchParams }: PageProps<"/schedul
 
       {!atToday && (
         <p className={styles.back}>
-          <Link href={scheduleHref(view, home)} scroll={false}>
+          <Link href={scheduleHref(view, home)} scroll={false} transitionTypes={types(navDirection(dateKey, home))}>
             <CalendarDays aria-hidden="true" />
             {view === "week" ? "К текущей неделе" : "К сегодняшнему дню"}
           </Link>
@@ -141,6 +146,7 @@ export default async function SchedulePage({ searchParams }: PageProps<"/schedul
           className={styles.arrow}
           aria-label="Предыдущая неделя"
           scroll={false}
+          transitionTypes={["nav-back"]}
         >
           <ChevronLeft aria-hidden="true" />
         </Link>
@@ -153,12 +159,15 @@ export default async function SchedulePage({ searchParams }: PageProps<"/schedul
           className={styles.arrow}
           aria-label="Следующая неделя"
           scroll={false}
+          transitionTypes={["nav-forward"]}
         >
           <ChevronRight aria-hidden="true" />
         </Link>
       </div>
 
       <SwipePane prev={swipe.prev} next={swipe.next} pageKey={`${view}:${dateKey}`} lead={lead}>
+      {/* ключ меняется с видом и датой: старый лист уходит в сторону листания, новый приходит с другой */}
+      <PageTransition key={`${view}:${dateKey}`}>
       {view === "day" && day && (
         <section className={styles.day}>
           <h2 className={styles.dayTitle}>
@@ -196,6 +205,7 @@ export default async function SchedulePage({ searchParams }: PageProps<"/schedul
           ))}
         </div>
       )}
+      </PageTransition>
       </SwipePane>
     </>
   );

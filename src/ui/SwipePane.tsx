@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useLayoutEffect, useRef, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { commitDistance, dragOffset, isSwipeBlockedTarget, shouldCommit } from "./swipe";
+import { transitionGate } from "./transition-gate";
 import styles from "./SwipePane.module.css";
 
 // Листание пальцем: лист идёт за пальцем, у края экрана появляется подсказка «куда попаду»,
@@ -64,6 +65,7 @@ export function SwipePane({ prev, next, pageKey, lead, className, children }: Sw
   useLayoutEffect(() => {
     const el = pane.current;
     window.clearTimeout(exitTimer.current);
+    transitionGate.silent = false; // новый лист уже создан
     if (!el) return;
     el.getAnimations().forEach((a) => a.cancel());
     el.style.transform = "";
@@ -190,10 +192,12 @@ export function SwipePane({ prev, next, pageKey, lead, className, children }: Sw
     }
     el.style.opacity = "0";
     // как и ссылки рядом: страница не прыгает наверх, меняется только лист
+    transitionGate.silent = true; // второго, браузерного перехода не нужно: лист уже двигался за пальцем
     router.push(target.href, { scroll: false });
     // Страховка: если переход не состоялся (сеть), возвращаем лист на место
     exitTimer.current = window.setTimeout(() => {
       pendingEnter.current = null;
+      transitionGate.silent = false;
       settle(el);
     }, 2500);
   }
