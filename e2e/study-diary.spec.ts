@@ -6,6 +6,8 @@ import { hasNoHorizontalScroll, localDatabaseUrl, resetDemoWorld, signIn } from 
 // Свайп по строке пары уже закрыт в swipe.spec.ts (только 360 px).
 
 test.beforeAll(() => resetDemoWorld());
+// тест с длинными заметками меняет демо-БД: после файла возвращаем чистый мир, как в соседних спеках
+test.afterAll(() => resetDemoWorld());
 
 const DAY = 86_400_000;
 const mskToday = () => new Date(Date.now() + 3 * 3600_000).toISOString().slice(0, 10);
@@ -66,7 +68,7 @@ test("«День»: материалы с подписью вида и поме�
     await page.goto(`/schedule?view=day&date=${shift(mskToday(), d)}`);
     const rows = main(page).locator("details > summary");
     const n = await rows.count();
-    for (let i = n - 1; i >= 0; i--) await rows.nth(i).click();
+    for (let i = 0; i < n; i++) await rows.nth(i).click();
     const hint = main(page).getByText("Файлы выдаёт преподаватель").first();
     if (await hint.count()) {
       await expect(hint).toBeVisible();
@@ -103,9 +105,22 @@ test("длинная тема и название без пробелов не �
     await expect(rows.first()).toBeVisible();
     const n = await rows.count();
     expect(n).toBeGreaterThan(0);
-    for (let i = n - 1; i >= 0; i--) await rows.nth(i).click(); // с конца: раскрытие нижних пар не сдвигает верхние
+    for (let i = 0; i < n; i++) await rows.nth(i).click();
     await expect(main(page).getByText("Методическоепособие").first()).toBeVisible();
     expect(await hasNoHorizontalScroll(page), `${view}: горизонтальная прокрутка`).toBe(true);
+    // список недели обрезает лишнее (overflow: hidden), поэтому документ «чист» и при обрезке: смотрим на сами блоки
+    const clipped = await main(page).evaluate((root) => {
+      const bad: string[] = [];
+      for (const el of Array.from(root.querySelectorAll<HTMLElement>("ol, details, li, p, ul"))) {
+        if (el.scrollWidth > el.clientWidth + 1) bad.push(`${el.tagName}.${el.className} ${el.scrollWidth}>${el.clientWidth}`);
+      }
+      for (const li of Array.from(root.querySelectorAll<HTMLElement>("ul li")).filter((l) => l.textContent?.includes("Методическоепособие"))) {
+        const list = li.closest("ol")!.getBoundingClientRect();
+        if (li.getBoundingClientRect().right > list.right + 1) bad.push("материал выходит за рамку списка");
+      }
+      return bad;
+    });
+    expect(clipped, `${view}: обрезанный или выступающий текст`).toEqual([]);
   }
 });
 
