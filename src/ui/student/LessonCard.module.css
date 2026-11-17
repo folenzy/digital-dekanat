@@ -118,13 +118,14 @@
 /* Верхняя строка: [тип] [номер пары] ............ время */
 .top {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap; /* тип и номер не переносятся; при нехватке места сжимается группа времени (см. .when) */
   align-items: center;
   gap: var(--space-2);
 }
 
 /* Тип занятия: лекция — синяя, практика — бирюзовая, лабораторная — охра */
 .type {
+  flex: none;
   display: inline-grid;
   place-items: center;
   min-width: 2.5rem;
@@ -151,6 +152,7 @@
 }
 
 .pair {
+  flex: none;
   display: inline-flex;
   align-items: center;
   height: 1.625rem;
@@ -163,14 +165,30 @@
   white-space: nowrap;
 }
 
+/* Время + шеврон: группа не переносится внутри себя, шеврон всегда рядом со временем.
+   Если места мало, переносится только зачёркнутое старое время — над новым. */
+.when {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: var(--space-2);
+  flex: 0 1 auto;
+  margin-left: auto;
+  min-width: 0;
+}
+
 .time {
   display: inline-flex;
+  flex-wrap: wrap;
   align-items: baseline;
-  gap: var(--space-2);
-  margin-left: auto;
+  justify-content: flex-end;
+  gap: 0 var(--space-2);
   font-size: var(--text-md);
   font-weight: 600;
   letter-spacing: -0.01em;
+}
+
+.range {
   white-space: nowrap;
 }
 
@@ -264,10 +282,16 @@
   box-shadow: inset 0 0 0 0.5px var(--accent), var(--shadow-sheet);
 }
 
-.lesson[data-state="current"]::after {
+/* Закладка — на обёртке .card, а не на <details>: ::after у details в Firefox/Safari рисуется ненадёжно */
+.card {
+  position: relative;
+}
+
+.card[data-state="current"]::after {
   content: "";
   position: absolute;
-  top: -1px;
+  top: 0;
+  pointer-events: none;
   left: 50%;
   width: 12px;
   height: 14px;

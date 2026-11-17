@@ -116,6 +116,13 @@ describe("LessonCard", () => {
       expect(d).not.toContain("PDF");
     });
 
+    it("пустая или из одних пробелов тема тоже даёт «Тема пока не указана»", () => {
+      for (const topic of ["", "   "]) {
+        const d = detailsOf(html(<LessonCard lesson={lesson({ note: { topic, task: null, materials: [] } })} />));
+        expect(d).toContain("Тема пока не указана");
+      }
+    });
+
     it("заметка без темы тоже даёт «Тема пока не указана»", () => {
       const d = detailsOf(html(<LessonCard lesson={lesson({ note: { topic: null, task: "Читать §3", materials: [] } })} />));
       expect(d).toContain("Тема пока не указана");

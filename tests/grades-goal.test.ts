@@ -37,12 +37,12 @@ describe("nearestCheckpoint", () => {
 
   it("среди несданных — самая ранняя по дате", () => {
     const list = [cp(1, "21", "2026-11-21", null), cp(2, "12", "2026-11-12", 10), cp(3, "30", "2026-11-30", null)];
-    expect(nearestCheckpoint(list, today)).toEqual({ title: "21", dueDate: "2026-11-21", maxPoints: 20, overdue: false });
+    expect(nearestCheckpoint(list, today)).toEqual({ title: "21", dueDate: "2026-11-21", maxPoints: 20, overdue: false, required: true });
   });
 
   it("просроченная несданная — overdue", () => {
     const list = [cp(1, "21", "2026-11-21", null), cp(2, "12", "2026-11-12", null)];
-    expect(nearestCheckpoint(list, today)).toEqual({ title: "12", dueDate: "2026-11-12", maxPoints: 20, overdue: true });
+    expect(nearestCheckpoint(list, today)).toEqual({ title: "12", dueDate: "2026-11-12", maxPoints: 20, overdue: true, required: true });
   });
 
   it("все сданы — null", () => {

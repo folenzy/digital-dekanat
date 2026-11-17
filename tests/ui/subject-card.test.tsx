@@ -38,9 +38,16 @@ describe("SubjectCard", () => {
     expect(out).not.toContain("нужно ещё");
   });
 
-  it("просроченная точка", () => {
+  it("просроченная обязательная точка — красным", () => {
+    const e = enrollment({ checkpoints: [{ id: 10, title: "Контрольная 1", maxPoints: 10, score: null, dueDate: "2026-11-12", required: true }] });
+    expect(text(e)).toContain("просрочена с 12 ноября");
+    expect(html(e)).toMatch(/overdue[^"]*">просрочена с 12 ноября/);
+  });
+
+  it("просроченная необязательная точка — нейтральным текстом, без красного", () => {
     const e = enrollment({ checkpoints: [{ id: 10, title: "Контрольная 1", maxPoints: 10, score: null, dueDate: "2026-11-12", required: false }] });
     expect(text(e)).toContain("просрочена с 12 ноября");
+    expect(html(e)).not.toMatch(/overdue[^"]*">просрочена/);
   });
 
   it("нет несданных точек: остальное — на экзамене или на зачёте", () => {

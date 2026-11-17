@@ -106,13 +106,13 @@ export function gradeGoal(points: number | null, form: ControlForm): GradeGoal {
   return next ? { kind: "need", label: next.label, need: next.at - p } : { kind: "reached", label: marks[marks.length - 1].label };
 }
 
-export type NearestCheckpoint = { title: string; dueDate: string; maxPoints: number; overdue: boolean };
+export type NearestCheckpoint = { title: string; dueDate: string; maxPoints: number; overdue: boolean; required: boolean };
 
 /** Ближайшая несданная (score === null) точка по сроку; overdue — срок уже прошёл. Все сданы — null. */
 export function nearestCheckpoint(checkpoints: readonly CheckpointView[], today: string): NearestCheckpoint | null {
   const open = checkpoints.filter((c) => c.score === null).sort((a, b) => a.dueDate.localeCompare(b.dueDate));
   const c = open[0];
-  return c ? { title: c.title, dueDate: c.dueDate, maxPoints: c.maxPoints, overdue: c.dueDate < today } : null;
+  return c ? { title: c.title, dueDate: c.dueDate, maxPoints: c.maxPoints, overdue: c.dueDate < today, required: c.required } : null;
 }
 
 /** Сколько должно быть оценено, чтобы показывать предварительную оценку: 20 баллов или две точки. */

@@ -59,7 +59,8 @@ export function LessonCard({ lesson: l, state, kicker, titleAs: Title = "h3", co
   const fullTeacher = l.teacher === "уточняется" ? "преподаватель уточняется" : l.teacher;
 
   return (
-    <div>
+    // Состояние дублируется на обёртке: закладка «Идёт сейчас» рисуется на ней, а не на <details> (::after у details ненадёжен в Firefox/Safari)
+    <div className={styles.card} data-state={state}>
       {/* Заголовок для навигации по заголовкам: внутри summary (роль button) он потерял бы семантику */}
       <Title className="sr-only">
         {l.discipline}, {l.start}–{l.end}
@@ -81,21 +82,24 @@ export function LessonCard({ lesson: l, state, kicker, titleAs: Title = "h3", co
               <span className="sr-only">{LESSON_TYPE_LABEL[l.type]}</span>
             </span>
             <span className={styles.pair}>{pairName(l.pair)}</span>
-            <span className={`${styles.time} num`}>
-              {was?.start && (
-                <del className={styles.oldStart}>
-                  <span className="sr-only">было в </span>
-                  {was.start}
-                </del>
-              )}
-              <span className={styles.range}>
-                <span className={styles.start}>{l.start}</span>
-                <span aria-hidden="true"> – </span>
-                <span className="sr-only"> до </span>
-                <span className={styles.end}>{l.end}</span>
+            {/* Время и шеврон — одна группа без переноса между собой: шеврон не уезжает на новую строку */}
+            <span className={styles.when}>
+              <span className={`${styles.time} num`}>
+                {was?.start && (
+                  <del className={styles.oldStart}>
+                    <span className="sr-only">было в </span>
+                    {was.start}
+                  </del>
+                )}
+                <span className={styles.range}>
+                  <span className={styles.start}>{l.start}</span>
+                  <span aria-hidden="true"> – </span>
+                  <span className="sr-only"> до </span>
+                  <span className={styles.end}>{l.end}</span>
+                </span>
               </span>
+              <ChevronDown aria-hidden="true" className={styles.chevron} size={18} />
             </span>
-            <ChevronDown aria-hidden="true" className={styles.chevron} size={18} />
           </span>
 
           {kicker && <span className={styles.kicker}>{kicker}</span>}
@@ -148,7 +152,7 @@ export function LessonCard({ lesson: l, state, kicker, titleAs: Title = "h3", co
           </p>
           <p className={styles.row}>
             <span className={styles.label}>Тема</span>
-            {note?.topic ?? <span className={styles.empty}>Тема пока не указана</span>}
+            {note?.topic?.trim() ? note.topic : <span className={styles.empty}>Тема пока не указана</span>}
           </p>
           {note?.task && (
             <p className={styles.row}>

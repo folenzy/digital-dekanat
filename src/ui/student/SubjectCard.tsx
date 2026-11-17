@@ -97,7 +97,12 @@ export function SubjectCard({ e, today, riskIds }: { e: EnrollmentView; today: s
             {next ? (
               <li>
                 Ближайшая точка: «{next.title}»,{" "}
-                {next.overdue ? <span className={styles.overdue}>просрочена с {ruDateKey(next.dueDate)}</span> : `до ${ruDateKey(next.dueDate)}`}, до +{next.maxPoints}
+                {/* Красным — только обязательная, как в списке точек ниже; необязательная просрочка — обычным текстом */}
+                {next.overdue
+                  ? next.required
+                    ? <span className={styles.overdue}>просрочена с {ruDateKey(next.dueDate)}</span>
+                    : `просрочена с ${ruDateKey(next.dueDate)}`
+                  : `до ${ruDateKey(next.dueDate)}`}, до +{next.maxPoints}
               </li>
             ) : (
               <li>Остальное — {rest}</li>
