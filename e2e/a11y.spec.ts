@@ -2,6 +2,7 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 import { readRows } from "./db";
 import { resetDemoWorld, shoot, signIn } from "./demo";
+import { mskAt, SEEDED_LESSONS, seedTodayLessons } from "./schedule-seed";
 
 // Доступность: axe-core (WCAG 2.0/2.1 A и AA) на всех ключевых экранах, на 360 и 1280 px.
 // Допускаем 0 нарушений уровня serious и critical; moderate/minor выводим в лог теста для сведения.
@@ -80,17 +81,12 @@ test("пара раскрыта (день, неделя) и «Семестр»",
 });
 
 test("«Сегодня» с блоком «Следующая пара» и во время пары (часы браузера)", async ({ page }) => {
+  const today = await seedTodayLessons(); // известные пары на сегодня: 09:00, 10:40, 14:20 (в любой день недели)
   await signIn(page, "alina");
   await page.goto("/");
   await expect(page.locator("section[aria-labelledby='next-lesson-h']")).toBeVisible();
   await scan(page, "«Сегодня» с блоком");
-  const today = new Date(Date.now() + 3 * 3600_000).toISOString().slice(0, 10);
-  await page.goto(`/schedule?view=day&date=${today}`);
-  const range = await page.locator("#main details:not([data-cancelled]) summary [class*='range']").first().textContent({ timeout: 3000 }).catch(() => null);
-  const start = range?.match(/\d\d:\d\d/)?.[0];
-  test.skip(!start, "сегодня нет пар");
-  const [h, m] = start!.split(":").map(Number);
-  await page.clock.install({ time: new Date(`${today}T00:00:00+03:00`).getTime() + (h * 60 + m + 5) * 60_000 });
+  await page.clock.install({ time: mskAt(today, SEEDED_LESSONS[0].start + 5) });
   await page.goto("/");
   await expect(page.locator("section[aria-labelledby='next-lesson-h'] h2")).toHaveText("Идёт сейчас");
   await scan(page, "«Сегодня», идёт пара");
