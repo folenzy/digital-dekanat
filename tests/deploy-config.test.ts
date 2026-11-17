@@ -87,3 +87,9 @@ describe("deploy/Caddyfile: сжатие и SSE", () => {
     expect(c).not.toMatch(/^\s*encode zstd gzip\s*$/m);
   });
 });
+
+describe("deploy/Dockerfile", () => {
+  it("копирует public/ в образ: standalone-сервер сам его не берёт, иконки манифеста иначе дадут 404", () => {
+    expect(code(read("Dockerfile"))).toMatch(/^COPY --from=build \/src\/public \.\/public\s*$/m);
+  });
+});

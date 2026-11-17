@@ -4,7 +4,7 @@ import * as s from "@/server/db/schema";
 import { buildDemoWorld } from "@/server/demo/world";
 import { viewerForUser, type StaffViewer, type StudentViewer } from "@/server/auth/viewer";
 import { getProfile } from "@/server/profile";
-import { getDay, getTodayOverview, getWeek } from "@/server/schedule";
+import { getDay, getNextStudyDayFirst, getTodayOverview, getWeek } from "@/server/schedule";
 import { getStudySummary, preliminaryGrade } from "@/server/grades";
 import { listAnnouncementsFor } from "@/server/announcements";
 import { listUpcomingDeadlines } from "@/server/deadlines";
@@ -155,6 +155,25 @@ describe("расписание", () => {
     const ov = await getTodayOverview(alina, new Date("2026-11-07T21:30:00Z"));
     expect(ov.lessons).toEqual([]);
     expect(ov.next?.dateKey).toBe("2026-11-09");
+  });
+});
+
+describe("первая пара следующего учебного дня", () => {
+  beforeAll(async () => { await buildDemoWorld(db, TUE, pw); await loadViewers(); });
+
+  it("до начала пар: не сегодняшняя, а первая пара среды (когда next — сегодня)", async () => {
+    const now = new Date("2026-11-10T05:00:00Z"); // вторник 08:00
+    expect((await getTodayOverview(alina, now)).next?.dateKey).toBe("2026-11-10");
+    expect(await getNextStudyDayFirst(alina, now)).toMatchObject({ dateKey: "2026-11-11", pair: 1, discipline: "Базы данных" });
+  });
+
+  it("вечером после пар — тоже среда", async () => {
+    expect(await getNextStudyDayFirst(alina, new Date("2026-11-10T17:00:00Z"))).toMatchObject({ dateKey: "2026-11-11", pair: 1 });
+  });
+
+  it("суббота: первая неотменённая пара понедельника", async () => {
+    expect(await getNextStudyDayFirst(alina, new Date("2026-11-14T09:00:00Z")))
+      .toMatchObject({ dateKey: "2026-11-16", pair: 2, discipline: "Математический анализ" });
   });
 });
 

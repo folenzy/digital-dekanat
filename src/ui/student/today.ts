@@ -5,7 +5,7 @@ import { mskDateKey, mskMinutes, shiftDateKey, toMin } from "@/server/time";
 
 // Тексты экрана «Сегодня»: одна-две фразы, которые отвечают «что у меня сейчас и что ждёт ответа».
 
-type NextLesson = Lesson & { dateKey: string };
+export type NextLesson = Lesson & { dateKey: string };
 
 const PAIRS: readonly [string, string, string] = ["пара", "пары", "пар"];
 const PAIR_WORDS = ["", "одна", "две", "три", "четыре", "пять", "шесть"];

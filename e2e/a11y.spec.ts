@@ -2,11 +2,13 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 import { readRows } from "./db";
 import { resetDemoWorld, shoot, signIn } from "./demo";
+import { mskAt, SEEDED_LESSONS, seedTodayLessons } from "./schedule-seed";
 
 // Доступность: axe-core (WCAG 2.0/2.1 A и AA) на всех ключевых экранах, на 360 и 1280 px.
 // Допускаем 0 нарушений уровня serious и critical; moderate/minor выводим в лог теста для сведения.
 
 test.beforeAll(() => resetDemoWorld());
+test.afterAll(() => resetDemoWorld());
 
 async function scan(page: Page, label: string) {
   await page.waitForLoadState("networkidle");
@@ -77,6 +79,18 @@ test("пара раскрыта (день, неделя) и «Семестр»",
   }
   await page.goto("/study");
   await scan(page, "«Учёба → Семестр»");
+});
+
+test("«Сегодня» с блоком «Следующая пара» и во время пары (часы браузера)", async ({ page }) => {
+  const today = await seedTodayLessons(); // известные пары на сегодня: 09:00, 10:40, 14:20 (в любой день недели)
+  await signIn(page, "alina");
+  await page.goto("/");
+  await expect(page.locator("section[aria-labelledby='next-lesson-h']")).toBeVisible();
+  await scan(page, "«Сегодня» с блоком");
+  await page.clock.install({ time: mskAt(today, SEEDED_LESSONS[0].start + 5) });
+  await page.goto("/");
+  await expect(page.locator("section[aria-labelledby='next-lesson-h'] h2")).toHaveText("Идёт сейчас");
+  await scan(page, "«Сегодня», идёт пара");
 });
 
 test("карточка обращения «нужно уточнение» и «готово» у Дениса", async ({ page }) => {

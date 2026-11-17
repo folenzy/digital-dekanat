@@ -25,9 +25,11 @@ ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \
     MIGRATIONS_DIR=/app/drizzle
 # Код принадлежит root и только читается; пользователю node доступна на запись лишь .next/cache.
-# public/ в проекте нет; .next/static server.js сам не раздаёт — кладём рядом (документация Next, output: standalone).
+# public/ (иконки, на них ссылается манифест) и .next/static standalone-server.js сам не копирует и не раздаёт —
+# кладём рядом (документация Next, output: standalone).
 COPY --from=build /src/.next/standalone ./
 COPY --from=build /src/.next/static ./.next/static
+COPY --from=build /src/public ./public
 COPY --from=build /src/drizzle ./drizzle
 RUN mkdir -p .next/cache && chown node:node .next/cache
 USER node

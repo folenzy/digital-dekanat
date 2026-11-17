@@ -1,6 +1,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 import { collectConsoleErrors, hasNoHorizontalScroll, resetDemoWorld, shoot, signIn } from "./demo";
+import { mskAt, SEEDED_LESSONS, seedTodayLessons } from "./schedule-seed";
 
 // Тема оформления: светлая по умолчанию, тёмная по выбору. На 360 и 1280 px.
 // Скриншоты (только с SCREENSHOTS=1) → docs/screenshots/08-<экран>-<ширина>.png.
@@ -35,6 +36,7 @@ async function seriousViolations(page: Page) {
 }
 
 test.beforeAll(() => resetDemoWorld());
+test.afterAll(() => resetDemoWorld());
 
 test("по умолчанию тема светлая — та, что была до появления выбора", async ({ page }) => {
   await page.goto("/login");
@@ -150,6 +152,14 @@ test("тёмная тема: без серьёзных нарушений дос
   }
   await page.goto("/study");
   expect.soft(await seriousViolations(page), "«Семестр» (тёмная)").toEqual([]);
+  const today = await seedTodayLessons(); // известные пары на сегодня: 09:00, 10:40, 14:20
+  await page.goto("/");
+  await expect(page.locator("section[aria-labelledby='next-lesson-h']")).toBeVisible();
+  expect.soft(await seriousViolations(page), "«Сегодня» с блоком «Следующая пара» (тёмная)").toEqual([]);
+  await page.clock.install({ time: mskAt(today, SEEDED_LESSONS[0].start + 5) });
+  await page.goto("/");
+  await expect(page.locator("section[aria-labelledby='next-lesson-h'] h2")).toHaveText("Идёт сейчас");
+  expect.soft(await seriousViolations(page), "«Сегодня», идёт пара (тёмная)").toEqual([]);
 
   await page.goto("/profile");
   await page.getByRole("button", { name: "Выйти" }).click();

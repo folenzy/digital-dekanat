@@ -50,6 +50,7 @@ describe("proxy: на какие запросы срабатывает (matcher)
       "/api/events", "/api/events?probe=1", "/api/health", "/api/internal/demo-reset",
       "/_next/static/chunks/main.js", "/_next/static/media/golos.woff2", "/_next/image?url=%2Fa.png&w=64&q=75",
       "/icon.svg", "/icon.svg?abc123", "/favicon.ico",
+      "/manifest.webmanifest", "/apple-icon.png", "/icon-192.png", "/icon-512.png", "/icon-maskable-512.png",
     ]) {
       expect(matches(path), path).toBe(false);
     }

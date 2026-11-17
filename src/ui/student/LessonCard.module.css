@@ -24,9 +24,10 @@
   display: none;
 }
 
+/* Кольцо — внутрь карточки: лист (SwipePane) обрезает всё, что выходит за его края по горизонтали */
 .summary:focus-visible {
   outline: 2px solid var(--ring);
-  outline-offset: 2px;
+  outline-offset: -2px;
 }
 
 @media (min-width: 600px) {
@@ -47,6 +48,33 @@
 
 @media (prefers-reduced-motion: reduce) {
   .chevron {
+    transition: none;
+  }
+}
+
+/* Плавное раскрытие: высота и прозрачность содержимого <details>. Где браузер не знает ::details-content,
+   часть раскрывается сразу — это допустимо. content-visibility переключается дискретно, поэтому allow-discrete. */
+.lesson {
+  interpolate-size: allow-keywords;
+}
+
+.lesson::details-content {
+  block-size: 0;
+  opacity: 0;
+  overflow: clip;
+  transition:
+    block-size var(--dur) var(--ease-out),
+    opacity var(--dur) var(--ease-out),
+    content-visibility var(--dur) allow-discrete;
+}
+
+.lesson[open]::details-content {
+  block-size: auto;
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lesson::details-content {
     transition: none;
   }
 }

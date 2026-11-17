@@ -70,3 +70,12 @@ export function scheduleNeighbors(
   };
   return { prev: step(-1), next: step(1) };
 }
+
+/**
+ * Куда «движется» экран при переходе между датами: позже — вперёд (новый лист входит справа),
+ * раньше — назад, та же дата — без направления. Ключи YYYY-MM-DD сравниваются как строки.
+ */
+export function navDirection(fromKey: string, toKey: string): "nav-forward" | "nav-back" | null {
+  if (fromKey === toKey) return null;
+  return toKey > fromKey ? "nav-forward" : "nav-back";
+}
