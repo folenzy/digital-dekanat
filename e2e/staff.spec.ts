@@ -125,6 +125,8 @@ test("очередь: сводка, вкладки со счётчиками, п
 
   // фильтр по отделу: «Справки и документы» — в «Новых» пусто, в «В работе» — справка Алины
   await queueTab(page, "Новые").click();
+  // ссылки отделов несут текущую вкладку: ждём, пока откроются «Новые», иначе фильтр применится к «Закрытым»
+  await expect(page).toHaveURL(/\/staff$/);
   const depts = page.getByRole("navigation", { name: "Отдел" });
   await depts.getByRole("link", { name: "Справки", exact: true }).click();
   await expect(page).toHaveURL(/\/staff\?dept=\d+$/);

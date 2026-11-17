@@ -83,6 +83,8 @@ test("«Неделя»: блоки дней, колонки по ширине э
   await signIn(page, "alina");
   await page.goto(`/schedule?view=week&date=${wed()}`);
   const days = main(page).locator("section").filter({ has: page.locator("h2") });
+  // count() не ждёт загрузки: сначала дожидаемся первого блока дня
+  await expect(days.first()).toBeVisible();
   expect(await days.count()).toBeGreaterThanOrEqual(5);
   await expect(main(page).getByText("Пар нет").first()).toBeVisible();
 
