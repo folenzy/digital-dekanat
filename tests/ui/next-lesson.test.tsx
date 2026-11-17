@@ -1,8 +1,11 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { Lesson } from "@/server/schedule";
 import { NextLesson, msToNextMinute } from "@/ui/student/NextLesson";
 import type { NextLesson as Upcoming } from "@/ui/student/today";
+
+// useRouter нужен только для router.refresh на клиенте; при серверном рендере в тесте он не вызывается.
+vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: () => {} }) }));
 
 // Блок «Следующая пара»: первый рендер идёт по nowIso сервера (без расхождения гидратации), тик минуты — чистая функция.
 const TODAY = "2026-11-17"; // вторник

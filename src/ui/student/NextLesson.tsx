@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { pairName, prettyTime } from "@/server/format";
 import type { Lesson } from "@/server/schedule";
+import { mskDateKey } from "@/server/time";
 import { buildingName, LESSON_TYPE_LABEL } from "./labels";
 import { scheduleHref } from "./schedule-params";
 import { LESSON_TYPE_CODE } from "./schedule-view";
@@ -14,8 +16,11 @@ import styles from "./NextLesson.module.css";
 // Блок «Следующая пара» — первый на «Сегодня». Рамка, не заливка: синяя плашка «важное» остаётся у деканата.
 // Первый рендер считается по nowIso сервера (разметка совпадает при гидратации); после монтирования время идёт
 // от new Date(): тик на границе минуты, затем раз в минуту, и пересчёт, когда вкладка снова видна.
+// Лента и подзаголовок ниже считаются на сервере: когда блок сменил состояние или наступили новые сутки,
+// просим сервер обновить страницу (router.refresh) — редко, не на каждый тик.
 
-type Props = { lessons: Lesson[]; todayKey: string; upcoming?: Upcoming; nowIso: string };
+/** `upcoming` — ближайшая пара (может быть сегодняшней); `nextStudyDay` — первая пара следующего учебного дня. */
+type Props = { lessons: Lesson[]; todayKey: string; upcoming?: Upcoming; nextStudyDay?: Upcoming; nowIso: string };
 
 /** Сколько мс до начала следующей минуты (на самой границе — целая минута). */
 export function msToNextMinute(now: Date): number {
@@ -68,7 +73,8 @@ function Details({ l }: { l: Lesson }) {
   );
 }
 
-export function NextLesson({ lessons, todayKey, upcoming, nowIso }: Props) {
+export function NextLesson({ lessons, todayKey, upcoming, nextStudyDay, nowIso }: Props) {
+  const router = useRouter();
   const [now, setNow] = useState(() => new Date(nowIso));
 
   useEffect(() => {
@@ -91,7 +97,26 @@ export function NextLesson({ lessons, todayKey, upcoming, nowIso }: Props) {
     };
   }, []);
 
-  const hero = todayHero(lessons, todayKey, upcoming, now);
+  const hero = todayHero(lessons, todayKey, upcoming, now, nextStudyDay);
+
+  // Ключ состояния: вид блока и его пара. Сравниваем с предыдущим клиентским ключом (а не с серверным),
+  // поэтому после refresh то же состояние второй раз не обновляет страницу — цикла нет.
+  const stateKey = !hero ? "none" : "lesson" in hero ? `${hero.kind}:${hero.lesson.dateKey}:${hero.lesson.pair}` : hero.kind;
+  const seenKey = useRef(stateKey);
+  const refreshedDay = useRef<string | null>(null);
+  useEffect(() => {
+    // вкладка дожила до новых суток: «сегодня» с сервера устарело (один запрос на каждые новые сутки)
+    if (mskDateKey(now) !== todayKey && refreshedDay.current !== todayKey) {
+      refreshedDay.current = todayKey;
+      router.refresh();
+      return;
+    }
+    if (seenKey.current !== stateKey) {
+      seenKey.current = stateKey;
+      router.refresh();
+    }
+  }, [now, stateKey, todayKey, router]);
+
   if (!hero) return null;
 
   if (hero.kind === "done" || hero.kind === "free") {
