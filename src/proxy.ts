@@ -59,8 +59,9 @@ export function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     {
-      // Всё, кроме API, внутренностей Next (/_next/static, /_next/image, HMR в dev), иконки и favicon.
-      source: "/((?!api/|_next/|favicon\\.ico|icon\\.svg).*)",
+      // Всё, кроме API, внутренностей Next (/_next/static, /_next/image, HMR в dev), иконок, favicon и манифеста:
+      // их браузер и телефон просят без cookie, редирект на /login сломал бы установку на экран «Домой».
+      source: "/((?!api/|_next/|favicon\\.ico|icon\\.svg|manifest\\.webmanifest|apple-icon\\.png|icon-[a-z0-9-]+\\.png).*)",
       // Предзагрузка next/link — это RSC-данные, а не документ: ей не нужны ни nonce, ни редирект.
       missing: [
         { type: "header", key: "next-router-prefetch" },
