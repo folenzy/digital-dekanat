@@ -144,9 +144,9 @@ export function LessonCard({ lesson: l, state, kicker, titleAs: Title = "h3", co
             )}
           </p>
           <p className={styles.row}>
-            <span className={styles.label}>Где</span>
+            <span className={styles.label}>Аудитория</span>
             <span>
-              {room}
+              {l.room}
               {building}
             </span>
           </p>

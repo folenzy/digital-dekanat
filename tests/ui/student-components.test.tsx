@@ -109,6 +109,18 @@ describe("LessonCard", () => {
       expect(d).toMatch(/корпус\sА/);
     });
 
+    it("в раскрытой части подпись «Аудитория», значение без повторного «ауд.»", () => {
+      const d = detailsOf(html(<LessonCard lesson={lesson({})} />));
+      expect(d).toMatch(/>Аудитория<\/span><span>А-310/);
+      expect(d).not.toContain(">Где<");
+      expect(d).not.toContain("ауд. А-310");
+    });
+
+    it("аудитория неизвестна — «уточняется» под подписью «Аудитория»", () => {
+      const d = detailsOf(html(<LessonCard lesson={lesson({ room: "уточняется" })} />));
+      expect(d).toMatch(/>Аудитория<\/span><span>уточняется/);
+    });
+
     it("без заметки: «Тема пока не указана», без материалов и пометки", () => {
       const d = detailsOf(html(<LessonCard lesson={lesson({ note: null })} />));
       expect(d).toContain("Тема пока не указана");
