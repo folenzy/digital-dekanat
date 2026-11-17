@@ -2,7 +2,6 @@
 
 .lesson {
   position: relative;
-  padding: var(--space-4);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   background: var(--surface);
@@ -11,10 +10,106 @@
   box-shadow: var(--shadow-sheet);
 }
 
+/* Строка пары — summary: без системного треугольника, нажимается целиком (не ниже 44 px) */
+.summary {
+  display: block;
+  min-height: var(--tap);
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  list-style: none;
+}
+
+.summary::-webkit-details-marker {
+  display: none;
+}
+
+.summary:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
 @media (min-width: 600px) {
-  .lesson {
+  .summary {
     padding: var(--space-5);
   }
+}
+
+.chevron {
+  flex: none;
+  color: var(--fg-muted);
+  transition: transform 150ms ease;
+}
+
+.lesson[open] .chevron {
+  transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chevron {
+    transition: none;
+  }
+}
+
+/* Раскрытая часть: подпись над значением, строки через линию */
+.details {
+  margin: 0 var(--space-4);
+  border-top: 1px solid var(--line);
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+}
+
+@media (min-width: 600px) {
+  .details {
+    margin: 0 var(--space-5);
+  }
+}
+
+.row {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--line);
+  color: var(--fg);
+}
+
+.row:last-child {
+  border-bottom: 0;
+}
+
+.label {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--fg-muted);
+}
+
+.instead,
+.empty,
+.hint {
+  color: var(--fg-muted);
+}
+
+.hint {
+  font-size: var(--text-xs);
+}
+
+.materials {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.kind {
+  display: inline-block;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--neutral-tint);
+  color: var(--muted-strong);
+  font-size: var(--text-xs);
+  font-weight: 600;
 }
 
 /* Верхняя строка: [тип] [номер пары] ............ время */
@@ -196,7 +291,7 @@
 }
 
 /* Плотная карточка для недели */
-.lesson[data-compact] {
+.lesson[data-compact] .summary {
   padding: var(--space-3) var(--space-4);
 }
 
