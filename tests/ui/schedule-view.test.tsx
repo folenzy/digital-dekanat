@@ -66,6 +66,39 @@ describe("LessonList — список пар с перерывами", () => {
     expect(out.indexOf("Окно")).toBeLessThan(out.indexOf("Программирование"));
   });
 
+  it("gaps={false}: перерывов и «окон» нет (неделя)", () => {
+    const out = html(
+      <LessonList
+        compact
+        gaps={false}
+        lessons={[lesson({}), lesson({ pair: 2, start: "10:40", end: "12:10" }), lesson({ pair: 4, start: "14:20", end: "15:50" })]}
+      />,
+    );
+    expect(out).not.toContain("Перерыв");
+    expect(out).not.toContain("Окно");
+  });
+
+  it("компактная строка: номер, время, предмет, плашка, аудитория; преподавателя в summary нет, в раскрытой части есть", () => {
+    const out = html(<LessonList compact lessons={[lesson({})]} />);
+    const summary = out.slice(out.indexOf("<summary"), out.indexOf("</summary>"));
+    const rest = out.slice(out.indexOf("</summary>"));
+    expect(summary).toContain("09:00");
+    expect(summary).toContain("Математический анализ");
+    expect(summary).toContain("ЛК");
+    expect(summary).toMatch(/1-.?я пара/);
+    expect(summary).toContain("ауд. А-310");
+    expect(summary).not.toMatch(/Ковалёва/);
+    expect(rest).toContain("Ковалёва Марина Анатольевна");
+  });
+
+  it("компактная строка несёт метку изменения", () => {
+    const out = html(
+      <LessonList compact lessons={[lesson({ change: { kind: "moved", was: { start: "08:00" } } })]} />,
+    );
+    const summary = out.slice(out.indexOf("<summary"), out.indexOf("</summary>"));
+    expect(summary).toContain("Перенос");
+  });
+
   it("у одной пары перерывов нет", () => {
     expect(html(<LessonList lessons={[lesson({})]} />)).not.toContain("Перерыв");
   });

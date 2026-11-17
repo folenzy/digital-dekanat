@@ -11,15 +11,17 @@ type LessonListProps = {
   /** Состояние каждой пары (идёт, следующая, прошла) — по индексу; для не сегодняшних дней не передаётся. */
   states?: readonly (LessonState | undefined)[];
   compact?: boolean;
+  /** Перерывы и «окна» между парами; в неделе выключены. */
+  gaps?: boolean;
   titleAs?: "h2" | "h3" | "h4";
 };
 
-export function LessonList({ lessons, states, compact = false, titleAs }: LessonListProps) {
+export function LessonList({ lessons, states, compact = false, gaps = true, titleAs }: LessonListProps) {
   return (
     <ol className={styles.list} data-compact={compact || undefined}>
       {lessons.map((l, i) => {
         const prev = lessons[i - 1];
-        const gap = prev ? gapBetween(prev.end, l.start) : null;
+        const gap = gaps && prev ? gapBetween(prev.end, l.start) : null;
         return (
           <Fragment key={`${l.pair}-${l.discipline}`}>
             {gap && (

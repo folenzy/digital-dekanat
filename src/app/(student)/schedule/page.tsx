@@ -188,7 +188,7 @@ export default async function SchedulePage({ searchParams }: PageProps<"/schedul
                 {d.dateKey === today && <Badge tone="accent">сегодня</Badge>}
               </h2>
               {d.lessons.length ? (
-                <LessonList lessons={d.lessons} states={statesFor(d.lessons, d.dateKey === today, minutes)} compact titleAs="h3" />
+                <LessonList lessons={d.lessons} states={statesFor(d.lessons, d.dateKey === today, minutes)} compact gaps={false} titleAs="h3" />
               ) : (
                 <p className={styles.free}>Пар нет</p>
               )}

@@ -60,7 +60,7 @@ export function LessonCard({ lesson: l, state, kicker, titleAs: Title = "h3", co
   const fullTeacher = l.teacher === "уточняется" ? "преподаватель уточняется" : l.teacher;
 
   return (
-    <div className={styles.card}>
+    <div>
       {/* Заголовок для навигации по заголовкам: внутри summary (роль button) он потерял бы семантику */}
       <Title className="sr-only">
         {l.discipline}, {l.start}–{l.end}
@@ -111,9 +111,12 @@ export function LessonCard({ lesson: l, state, kicker, titleAs: Title = "h3", co
               {was?.room ? <>ауд.{" "}<Was was={was.room} now={l.room} /></> : room}
               {building}
             </span>
-            <span className={styles.teacher}>
-              {was?.teacher ? <Was was={teacherName(was.teacher)} now={teacherName(l.teacher)} /> : teacherName(l.teacher)}
-            </span>
+            {/* В недельной строке преподавателя нет: он в раскрытой части */}
+            {!compact && (
+              <span className={styles.teacher}>
+                {was?.teacher ? <Was was={teacherName(was.teacher)} now={teacherName(l.teacher)} /> : teacherName(l.teacher)}
+              </span>
+            )}
           </span>
 
           {hasBadges && (
