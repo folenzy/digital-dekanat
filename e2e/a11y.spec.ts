@@ -8,6 +8,7 @@ import { mskAt, SEEDED_LESSONS, seedTodayLessons } from "./schedule-seed";
 // Допускаем 0 нарушений уровня serious и critical; moderate/minor выводим в лог теста для сведения.
 
 test.beforeAll(() => resetDemoWorld());
+test.afterAll(() => resetDemoWorld());
 
 async function scan(page: Page, label: string) {
   await page.waitForLoadState("networkidle");

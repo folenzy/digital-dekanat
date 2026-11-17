@@ -36,6 +36,7 @@ async function seriousViolations(page: Page) {
 }
 
 test.beforeAll(() => resetDemoWorld());
+test.afterAll(() => resetDemoWorld());
 
 test("по умолчанию тема светлая — та, что была до появления выбора", async ({ page }) => {
   await page.goto("/login");
