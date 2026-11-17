@@ -207,8 +207,60 @@ test.describe("без движения (prefers-reduced-motion)", () => {
     await expect(page.locator("#main details[open]")).toHaveCount(1);
     await expect.poll(() => page.evaluate(() => document.getAnimations().length), { message: "после раскрытия пары" }).toBe(0);
     await page.getByRole("navigation", { name: "Разделы", exact: true }).getByRole("link", { name: "Учёба" }).first().click();
-    await expect(page).toHaveURL(/\/study/);
+    await expect(page).toHaveURL(/[/]study/);
     await expect(page.getByRole("main").getByRole("heading", { level: 1 })).toBeVisible();
     await expect.poll(() => page.evaluate(() => document.getAnimations().length), { message: "в «Учёбе»" }).toBe(0);
+  });
+
+  // Вычисленные стили, а не «счётчик пуст»: счётчик мог бы быть нулём и из-за того, что анимации ещё не начались.
+  test("вычисленные стили: у заливки полосы нет анимации, у раскрытия пары нет перехода", async ({ page }) => {
+    await signIn(page, "alina");
+    await page.goto("/study");
+    const fill = page.locator("#main [aria-label^='Баллы по дисциплине'] > span").first();
+    await expect(fill).toBeVisible();
+    expect(await fill.evaluate((el) => getComputedStyle(el).animationName), "заливка полосы: animation-name").toBe("none");
+
+    await page.goto(`/schedule?view=day&date=${wednesday()}`);
+    const details = page.locator("#main details").first();
+    await expect(details).toBeVisible();
+    const durations = await details.evaluate((el) => {
+      const raw = getComputedStyle(el, "::details-content").transitionDuration;
+      return raw.split(",").map((d) => d.trim());
+    });
+    // transition: none даёт 0s; глобальное правило сокращения даёт 0.01ms — оба не движение
+    for (const d of durations) expect(parseFloat(d) * (d.endsWith("ms") ? 0.001 : 1), "::details-content: transition-duration").toBeLessThan(0.001);
+  });
+
+  // Браузер заводит служебные анимации ::view-transition / group(root) нулевой длины — это не движение.
+  // Движением считаем любую ::view-transition-* анимацию с длительностью больше нуля.
+  test("«›» в «Пары → День»: анимаций ::view-transition-* с ненулевой длительностью нет", async ({ page }) => {
+    await page.addInitScript(() => {
+      const w = window as unknown as { __vt: string[] };
+      w.__vt = [];
+      const orig = document.startViewTransition?.bind(document);
+      if (!orig) return;
+      document.startViewTransition = (arg: unknown) => {
+        const t = orig(arg as never);
+        t.ready.then(() => {
+          for (const a of document.getAnimations()) {
+            const p = String((a.effect as KeyframeEffect).pseudoElement);
+            if (p.startsWith("::view-transition") && Number(a.effect!.getComputedTiming().duration) > 0) w.__vt.push(p);
+          }
+        }).catch(() => {});
+        return t;
+      };
+    });
+    await signIn(page, "alina");
+    await page.goto(`/schedule?view=day&date=${wednesday()}`);
+    await page.waitForTimeout(800);
+    const before = page.url();
+    await page.getByRole("link", { name: "Следующая неделя" }).click();
+    await expect.poll(() => page.url()).not.toBe(before);
+    await page.waitForTimeout(600);
+    expect(await page.evaluate(() => (window as unknown as { __vt: string[] }).__vt), "запущенные анимации ::view-transition-*").toEqual([]);
+    const live = await page.evaluate(() => document.getAnimations()
+      .filter((a) => String((a.effect as KeyframeEffect).pseudoElement).startsWith("::view-transition")
+        && Number(a.effect!.getComputedTiming().duration) > 0).length);
+    expect(live).toBe(0);
   });
 });
