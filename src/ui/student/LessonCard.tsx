@@ -1,5 +1,5 @@
 import { ChevronDown } from "lucide-react";
-import type { ReactNode } from "react";
+import { useId, type ReactNode } from "react";
 import { pairName, shortPersonName } from "@/server/format";
 import type { Lesson } from "@/server/schedule";
 import { Badge } from "../Badge";
@@ -55,110 +55,122 @@ export function LessonCard({ lesson: l, state, kicker, titleAs: Title = "h3", co
   const room = l.room === "уточняется" ? "аудитория уточняется" : `ауд. ${l.room}`;
   // «Корпус А» → «, корпус А»
   const building = l.building ? `, ${buildingName(l.building)}` : "";
+  const id = useId();
+  const hasBadges = Boolean(change || state === "current" || state === "next");
   const fullTeacher = l.teacher === "уточняется" ? "преподаватель уточняется" : l.teacher;
 
   return (
-    <details
-      className={styles.lesson}
-      data-surface="paper"
-      data-type={l.type}
-      data-state={state}
-      data-cancelled={cancelled || undefined}
-      data-compact={compact || undefined}
-    >
-      <summary className={styles.summary}>
-        <div className={styles.top}>
-          <span className={styles.type} data-type={l.type}>
-            <span aria-hidden="true">{LESSON_TYPE_CODE[l.type]}</span>
-            <span className="sr-only">{LESSON_TYPE_LABEL[l.type]}</span>
+    <div className={styles.card}>
+      {/* Заголовок для навигации по заголовкам: внутри summary (роль button) он потерял бы семантику */}
+      <Title className="sr-only">
+        {l.discipline}, {l.start}–{l.end}
+      </Title>
+      <details
+        className={styles.lesson}
+        data-surface="paper"
+        data-type={l.type}
+        data-state={state}
+        data-cancelled={cancelled || undefined}
+        data-compact={compact || undefined}
+      >
+        <summary
+          className={styles.summary}
+          aria-labelledby={`${id}-type ${id}-title ${id}-time`}
+          aria-describedby={`${id}-foot${hasBadges ? ` ${id}-badges` : ""}${change?.note ? ` ${id}-note` : ""}`}
+        >
+          <span className={styles.top}>
+            <span id={`${id}-type`} className={styles.type} data-type={l.type}>
+              <span aria-hidden="true">{LESSON_TYPE_CODE[l.type]}</span>
+              <span className="sr-only">{LESSON_TYPE_LABEL[l.type]}</span>
+            </span>
+            <span className={styles.pair}>{pairName(l.pair)}</span>
+            <span id={`${id}-time`} className={`${styles.time} num`}>
+              {was?.start && (
+                <del className={styles.oldStart}>
+                  <span className="sr-only">было в </span>
+                  {was.start}
+                </del>
+              )}
+              <span className={styles.range}>
+                <span className={styles.start}>{l.start}</span>
+                <span aria-hidden="true"> – </span>
+                <span className="sr-only"> до </span>
+                <span className={styles.end}>{l.end}</span>
+              </span>
+            </span>
+            <ChevronDown aria-hidden="true" className={styles.chevron} size={18} />
           </span>
-          <span className={styles.pair}>{pairName(l.pair)}</span>
-          <span className={`${styles.time} num`}>
-            {was?.start && (
-              <del className={styles.oldStart}>
-                <span className="sr-only">было в </span>
-                {was.start}
-              </del>
-            )}
-            <span className={styles.range}>
-              <span className={styles.start}>{l.start}</span>
-              <span aria-hidden="true"> – </span>
-              <span className="sr-only"> до </span>
-              <span className={styles.end}>{l.end}</span>
+
+          {kicker && <span className={styles.kicker}>{kicker}</span>}
+          <span id={`${id}-title`} className={styles.title}>
+            {cancelled ? <s>{l.discipline}</s> : l.discipline}
+          </span>
+
+          <span id={`${id}-foot`} className={styles.foot}>
+            <span className={styles.room}>
+              {was?.room ? <>ауд.{" "}<Was was={was.room} now={l.room} /></> : room}
+              {building}
+            </span>
+            <span className={styles.teacher}>
+              {was?.teacher ? <Was was={teacherName(was.teacher)} now={teacherName(l.teacher)} /> : teacherName(l.teacher)}
             </span>
           </span>
-          <ChevronDown aria-hidden="true" className={styles.chevron} size={18} />
-        </div>
 
-        {kicker && <p className={styles.kicker}>{kicker}</p>}
-        <Title className={styles.title}>
-          {cancelled ? <s>{l.discipline}</s> : l.discipline}
-        </Title>
-
-        <div className={styles.foot}>
-          <p className={styles.room}>
-            {was?.room ? <>ауд.{" "}<Was was={was.room} now={l.room} /></> : room}
-            {building}
-          </p>
-          <p className={styles.teacher}>
-            {was?.teacher ? <Was was={shortPersonName(was.teacher)} now={teacherName(l.teacher)} /> : teacherName(l.teacher)}
-          </p>
-        </div>
-
-        {(change || state === "current" || state === "next") && (
-          <p className={styles.badges}>
-            {state === "current" && <Badge tone="accent">Идёт сейчас</Badge>}
-            {state === "next" && <Badge tone="neutral">Следующая</Badge>}
-            {change && <Badge tone={CHANGE_META[change.kind].tone}>{CHANGE_META[change.kind].label}</Badge>}
-            {cancelled && change?.kind !== "cancelled" && <Badge tone="danger">Отменена</Badge>}
-          </p>
-        )}
-        {change?.note && <p className={styles.note}>{change.note}</p>}
-      </summary>
-
-      <div className={styles.details}>
-        <p className={styles.row}>
-          <span className={styles.label}>Преподаватель</span>
-          {was?.teacher ? (
-            <>
-              {fullTeacher}
-              <span className={styles.instead}>вместо {was.teacher}</span>
-            </>
-          ) : (
-            fullTeacher
+          {hasBadges && (
+            <span id={`${id}-badges`} className={styles.badges}>
+              {state === "current" && <Badge tone="accent">Идёт сейчас</Badge>}
+              {state === "next" && <Badge tone="neutral">Следующая</Badge>}
+              {change && <Badge tone={CHANGE_META[change.kind].tone}>{CHANGE_META[change.kind].label}</Badge>}
+              {cancelled && change?.kind !== "cancelled" && <Badge tone="danger">Отменена</Badge>}
+            </span>
           )}
-        </p>
-        <p className={styles.row}>
-          <span className={styles.label}>Где</span>
-          <span>
-            {room}
-            {building}
-          </span>
-        </p>
-        <p className={styles.row}>
-          <span className={styles.label}>Тема</span>
-          {note?.topic ?? <span className={styles.empty}>Тема пока не указана</span>}
-        </p>
-        {note?.task && (
+          {change?.note && <span id={`${id}-note`} className={styles.note}>{change.note}</span>}
+        </summary>
+
+        <div className={styles.details}>
           <p className={styles.row}>
-            <span className={styles.label}>Задание</span>
-            {note.task}
+            <span className={styles.label}>Преподаватель</span>
+            {was?.teacher && was.teacher !== "уточняется" ? (
+              <>
+                {fullTeacher}
+                <span className={styles.instead}>вместо {was.teacher}</span>
+              </>
+            ) : (
+              fullTeacher
+            )}
           </p>
-        )}
-        {note && note.materials.length > 0 && (
-          <div className={styles.row}>
-            <span className={styles.label}>Материалы</span>
-            <ul className={styles.materials}>
-              {note.materials.map((m, i) => (
-                <li key={i}>
-                  <span className={styles.kind}>{MATERIAL_KIND_LABEL[m.kind]}</span> {m.title}
-                </li>
-              ))}
-            </ul>
-            <span className={styles.hint}>Файлы выдаёт преподаватель</span>
-          </div>
-        )}
-      </div>
-    </details>
+          <p className={styles.row}>
+            <span className={styles.label}>Где</span>
+            <span>
+              {room}
+              {building}
+            </span>
+          </p>
+          <p className={styles.row}>
+            <span className={styles.label}>Тема</span>
+            {note?.topic ?? <span className={styles.empty}>Тема пока не указана</span>}
+          </p>
+          {note?.task && (
+            <p className={styles.row}>
+              <span className={styles.label}>Задание</span>
+              {note.task}
+            </p>
+          )}
+          {note && note.materials.length > 0 && (
+            <div className={styles.row}>
+              <span className={styles.label}>Материалы</span>
+              <ul className={styles.materials}>
+                {note.materials.map((m, i) => (
+                  <li key={i}>
+                    <span className={styles.kind}>{MATERIAL_KIND_LABEL[m.kind]}</span> {m.title}
+                  </li>
+                ))}
+              </ul>
+              <span className={styles.hint}>Файлы выдаёт преподаватель</span>
+            </div>
+          )}
+        </div>
+      </details>
+    </div>
   );
 }

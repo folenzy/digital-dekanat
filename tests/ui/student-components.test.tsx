@@ -60,12 +60,28 @@ describe("LessonCard", () => {
 
     it("корень — details, в summary название и время, подробности после него", () => {
       const out = html(<LessonCard lesson={lesson({})} />);
-      expect(out.startsWith("<details")).toBe(true);
+      expect(out).toContain("<details");
       const s = summaryOf(out);
       expect(s).toContain("Математический анализ");
       expect(s).toContain("10:40");
       expect(s).toContain("12:10");
       expect(detailsOf(out)).not.toContain("<script");
+    });
+
+    it("заголовок — вне summary, sr-only, с названием и временем; в summary нет p, div и заголовков", () => {
+      const out = html(<LessonCard lesson={lesson({})} titleAs="h2" state="current" />);
+      expect(out).toMatch(/<h2 class="sr-only">Математический анализ, 10:40–12:10<\/h2><details/);
+      const s = summaryOf(out);
+      expect(s).not.toMatch(/<(p|div|h[1-6])[\s>]/);
+      expect(s).toMatch(/aria-labelledby="([^"]+)-type \1-title \1-time"/);
+      expect(s).toMatch(/aria-describedby="[^"]+-foot [^"]+-badges"/);
+      const id = s.match(/aria-labelledby="([^"]+)-type/)![1];
+      for (const part of ["type", "title", "time", "foot", "badges"]) expect(s).toContain(`id="${id}-${part}"`);
+    });
+
+    it("прежний преподаватель неизвестен — «вместо» не показываем", () => {
+      const d = detailsOf(html(<LessonCard lesson={lesson({ teacher: "Лебедев Сергей Павлович", change: { kind: "teacher", was: { teacher: "уточняется" } } })} />));
+      expect(d).not.toContain("вместо");
     });
 
     it("раскрытая часть: полное ФИО, тема, задание, материалы с подписями, аудитория и корпус", () => {
@@ -141,7 +157,7 @@ describe("LessonCard", () => {
 
     it("отменённая раскрывается и показывает причину", () => {
       const out = html(<LessonCard lesson={lesson({ cancelled: true, change: { kind: "cancelled", note: "Преподаватель болеет" } })} />);
-      expect(out.startsWith("<details")).toBe(true);
+      expect(out).toContain("<details");
       expect(out).toContain("Преподаватель болеет");
     });
 
