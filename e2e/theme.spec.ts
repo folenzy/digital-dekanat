@@ -139,6 +139,18 @@ test("тёмная тема: без серьёзных нарушений дос
     await page.goto(path);
     expect.soft(await seriousViolations(page), `${path} (тёмная)`).toEqual([]);
   }
+  // раскрытая пара в «Дне» и «Неделе», «Семестр»
+  const d = new Date(Date.now() + 3 * 3600_000);
+  d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7) + 2);
+  for (const view of ["day", "week"]) {
+    await page.goto(`/schedule?view=${view}&date=${d.toISOString().slice(0, 10)}`);
+    await page.locator("#main details > summary").first().click();
+    await expect(page.locator("#main details[open]")).toHaveCount(1);
+    expect.soft(await seriousViolations(page), `пара раскрыта, ${view} (тёмная)`).toEqual([]);
+  }
+  await page.goto("/study");
+  expect.soft(await seriousViolations(page), "«Семестр» (тёмная)").toEqual([]);
+
   await page.goto("/profile");
   await page.getByRole("button", { name: "Выйти" }).click();
   await page.waitForURL("**/login**");
