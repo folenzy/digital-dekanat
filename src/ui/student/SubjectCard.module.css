@@ -85,9 +85,21 @@
   bottom: 0;
 }
 
+/* Заливка «вырастает» при открытии: ширина остаётся инлайн, анимируется только масштаб (без перекладки) */
 .barFill {
   left: 0;
   background: var(--accent-fill);
+  transform-origin: left;
+  animation: bar-fill var(--dur) var(--ease-out) both;
+}
+
+@keyframes bar-fill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
 }
 
 .barAhead {
@@ -247,6 +259,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .barFill {
+    animation: none;
+  }
+
   .summary::after {
     transition: none;
   }
