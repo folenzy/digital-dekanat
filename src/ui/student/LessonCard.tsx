@@ -1,5 +1,5 @@
 import { ChevronDown } from "lucide-react";
-import { useId, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { pairName, shortPersonName } from "@/server/format";
 import type { Lesson } from "@/server/schedule";
 import { Badge } from "../Badge";
@@ -55,7 +55,6 @@ export function LessonCard({ lesson: l, state, kicker, titleAs: Title = "h3", co
   const room = l.room === "уточняется" ? "аудитория уточняется" : `ауд. ${l.room}`;
   // «Корпус А» → «, корпус А»
   const building = l.building ? `, ${buildingName(l.building)}` : "";
-  const id = useId();
   const hasBadges = Boolean(change || state === "current" || state === "next");
   const fullTeacher = l.teacher === "уточняется" ? "преподаватель уточняется" : l.teacher;
 
@@ -75,16 +74,14 @@ export function LessonCard({ lesson: l, state, kicker, titleAs: Title = "h3", co
       >
         <summary
           className={styles.summary}
-          aria-labelledby={`${id}-type ${id}-title ${id}-time`}
-          aria-describedby={`${id}-foot${hasBadges ? ` ${id}-badges` : ""}${change?.note ? ` ${id}-note` : ""}`}
         >
           <span className={styles.top}>
-            <span id={`${id}-type`} className={styles.type} data-type={l.type}>
+            <span className={styles.type} data-type={l.type}>
               <span aria-hidden="true">{LESSON_TYPE_CODE[l.type]}</span>
               <span className="sr-only">{LESSON_TYPE_LABEL[l.type]}</span>
             </span>
             <span className={styles.pair}>{pairName(l.pair)}</span>
-            <span id={`${id}-time`} className={`${styles.time} num`}>
+            <span className={`${styles.time} num`}>
               {was?.start && (
                 <del className={styles.oldStart}>
                   <span className="sr-only">было в </span>
@@ -102,11 +99,11 @@ export function LessonCard({ lesson: l, state, kicker, titleAs: Title = "h3", co
           </span>
 
           {kicker && <span className={styles.kicker}>{kicker}</span>}
-          <span id={`${id}-title`} className={styles.title}>
+          <span className={styles.title}>
             {cancelled ? <s>{l.discipline}</s> : l.discipline}
           </span>
 
-          <span id={`${id}-foot`} className={styles.foot}>
+          <span className={styles.foot}>
             <span className={styles.room}>
               {was?.room ? <>ауд.{" "}<Was was={was.room} now={l.room} /></> : room}
               {building}
@@ -120,14 +117,14 @@ export function LessonCard({ lesson: l, state, kicker, titleAs: Title = "h3", co
           </span>
 
           {hasBadges && (
-            <span id={`${id}-badges`} className={styles.badges}>
+            <span className={styles.badges}>
               {state === "current" && <Badge tone="accent">Идёт сейчас</Badge>}
               {state === "next" && <Badge tone="neutral">Следующая</Badge>}
               {change && <Badge tone={CHANGE_META[change.kind].tone}>{CHANGE_META[change.kind].label}</Badge>}
               {cancelled && change?.kind !== "cancelled" && <Badge tone="danger">Отменена</Badge>}
             </span>
           )}
-          {change?.note && <span id={`${id}-note`} className={styles.note}>{change.note}</span>}
+          {change?.note && <span className={styles.note}>{change.note}</span>}
         </summary>
 
         <div className={styles.details}>

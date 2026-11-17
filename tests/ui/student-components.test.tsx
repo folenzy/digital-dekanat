@@ -73,10 +73,10 @@ describe("LessonCard", () => {
       expect(out).toMatch(/<h2 class="sr-only">Математический анализ, 10:40–12:10<\/h2><details/);
       const s = summaryOf(out);
       expect(s).not.toMatch(/<(p|div|h[1-6])[\s>]/);
-      expect(s).toMatch(/aria-labelledby="([^"]+)-type \1-title \1-time"/);
-      expect(s).toMatch(/aria-describedby="[^"]+-foot [^"]+-badges"/);
-      const id = s.match(/aria-labelledby="([^"]+)-type/)![1];
-      for (const part of ["type", "title", "time", "foot", "badges"]) expect(s).toContain(`id="${id}-${part}"`);
+      // имя кнопки — её видимое содержимое (WCAG 2.5.3): ни aria-labelledby, ни aria-describedby
+      expect(s).not.toContain("aria-labelledby");
+      expect(s).not.toContain("aria-describedby");
+      expect(s).not.toContain(" id=");
     });
 
     it("прежний преподаватель неизвестен — «вместо» не показываем", () => {
