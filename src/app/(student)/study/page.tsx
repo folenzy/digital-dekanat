@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { CircleAlert, CircleCheck, Circle, GraduationCap, NotebookPen } from "lucide-react";
+import { GraduationCap, NotebookPen } from "lucide-react";
 import { requireStudent } from "@/server/auth/viewer";
-import { dayDiff, formatAverage, mskTime, plural, ruDateKey, ruRelativeDate, ruWeekdayShort } from "@/server/format";
-import { currentSemester, getStudySummary, type EnrollmentView, type ExamView, type StudySummary } from "@/server/grades";
+import { formatAverage, mskTime, plural, ruDateKey, ruRelativeDate, ruWeekdayShort } from "@/server/format";
+import { currentSemester, getStudySummary, type ExamView, type StudySummary } from "@/server/grades";
 import { mskDateKey } from "@/server/time";
 import { Badge } from "@/ui/Badge";
 import { Button } from "@/ui/Button";
@@ -11,13 +11,13 @@ import { EmptyState } from "@/ui/EmptyState";
 import { PageHeader } from "@/ui/PageHeader";
 import { Section } from "@/ui/Section";
 import { Tabs } from "@/ui/Tabs";
+import { SubjectCard } from "@/ui/student/SubjectCard";
 import { buildingName, CONTROL_FORM_LABEL, EXAM_KIND_LABEL, gradeLabel, isDebtGrade, VERDICT_COPY } from "@/ui/student/labels";
 import styles from "./study.module.css";
 
 export const metadata: Metadata = { title: "Учёба" };
 
 type Tab = "semester" | "session" | "history";
-const POINTS: readonly [string, string, string] = ["балл", "балла", "баллов"];
 const DAYS: readonly [string, string, string] = ["день", "дня", "дней"];
 
 function Verdict({ s, now }: { s: StudySummary; now: Date }) {
@@ -77,97 +77,6 @@ function Verdict({ s, now }: { s: StudySummary; now: Date }) {
         </div>
       )}
     </Card>
-  );
-}
-
-/** Допуск в строке предмета: «есть» — обычным текстом, метка — только когда допуска нет или он не решён. */
-function Admission({ admitted }: { admitted: boolean | null }) {
-  if (admitted === true) return <span>допуск есть</span>;
-  if (admitted === false) return <Badge tone="danger">Нет допуска</Badge>;
-  return <Badge tone="warn">Допуск не решён</Badge>;
-}
-
-function Subject({ e, today, riskIds }: { e: EnrollmentView; today: string; riskIds: Set<number> }) {
-  const done = e.checkpoints.filter((c) => c.score !== null).length;
-  const remaining = e.checkpoints.filter((c) => c.score === null).reduce((sum, c) => sum + c.maxPoints, 0);
-  const points = Math.min(100, Math.max(0, e.points ?? 0));
-  const ahead = Math.min(100 - points, remaining);
-  const rest = e.controlForm === "exam" ? "на экзамене" : "на зачёте";
-  return (
-    <li className={styles.subject}>
-      <div className={styles.subjectHead}>
-        <h3 className={styles.subjectTitle}>{e.discipline}</h3>
-        <p className={styles.pointsLine}>
-          <span className={`${styles.pointsNum} num`}>{points}</span>
-          <span className={styles.pointsMax}> из 100</span>
-        </p>
-      </div>
-
-      <div className={styles.subjectMeta}>
-        <p className={styles.form}>
-          {CONTROL_FORM_LABEL[e.controlForm]}, <Admission admitted={e.admitted} />
-        </p>
-        <p className={styles.prelim}>
-          {e.finalGrade ? (
-            <>итог: <strong>{gradeLabel(e.finalGrade)}</strong></>
-          ) : e.pace ? (
-            <>предварительно <strong>{e.pace.grade}</strong>, {e.pace.score} из {e.pace.max}</>
-          ) : done > 0 ? (
-            "пока мало оценок"
-          ) : (
-            "точки ещё впереди"
-          )}
-        </p>
-      </div>
-
-      <div
-        className={styles.bar}
-        role="meter"
-        aria-label={`Баллы по дисциплине «${e.discipline}»`}
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-valuenow={points}
-        aria-valuetext={`${points} из 100${remaining ? `, в контрольных точках можно набрать ещё ${remaining}, остальное — ${rest}` : `, остальные баллы — ${rest}`}`}
-      >
-        <span className={styles.barFill} style={{ width: `${points}%` }} />
-        {ahead > 0 && <span className={styles.barAhead} style={{ left: `${points}%`, width: `${ahead}%` }} />}
-      </div>
-
-      {e.checkpoints.length > 0 && (
-        <details className={styles.checkpoints} open={e.checkpoints.some((c) => riskIds.has(c.id)) || undefined}>
-          <summary className={styles.summary}>
-            Контрольные точки: сдано {done} из {e.checkpoints.length}
-          </summary>
-          <ul className={styles.cpList}>
-            {e.checkpoints.map((c) => {
-              const overdue = c.score === null && c.dueDate < today;
-              const state = c.score !== null ? "done" : overdue && c.required ? "overdue" : "open";
-              const left = dayDiff(today, c.dueDate);
-              return (
-                <li key={c.id} className={styles.cp} data-state={state}>
-                  <span className={styles.cpIcon} aria-hidden="true">
-                    {state === "done" ? <CircleCheck /> : state === "overdue" ? <CircleAlert /> : <Circle />}
-                  </span>
-                  <span className={styles.cpBody}>
-                    <span className={styles.cpTitle}>
-                      {c.title}
-                      {c.required && <span className={styles.required}>обязательная</span>}
-                    </span>
-                    <span className={styles.cpMeta}>
-                      {c.score !== null
-                        ? `${c.score} из ${c.maxPoints} ${plural(c.maxPoints, POINTS)}`
-                        : overdue
-                          ? `не сдана, срок прошёл ${ruDateKey(c.dueDate)}`
-                          : `до ${ruDateKey(c.dueDate)}${left <= 7 ? ` (через ${left} ${plural(left, DAYS)})` : ""}, до ${c.maxPoints} ${plural(c.maxPoints, POINTS)}`}
-                    </span>
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
-        </details>
-      )}
-    </li>
   );
 }
 
@@ -231,7 +140,7 @@ export default async function StudyPage({ searchParams }: PageProps<"/study">) {
               в оставшихся точках и на зачёте или экзамене.
             </p>
             <ul className={styles.list}>
-              {s.current.map((e) => <Subject key={e.id} e={e} today={today} riskIds={riskIds} />)}
+              {s.current.map((e) => <SubjectCard key={e.id} e={e} today={today} riskIds={riskIds} />)}
             </ul>
           </>
         ) : (

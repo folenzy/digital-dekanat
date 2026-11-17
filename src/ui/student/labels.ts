@@ -1,4 +1,5 @@
 import type { ControlForm, ExamView, StudySummary } from "@/server/grades";
+import type { LessonMaterial } from "@/server/db/schema";
 import type { Lesson, LessonChange } from "@/server/schedule";
 import type { BadgeTone } from "../Badge";
 
@@ -8,6 +9,13 @@ export const LESSON_TYPE_LABEL: Record<Lesson["type"], string> = {
   lecture: "Лекция",
   practice: "Практика",
   lab: "Лабораторная",
+};
+
+export const MATERIAL_KIND_LABEL: Record<LessonMaterial["kind"], string> = {
+  pdf: "PDF",
+  slides: "Презентация",
+  link: "Ссылка",
+  book: "Учебник",
 };
 
 /** Бейджи изменений в расписании (спека §7.3); порядок — как в спеке. */

@@ -63,6 +63,22 @@ test("страницы студента", async ({ page }) => {
   await scan(page, "форма с ошибкой");
 });
 
+test("пара раскрыта (день, неделя) и «Семестр»", async ({ page }) => {
+  test.setTimeout(120_000);
+  const d = new Date(Date.now() + 3 * 3600_000);
+  d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7) + 2); // среда текущей недели
+  const wed = d.toISOString().slice(0, 10);
+  await signIn(page, "alina");
+  for (const [view, label] of [["day", "день"], ["week", "неделя"]]) {
+    await page.goto(`/schedule?view=${view}&date=${wed}`);
+    await page.locator("#main details > summary").first().click();
+    await expect(page.locator("#main details[open]")).toHaveCount(1);
+    await scan(page, `«Пары → ${label}», пара раскрыта`);
+  }
+  await page.goto("/study");
+  await scan(page, "«Учёба → Семестр»");
+});
+
 test("карточка обращения «нужно уточнение» и «готово» у Дениса", async ({ page }) => {
   await signIn(page, "denis");
   for (const title of ["Пересдача", "Справка об обучении"]) {

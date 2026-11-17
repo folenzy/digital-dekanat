@@ -218,3 +218,27 @@ test("в поле ввода и на форме палец ничего не л�
   await page.waitForTimeout(450);
   await expect(page).toHaveURL(/\/dekanat\/new\?type=cert_study$/);
 });
+
+test("«Пары»: свайп по строке пары листает день и не раскрывает пару, нажатие раскрывает и день не меняет", async ({ page }) => {
+  const wed = shift(monday(), 2);
+  await signIn(page, "alina");
+  await openDay(page, wed);
+  const rows = sheet(page).locator("summary");
+  await expect(rows.first()).toBeVisible();
+  await rows.first().scrollIntoViewIfNeeded();
+  const box = await rows.first().boundingBox();
+  expect(box).not.toBeNull();
+  const y = box!.y + box!.height / 2;
+
+  await swipe(page, 300, 60, { y }); // палец ведём по строке пары
+  await expect.poll(() => dateOf(page)).toBe(shift(wed, 1));
+  await expect(page.locator("#main details[open]")).toHaveCount(0);
+
+  // обычное нажатие по строке — пара раскрылась, день тот же
+  await openDay(page, wed);
+  await rows.first().scrollIntoViewIfNeeded();
+  await rows.first().click();
+  await expect(page.locator("#main details[open]")).toHaveCount(1);
+  await page.waitForTimeout(450);
+  expect(dateOf(page)).toBe(wed);
+});

@@ -10,7 +10,7 @@ const html = (el: ReactElement) => renderToStaticMarkup(el);
 
 const lesson = (over: Partial<Lesson>): Lesson => ({
   pair: 2, start: "10:40", end: "12:10", discipline: "Математический анализ", type: "lecture",
-  room: "А-310", building: "Корпус А", teacher: "Ковалёва Марина Анатольевна", cancelled: false, ...over,
+  room: "А-310", building: "Корпус А", teacher: "Ковалёва Марина Анатольевна", cancelled: false, note: null, ...over,
 });
 
 describe("LessonCard", () => {
@@ -51,6 +51,134 @@ describe("LessonCard", () => {
     const out = html(<LessonCard lesson={lesson({ change: { kind: "extra", note: "<img src=x onerror=alert(1)>" } })} />);
     expect(out).not.toContain("<img");
     expect(out).toContain("&lt;img");
+  });
+
+  describe("раскрытие", () => {
+    const FULL = "Лебедев Сергей Павлович";
+    const summaryOf = (out: string) => out.match(/<summary[\s\S]*?<\/summary>/)?.[0] ?? "";
+    const detailsOf = (out: string) => out.split("</summary>")[1] ?? "";
+
+    it("корень — details, в summary название и время, подробности после него", () => {
+      const out = html(<LessonCard lesson={lesson({})} />);
+      expect(out).toContain("<details");
+      const s = summaryOf(out);
+      expect(s).toContain("Математический анализ");
+      expect(s).toContain("10:40");
+      expect(s).toContain("12:10");
+      expect(detailsOf(out)).not.toContain("<script");
+    });
+
+    it("заголовок — вне summary, sr-only, с названием и временем; в summary нет p, div и заголовков", () => {
+      const out = html(<LessonCard lesson={lesson({})} titleAs="h2" state="current" />);
+      expect(out).toMatch(/<h2 class="sr-only">Математический анализ, 10:40–12:10<\/h2><details/);
+      const s = summaryOf(out);
+      expect(s).not.toMatch(/<(p|div|h[1-6])[\s>]/);
+      // имя кнопки — её видимое содержимое (WCAG 2.5.3): ни aria-labelledby, ни aria-describedby
+      expect(s).not.toContain("aria-labelledby");
+      expect(s).not.toContain("aria-describedby");
+      expect(s).not.toContain(" id=");
+    });
+
+    it("прежний преподаватель неизвестен — «вместо» не показываем", () => {
+      const d = detailsOf(html(<LessonCard lesson={lesson({ teacher: "Лебедев Сергей Павлович", change: { kind: "teacher", was: { teacher: "уточняется" } } })} />));
+      expect(d).not.toContain("вместо");
+    });
+
+    it("раскрытая часть: полное ФИО, тема, задание, материалы с подписями, аудитория и корпус", () => {
+      const out = html(
+        <LessonCard
+          lesson={lesson({
+            teacher: FULL,
+            note: {
+              topic: "Пределы последовательностей",
+              task: "Решить №12–18",
+              materials: [{ title: "Конспект лекции", kind: "pdf" }, { title: "Слайды", kind: "slides" }],
+            },
+          })}
+        />,
+      );
+      const d = detailsOf(out);
+      expect(d).toContain(FULL);
+      expect(d).toContain("Пределы последовательностей");
+      expect(d).toContain("Решить №12–18");
+      expect(d).toContain("Конспект лекции");
+      expect(d).toContain("PDF");
+      expect(d).toContain("Презентация");
+      expect(d).toContain("Файлы выдаёт преподаватель");
+      expect(d).toContain("А-310");
+      expect(d).toMatch(/корпус\sА/);
+    });
+
+    it("без заметки: «Тема пока не указана», без материалов и пометки", () => {
+      const d = detailsOf(html(<LessonCard lesson={lesson({ note: null })} />));
+      expect(d).toContain("Тема пока не указана");
+      expect(d).not.toContain("Файлы выдаёт преподаватель");
+      expect(d).not.toContain("PDF");
+    });
+
+    it("пустая или из одних пробелов тема тоже даёт «Тема пока не указана»", () => {
+      for (const topic of ["", "   "]) {
+        const d = detailsOf(html(<LessonCard lesson={lesson({ note: { topic, task: null, materials: [] } })} />));
+        expect(d).toContain("Тема пока не указана");
+      }
+    });
+
+    it("заметка без темы тоже даёт «Тема пока не указана»", () => {
+      const d = detailsOf(html(<LessonCard lesson={lesson({ note: { topic: null, task: "Читать §3", materials: [] } })} />));
+      expect(d).toContain("Тема пока не указана");
+      expect(d).toContain("Читать §3");
+    });
+
+    it("подписи всех типов материалов", () => {
+      const d = detailsOf(
+        html(
+          <LessonCard
+            lesson={lesson({
+              note: {
+                topic: "Т",
+                task: null,
+                materials: [
+                  { title: "а", kind: "pdf" }, { title: "б", kind: "slides" },
+                  { title: "в", kind: "link" }, { title: "г", kind: "book" },
+                ],
+              },
+            })}
+          />,
+        ),
+      );
+      for (const label of ["PDF", "Презентация", "Ссылка", "Учебник"]) expect(d).toContain(label);
+    });
+
+    it("замена преподавателя: новое полное ФИО и «вместо» прежнего", () => {
+      const d = detailsOf(
+        html(<LessonCard lesson={lesson({ teacher: FULL, change: { kind: "teacher", was: { teacher: "Ковалёва Марина Анатольевна" } } })} />),
+      );
+      expect(d).toContain(FULL);
+      expect(d).toContain("вместо Ковалёва Марина Анатольевна");
+    });
+
+    it("преподаватель не назначен: «преподаватель уточняется»", () => {
+      const d = detailsOf(html(<LessonCard lesson={lesson({ teacher: "уточняется" })} />));
+      expect(d).toContain("преподаватель уточняется");
+    });
+
+    it("отменённая раскрывается и показывает причину", () => {
+      const out = html(<LessonCard lesson={lesson({ cancelled: true, change: { kind: "cancelled", note: "Преподаватель болеет" } })} />);
+      expect(out).toContain("<details");
+      expect(out).toContain("Преподаватель болеет");
+    });
+
+    it("две карточки — независимые details", () => {
+      const out = html(
+        <>
+          <LessonCard lesson={lesson({})} />
+          <LessonCard lesson={lesson({ pair: 3, start: "12:40", end: "14:10" })} />
+        </>,
+      );
+      expect(out.match(/<details/g)).toHaveLength(2);
+      expect(out).not.toMatch(/<details[^>]*\sname=/);
+      expect(out).not.toMatch(/<details[^>]*\sopen/);
+    });
   });
 });
 

@@ -1,7 +1,7 @@
 import { sql } from "drizzle-orm";
 import {
   boolean, check, customType, date, index, integer, jsonb, pgEnum, pgSequence, pgTable,
-  primaryKey, text, timestamp, uuid,
+  primaryKey, text, timestamp, unique, uuid,
 } from "drizzle-orm/pg-core";
 
 // ---------- enums ----------
@@ -170,6 +170,23 @@ export const scheduleChanges = pgTable("schedule_changes", {
   lessonType: lessonTypeEnum("lesson_type"),
   note: text("note"),
 }, (t) => [index("schedule_changes_group_date_idx").on(t.groupId, t.date)]);
+
+export type LessonMaterial = { title: string; kind: "pdf" | "slides" | "link" | "book" };
+export type LessonNote = { topic: string | null; task: string | null; materials: LessonMaterial[] };
+
+/** Заметка к паре: тема, задание, материалы. Ключ — группа + дата + исходный номер пары. */
+export const lessonNotes = pgTable("lesson_notes", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  groupId: integer("group_id").notNull().references(() => groups.id),
+  date: date("date", { mode: "string" }).notNull(),
+  pair: integer("pair").notNull(),
+  topic: text("topic"),
+  task: text("task"),
+  materials: jsonb("materials").$type<LessonMaterial[]>().notNull().default(sql`'[]'::jsonb`),
+}, (t) => [
+  unique("lesson_notes_group_date_pair_uq").on(t.groupId, t.date, t.pair),
+  check("lesson_notes_pair_chk", sql`${t.pair} between 1 and 6`),
+]);
 
 // ---------- успеваемость ----------
 export const enrollments = pgTable("enrollments", {

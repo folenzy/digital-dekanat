@@ -72,12 +72,47 @@ export function currentSemester(course: number, now: Date): number {
   return (course - 1) * 2 + (autumn ? 1 : 2);
 }
 
+/** Пороги баллов (из 100) для оценок «3», «4», «5»; зачёт — порог «3». Единый источник для всех шкал. */
+export const GRADE_THRESHOLDS = { three: 55, four: 70, five: 85 } as const;
+
 export function preliminaryGrade(points: number | null): string | null {
   if (points === null) return null;
-  if (points >= 85) return "отлично";
-  if (points >= 70) return "хорошо";
-  if (points >= 55) return "удовлетворительно";
+  if (points >= GRADE_THRESHOLDS.five) return "отлично";
+  if (points >= GRADE_THRESHOLDS.four) return "хорошо";
+  if (points >= GRADE_THRESHOLDS.three) return "удовлетворительно";
   return "неудовлетворительно";
+}
+
+/** Отметка на полосе баллов: оценка и балл, с которого она ставится. */
+export type GradeMark = { label: string; at: number };
+
+/** Отметки по форме контроля: экзамен и дифзачёт — «3», «4», «5»; зачёт — одна отметка «зачёт». */
+export function gradeMarks(form: ControlForm): GradeMark[] {
+  if (form === "credit") return [{ label: "зачёт", at: GRADE_THRESHOLDS.three }];
+  return [
+    { label: "3", at: GRADE_THRESHOLDS.three },
+    { label: "4", at: GRADE_THRESHOLDS.four },
+    { label: "5", at: GRADE_THRESHOLDS.five },
+  ];
+}
+
+export type GradeGoal = { kind: "need"; label: string; need: number } | { kind: "reached"; label: string };
+
+/** Сколько баллов до ближайшей отметки выше текущих; все пройдены — reached с высшей. Ровно на пороге — порог пройден. */
+export function gradeGoal(points: number | null, form: ControlForm): GradeGoal {
+  const p = Math.min(100, Math.max(0, points ?? 0));
+  const marks = gradeMarks(form);
+  const next = marks.find((m) => p < m.at);
+  return next ? { kind: "need", label: next.label, need: next.at - p } : { kind: "reached", label: marks[marks.length - 1].label };
+}
+
+export type NearestCheckpoint = { title: string; dueDate: string; maxPoints: number; overdue: boolean; required: boolean };
+
+/** Ближайшая несданная (score === null) точка по сроку; overdue — срок уже прошёл. Все сданы — null. */
+export function nearestCheckpoint(checkpoints: readonly CheckpointView[], today: string): NearestCheckpoint | null {
+  const open = checkpoints.filter((c) => c.score === null).sort((a, b) => a.dueDate.localeCompare(b.dueDate));
+  const c = open[0];
+  return c ? { title: c.title, dueDate: c.dueDate, maxPoints: c.maxPoints, overdue: c.dueDate < today, required: c.required } : null;
 }
 
 /** Сколько должно быть оценено, чтобы показывать предварительную оценку: 20 баллов или две точки. */
