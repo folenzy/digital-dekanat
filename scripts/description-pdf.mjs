@@ -43,6 +43,25 @@ function toHtml(md) {
     const h = l.match(/^(#{1,4}) (.*)$/);
     if (h) { html.push(`<h${h[1].length}>${inline(h[2])}</h${h[1].length}>`); i++; continue; }
     if (/^---+$/.test(l.trim())) { html.push("<hr>"); i++; continue; }
+    if (l.startsWith("```")) { // блок кода: промпты приводим дословно
+      const code = [];
+      i++;
+      while (i < lines.length && !lines[i].startsWith("```")) code.push(lines[i++]);
+      i++;
+      html.push(`<pre>${esc(code.join("\n"))}</pre>`);
+      continue;
+    }
+    if (l.startsWith("![")) { // подряд идущие картинки — один ряд: ![подпись](путь от корня репозитория)
+      const shots = [];
+      while (i < lines.length && lines[i].startsWith("![")) {
+        // {pos=N} в конце — какой кусок высокого снимка показать, в процентах сверху вниз
+        const m = lines[i++].match(/^!\[([^\]]*)\]\(([^)]+)\)(?:\{pos=(\d+)\})?\s*$/);
+        if (!m) throw new Error(`не разобрана картинка: ${lines[i - 1]}`);
+        shots.push(`<figure><img src="${pathToFileURL(join(root, m[2])).href}" alt=""${m[3] ? ` style="object-position: 50% ${m[3]}%"` : ""}><figcaption>${inline(m[1])}</figcaption></figure>`);
+      }
+      html.push(`<div class="shots n${shots.length}">${shots.join("")}</div>`);
+      continue;
+    }
     if (l.startsWith("|")) {
       const head = cells(l);
       i += 2; // строка заголовка и разделитель
@@ -72,7 +91,7 @@ function toHtml(md) {
       continue;
     }
     const p = [];
-    while (i < lines.length && lines[i].trim() && !/^(#|\||>|- |---)/.test(lines[i])) p.push(lines[i++]);
+    while (i < lines.length && lines[i].trim() && !/^(#|\||>|- |---|```|!\[)/.test(lines[i])) p.push(lines[i++]);
     html.push(`<p>${p.map(inline).join("<br>")}</p>`);
   }
   return html.join("\n");
@@ -99,6 +118,14 @@ thead { display: table-header-group; }
 tr { break-inside: avoid; }
 th, td { text-align: left; vertical-align: top; padding: 3.5pt 5pt; border-bottom: 1px solid #e1e4e9; }
 th { font-weight: 650; border-bottom: 1.5px solid #9aa3af; }
+pre { margin: 0 0 8pt; padding: 6pt 8pt; background: #f4f6f9; border: 1px solid #e1e4e9; border-left: 3px solid #1E6FD9; border-radius: 3pt; font-family: Consolas, "Cascadia Mono", monospace; font-size: 8pt; line-height: 1.4; white-space: pre-wrap; overflow-wrap: anywhere; break-inside: avoid; }
+.shots { display: flex; gap: 8pt; margin: 6pt 0 10pt; break-inside: avoid; align-items: flex-start; }
+.shots figure { flex: 1 1 0; min-width: 0; margin: 0; }
+.shots img { display: block; width: 100%; max-height: 92mm; object-fit: cover; object-position: top; border: 1px solid #d5d9e0; border-radius: 3pt; }
+.shots.n1 img { max-height: 105mm; }
+.shots.n1 figure { flex: 0 1 100%; }
+.shots.n4 img { max-height: 70mm; }
+figcaption { margin-top: 3pt; font-size: 7.8pt; line-height: 1.35; color: #4b5360; }
 `;
 
 const html = `<!doctype html><html lang="ru"><head><meta charset="utf-8"><title>«На связи» — описание работы</title>
@@ -117,6 +144,13 @@ const faces = await page.evaluate(() => [...document.fonts].map((f) => `${f.fami
 const fontOk = faces.some((f) => f.startsWith("Golos") && f.includes(" loaded ") && f.includes("U+400-45F")); // кириллица
 if (!fontOk) console.error(faces);
 if (!fontOk) throw new Error("шрифт Golos Text не загрузился — PDF был бы запасным шрифтом");
+// все картинки загружены (битая ссылка дала бы пустую рамку в PDF)
+const broken = await page.evaluate(async () => {
+  const imgs = [...document.images];
+  await Promise.all(imgs.map((im) => (im.complete ? null : new Promise((r) => { im.onload = im.onerror = r; }))));
+  return imgs.filter((im) => !im.naturalWidth).map((im) => im.src);
+});
+if (broken.length) throw new Error(`не загрузились картинки: ${broken.join(", ")}`);
 await page.pdf({
   path: out,
   format: "A4",
