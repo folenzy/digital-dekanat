@@ -13,19 +13,22 @@ const src = join(root, "docs/process/DESCRIPTION.md");
 const out = join(root, "docs/process/DESCRIPTION.pdf");
 const fontCss = pathToFileURL(join(root, "node_modules/@fontsource-variable/golos-text/index.css")).href; // то же, что wght.css в layout.tsx
 
+const REPO = "https://github.com/folenzy/digital-dekanat";
+/** Относительная ссылка из DESCRIPTION.md → адрес файла на GitHub (ветка main). */
+const toUrl = (href) =>
+  /^https?:/.test(href) ? href : `${REPO}/blob/main/${new URL(href, "https://x/docs/process/").pathname.slice(1)}`;
+
 const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
 function inline(text) {
   const codes = [];
   let s = text.replace(/`([^`]+)`/g, (_, c) => `\u0000${codes.push(esc(c)) - 1}\u0000`);
   s = esc(s);
-  // ссылки: внешние кликабельны, ссылки на файлы репозитория — путь кодом (в PDF они никуда не ведут)
-  s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, label, href) =>
-    /^https?:/.test(href) ? `<a href="${href}">${label}</a>` : label,
-  );
+  // ссылки на файлы репозитория ведут на GitHub; голые адреса https тоже кликабельны
+  s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, label, href) => `<a href="${toUrl(href)}">${label}</a>`);
   s = s.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
   s = s.replace(/(^|[^*])\*([^*\s][^*]*)\*/g, "$1<em>$2</em>");
-  s = s.replace(/(https:\/\/194-87-80-252\.sslip\.io)(?![^<]*<\/a>)/g, '<a href="$1">$1</a>');
+  s = s.replace(/(^|[\s(>])(https:\/\/[^\s<)]+)/g, '$1<a href="$2">$2</a>');
   return s.replace(/\u0000(\d+)\u0000/g, (_, i) => `<code>${codes[i]}</code>`);
 }
 
